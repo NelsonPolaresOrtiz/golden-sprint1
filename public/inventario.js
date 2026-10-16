@@ -123,3 +123,50 @@ async function eliminarProducto(id) {
         cargarProductos();
     }
 }
+
+// ==========================================
+// 5. EXPORTAR REPORTE A PDF (NUEVO)
+// ==========================================
+function exportarPDF() {
+    if (productosGlobal.length === 0) {
+        alert("No hay productos en el inventario para exportar.");
+        return;
+    }
+
+    // Inicializar la librería jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Dibujar el Título del Documento
+    doc.setFontSize(18);
+    doc.setTextColor(15, 23, 42); // Azul oscuro
+    doc.text("Reporte de Inventario - Distribuidora GOLDEN", 14, 20);
+    
+    // Dibujar la Fecha
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()} - Generado por el sistema ERP`, 14, 28);
+
+    // Preparar los datos de la tabla
+    const columnas = ["SKU", "Nombre del Repuesto", "Categoría", "Precio (Bs)", "Stock Actual"];
+    const filas = productosGlobal.map(p => [
+        p.sku, 
+        p.nombre, 
+        p.categoria, 
+        `Bs. ${parseFloat(p.precio).toFixed(2)}`, 
+        p.stock.toString()
+    ]);
+
+    // Generar la tabla con diseño
+    doc.autoTable({
+        startY: 35,
+        head: [columnas],
+        body: filas,
+        theme: 'striped',
+        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] }, // Colores corporativos
+        alternateRowStyles: { fillColor: [248, 249, 250] }
+    });
+
+    // Descargar el archivo automáticamente
+    doc.save("Reporte_Inventario_GOLDEN.pdf");
+}

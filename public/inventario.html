@@ -21,7 +21,8 @@
     <!-- MENÚ INTELIGENTE -->
     <div id="menu-contenedor"></div>
 
-    <div class="container py-4">
+    <!-- PANTALLA COMPLETA (container-fluid) -->
+    <div class="container-fluid px-4 py-4">
         
         <!-- Título de Sección -->
         <div class="d-flex justify-content-between align-items-end mb-4 mt-2 border-bottom pb-3">
@@ -33,7 +34,7 @@
 
         <div class="row g-4">
             <!-- Columna Izquierda: Formulario -->
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <div class="card card-premium h-100">
                     <div class="card-header bg-gradient-dark text-warning fw-bold py-3 border-0" id="formTitle">
                         <i class="bi bi-plus-circle-fill me-1"></i> Registrar Repuesto
@@ -76,16 +77,24 @@
                 </div>
             </div>
 
-            <!-- Columna Derecha: Tabla y Buscador -->
-            <div class="col-lg-8">
+            <!-- Columna Derecha: Tabla, Buscador y Botón PDF -->
+            <div class="col-lg-9">
                 <div class="card card-premium h-100">
                     
-                    <!-- Cabecera con Buscador Moderno -->
+                    <!-- Cabecera con Buscador Moderno y Botón PDF -->
                     <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center py-3 border-bottom-0 gap-3">
                         <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-boxes text-warning me-2"></i>Catálogo Interno</h5>
-                        <div class="input-group" style="max-width: 320px;">
-                            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                            <input type="text" id="buscadorInventario" class="form-control border-start-0 ps-0 bg-light" placeholder="Buscar SKU, nombre...">
+                        
+                        <div class="d-flex gap-2 align-items-center">
+                            <!-- Botón de Reporte PDF -->
+                            <button class="btn btn-danger btn-sm fw-bold shadow-sm px-3 py-2" onclick="exportarPDF()">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Exportar PDF
+                            </button>
+
+                            <div class="input-group" style="max-width: 280px;">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                <input type="text" id="buscadorInventario" class="form-control border-start-0 ps-0 bg-light" placeholder="Buscar SKU, nombre...">
+                            </div>
                         </div>
                     </div>
                     
@@ -110,7 +119,11 @@
         </div>
     </div>
 
-    <script src="menu.js?v=6"></script>
-    <script src="inventario.js?v=6"></script>
+    <!-- LIBRERÍAS PARA GENERAR PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script src="menu.js?v=7"></script>
+    <script src="inventario.js?v=7"></script>
 </body>
 </html>
