@@ -7,120 +7,101 @@ const db = require('./database');
 const app = express();
 const PORT = 3000;
 
+app.set('etag', false);
+app.use((req, res, next) => { res.set('Cache-Control', 'no-store, no-cache'); next(); });
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ==========================================
-// 1. ENDPOINT DE AUTENTICACIÓN (LOGIN)
-// ==========================================
+// CRUD INVENTARIO
+app.get('/api/productos', (req, res) => db.all(`SELECT * FROM productos ORDER BY id DESC`, [], (err, rows) => res.json(rows)));
+app.post('/api/productos', (req, res) => {
+    db.run(`INSERT INTO productos (sku, nombre, categoria, precio, stock, stock_minimo) VALUES (?, ?, ?, ?, ?, ?)`, 
+    [req.body.sku, req.body.nombre, req.body.categoria, req.body.precio, req.body.stock, 5], function(err) {
+        if(err) return res.status(400).json({error: err.message}); res.status(201).json({id: this.lastID});
+    });
+});
+app.put('/api/productos/:id', (req, res) => {
+    db.run(`UPDATE productos SET sku=?, nombre=?, categoria=?, precio=?, stock=? WHERE id=?`, 
+    [req.body.sku, req.body.nombre, req.body.categoria, req.body.precio, req.body.stock, req.params.id], () => res.json({mensaje: 'OK'}));
+});
+app.delete('/api/productos/:id', (req, res) => db.run(`DELETE FROM productos WHERE id=?`, [req.params.id], () => res.json({mensaje: 'OK'})));
+
+// SEGURIDAD Y USUARIOS
 app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Ingrese correo y contraseña' });
-    }
-
-    db.get(`SELECT * FROM usuarios WHERE email = ?`, [email], (err, user) => {
-        if (err) return res.status(500).json({ error: 'Error en el servidor' });
-        if (!user) return res.status(401).json({ error: 'Credenciales incorrectas' });
-
-        if (user.estado === 'INACTIVO') {
-            return res.status(403).json({ error: 'Esta cuenta de usuario está inactiva' });
-        }
-
-        const passwordValido = bcrypt.compareSync(password, user.password);
-        if (!passwordValido) {
-            return res.status(401).json({ error: 'Credenciales incorrectas' });
-        }
-
-        res.json({
-            mensaje: 'Inicio de sesión exitoso',
-            usuario: {
-                id: user.id,
-                nombre: user.nombre,
-                email: user.email,
-                rol: user.rol,
-                estado: user.estado
-            }
-        });
+    db.get(`SELECT * FROM usuarios WHERE email = ?`, [req.body.email], (err, user) => {
+        if (!user || user.estado === 'INACTIVO' || !bcrypt.compareSync(req.body.password, user.password)) return res.status(401).json({ error: 'Error' });
+        res.json({ usuario: { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol } });
     });
 });
-
-// ==========================================
-// 2. ENDPOINTS CRUD DE USUARIOS
-// ==========================================
-
-// LEER TODOS LOS USUARIOS (READ)
-app.get('/api/usuarios', (req, res) => {
-    const sql = `SELECT id, nombre, email, rol, estado, fecha_creacion FROM usuarios ORDER BY id DESC`;
-    db.all(sql, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-// CREAR USUARIO (CREATE)
+app.get('/api/usuarios', (req, res) => db.all(`SELECT id, nombre, email, rol, estado FROM usuarios ORDER BY id DESC`, [], (err, rows) => res.json(rows)));
 app.post('/api/usuarios', (req, res) => {
-    const { nombre, email, password, rol, estado } = req.body;
+    db.run(`INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (?, ?, ?, ?, ?)`, 
+    [req.body.nombre, req.body.email, bcrypt.hashSync(req.body.password, 10), req.body.rol, req.body.estado], function(err) {
+        if(err) return res.status(400).json({error: 'Error'}); res.status(201).json({id: this.lastID});
+    });
+});
+app.delete('/api/usuarios/:id', (req, res) => db.run(`DELETE FROM usuarios WHERE id=?`, [req.params.id], () => res.json({mensaje: 'OK'})));
 
-    if (!nombre || !email || !password || !rol) {
-        return res.status(400).json({ error: 'Todos los campos obligatorios deben ser completados' });
-    }
+// ==========================================
+// VENTAS Y LOGÍSTICA (Cajero y Repartidor)
+// ==========================================
+app.post('/api/ventas', (req, res) => {
+    db.run(`INSERT INTO pedidos (cliente_id, total, estado) VALUES (?, ?, 'PENDIENTE')`, [req.body.cliente_id, req.body.total], function(err) {
+        if(err) return res.status(500).json({error: 'Error al registrar pedido: ' + err.message});
+        
+        const pedidoId = this.lastID;
+        // Descontar inventario
+        req.body.carrito.forEach(item => {
+            db.run(`UPDATE productos SET stock = stock - ? WHERE id = ?`, [item.cantidad, item.id]);
+        });
+        res.status(201).json({ pedidoId });
+    });
+});
 
-    const hash = bcrypt.hashSync(password, 10);
-    const estadoFinal = estado || 'ACTIVO';
-
-    const sql = `INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (?, ?, ?, ?, ?)`;
-    db.run(sql, [nombre, email, hash, rol, estadoFinal], function (err) {
+app.get('/api/pedidos', (req, res) => {
+    const sql = `SELECT p.id, p.total, p.estado, p.fecha_compra, u.nombre as cliente FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id ORDER BY p.id DESC`;
+    db.all(sql, [], (err, rows) => {
         if (err) {
-            if (err.message.includes('UNIQUE')) {
-                return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
-            }
-            return res.status(500).json({ error: err.message });
+            console.error("Error SQL en Pedidos:", err.message);
+            return res.status(500).json({ error: 'Error en la base de datos' });
         }
-        res.status(201).json({
-            mensaje: 'Usuario creado exitosamente',
-            id: this.lastID
+        res.json(rows || []);
+    });
+});
+
+app.put('/api/pedidos/:id/estado', (req, res) => {
+    db.run(`UPDATE pedidos SET estado = ? WHERE id = ?`, [req.body.estado, req.params.id], function(err) {
+        if (err) return res.status(500).json({error: err.message});
+        res.json({mensaje: 'Estado actualizado'});
+    });
+});
+
+// ==========================================
+// 5. ENDPOINT DE DASHBOARD (ANALÍTICA)
+// ==========================================
+app.get('/api/estadisticas', (req, res) => {
+    db.serialize(() => {
+        let stats = {};
+        
+        // 1. Sumar ingresos y contar ventas
+        db.get(`SELECT SUM(total) as ingresos, COUNT(id) as ventas FROM pedidos`, [], (err, row) => {
+            stats.ingresos = row.ingresos || 0;
+            stats.ventas = row.ventas || 0;
+            
+            // 2. Contar productos con stock crítico
+            db.get(`SELECT COUNT(id) as bajo_stock FROM productos WHERE stock <= stock_minimo`, [], (err, row2) => {
+                stats.bajo_stock = row2.bajo_stock || 0;
+                
+                // 3. Traer las últimas 5 transacciones
+                db.all(`SELECT p.id, u.nombre as cliente, p.total, p.estado, p.fecha_compra FROM pedidos p JOIN usuarios u ON p.cliente_id = u.id ORDER BY p.id DESC LIMIT 5`, [], (err, rows) => {
+                    stats.ultimos_pedidos = rows || [];
+                    res.json(stats);
+                });
+            });
         });
     });
 });
 
-// ACTUALIZAR USUARIO (UPDATE)
-app.put('/api/usuarios/:id', (req, res) => {
-    const { id } = req.params;
-    const { nombre, email, password, rol, estado } = req.body;
-
-    if (!nombre || !email || !rol || !estado) {
-        return res.status(400).json({ error: 'Nombre, email, rol y estado son requeridos' });
-    }
-
-    // Si se envía una nueva contraseña, se actualiza también el hash
-    if (password && password.trim() !== '') {
-        const hash = bcrypt.hashSync(password, 10);
-        const sql = `UPDATE usuarios SET nombre = ?, email = ?, password = ?, rol = ?, estado = ? WHERE id = ?`;
-        db.run(sql, [nombre, email, hash, rol, estado, id], function (err) {
-            if (err) return res.status(400).json({ error: 'Error al actualizar: verifique que el correo no esté duplicado' });
-            res.json({ mensaje: 'Usuario y contraseña actualizados correctamente' });
-        });
-    } else {
-        const sql = `UPDATE usuarios SET nombre = ?, email = ?, rol = ?, estado = ? WHERE id = ?`;
-        db.run(sql, [nombre, email, rol, estado, id], function (err) {
-            if (err) return res.status(400).json({ error: 'Error al actualizar: verifique que el correo no esté duplicado' });
-            res.json({ mensaje: 'Usuario actualizado correctamente' });
-        });
-    }
-});
-
-// ELIMINAR USUARIO (DELETE)
-app.delete('/api/usuarios/:id', (req, res) => {
-    const { id } = req.params;
-    db.run(`DELETE FROM usuarios WHERE id = ?`, [id], function (err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ mensaje: 'Usuario eliminado correctamente' });
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-});
+// ¡ESTO SIEMPRE VA AL FINAL!
+app.listen(PORT, () => console.log(`🚀 Servidor ERP GOLDEN en http://localhost:${PORT}`));

@@ -43,20 +43,20 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 function mostrarPanelCRUD(usuario) {
     document.getElementById('loginView').classList.add('d-none');
     document.getElementById('crudView').classList.remove('d-none');
-    document.getElementById('navUserSection').classList.remove('d-none');
+    
+    // MOSTRAR E INYECTAR EL MENÚ NUEVO
+    const menuContenedor = document.getElementById('menu-contenedor');
+    menuContenedor.classList.remove('d-none');
+    renderizarMenu('usuarios');
+
+    // DIBUJAR DATOS DEL USUARIO
     document.getElementById('userInfoBadge').innerHTML = `
         <i class="bi bi-person-circle me-1"></i> ${usuario.nombre} <span class="badge bg-warning text-dark">${usuario.rol}</span>
     `;
     cargarUsuarios();
 }
 
-function cerrarSesion() {
-    localStorage.removeItem('usuario_golden');
-    document.getElementById('crudView').classList.add('d-none');
-    document.getElementById('navUserSection').classList.add('d-none');
-    document.getElementById('loginView').classList.remove('d-none');
-    document.getElementById('loginForm').reset();
-}
+// (La función cerrarSesion se eliminó de aquí porque ya vive globalmente en menu.js)
 
 // ==========================================
 // 2. LÓGICA CRUD DE USUARIOS
@@ -137,7 +137,6 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
     }
 });
 
-// CARGAR DATOS EN EL FORMULARIO PARA EDITAR
 function prepararEdicion(id) {
     const u = listaUsuariosGlobal.find(item => item.id === id);
     if (!u) return;
@@ -155,7 +154,6 @@ function prepararEdicion(id) {
     document.getElementById('btnCancelar').classList.remove('d-none');
 }
 
-// ELIMINAR USUARIO
 async function eliminarUsuario(id, nombre) {
     if (!confirm(`¿Está seguro de eliminar al usuario "${nombre}"?`)) return;
 
