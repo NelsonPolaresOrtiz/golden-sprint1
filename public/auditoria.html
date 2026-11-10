@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría & Trazabilidad Transaccional - ERP GOLDEN</title>
+
+    <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                if (u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                    window.location.href = 'tienda.html';
+                } else if (u.rol !== 'ADMIN') {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <!-- Bootstrap 5.3.3 & Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-dark text-white m-0 p-0 overflow-hidden">
+
+    <!-- ESTRUCTURA MAESTRA (FLEXBOX) -->
+    <div class="d-flex vh-100 overflow-hidden bg-dark">
+
+        <!-- LADO IZQUIERDO (SIDEBAR): Ancho 280px Fijo, Fondo #0f172a, Borde Sutil -->
+        <aside class="sidebar-master d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; background-color: #0f172a; border-right: 1px solid rgba(255, 255, 255, 0.08); z-index: 1020;">
+            
+            <!-- Branding / Logo Header -->
+            <a href="dashboard.html" class="d-flex align-items-center gap-3 text-white text-decoration-none pb-3 border-bottom border-secondary border-opacity-25 px-2">
+                <div class="d-flex align-items-center justify-content-center rounded-3 shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; font-weight: 900; font-size: 1.35rem; border: 1px solid rgba(251, 191, 36, 0.5);">
+                    G
+                </div>
+                <div class="d-flex flex-column sidebar-brand-text" style="line-height: 1.15;">
+                    <span class="fs-5 fw-bold tracking-tight text-white">
+                        GOLDEN <span style="color: #f59e0b;">ERP</span>
+                    </span>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1.5px;">Enterprise Suite</span>
+                </div>
+            </a>
+
+            <!-- 2. SIDEBAR ORDENADO (Los 6 Módulos en Orden Estricto) -->
+            <ul class="nav flex-column gap-2 mt-4 flex-grow-1">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">📊</span>
+                        <span>Analítica y Monetización</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tienda.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">🛒</span>
+                        <span>E-commerce y Ventas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="inventario.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">📦</span>
+                        <span>Gestión de Inventario</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logistica.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">🚚</span>
+                        <span>Distribución y Logística</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="facturacion.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">💳</span>
+                        <span>Cobranza y Facturación</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="auditoria.html" class="nav-sidebar-link d-flex align-items-center active">
+                        <span class="nav-icon">🔐</span>
+                        <span>Seguridad y Usuario</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Pie del Sidebar: Usuario, Alertas en Vivo y Logout -->
+            <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="d-flex flex-column text-truncate" style="line-height: 1.1;">
+                            <span class="small fw-bold text-white text-truncate" id="sidebarUserName">Administrador</span>
+                            <span class="text-warning text-uppercase" style="font-size: 0.65rem; font-weight: 700;" id="sidebarUserRol">ADMIN</span>
+                        </div>
+                    </div>
+                    <!-- Campanita de Notificaciones de Stock -->
+                    <button id="btnCampanaSidebar" class="btn p-0 text-warning d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 34px; height: 34px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px;" onclick="mostrarModalAlertasStock()" title="Alertas de Stock Crítico">
+                        <i class="bi bi-bell-fill fs-6 text-warning"></i>
+                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.65rem; display: none; padding: 0.3em 0.5em;">0</span>
+                    </button>
+                </div>
+                <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3" onclick="cerrarSesion()" title="Finalizar Sesión Segura">
+                    <i class="bi bi-power"></i>
+                    <span class="btn-logout-text">Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- LADO DERECHO (MAIN CONTENT): Main scrolleable -->
+        <main class="flex-grow-1 overflow-auto p-4 bg-dark">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
+            <div>
+                <h2 class="fw-bolder text-white mb-0 d-flex align-items-center">
+                    <i class="bi bi-shield-check text-warning me-2"></i>Auditoría & Trazabilidad del Sistema
+                </h2>
+                <p class="text-secondary mb-0 mt-1 small">
+                    Pista inmutable de operaciones críticas, modificaciones de roles, transacciones comerciales y control de accesos.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarAuditoria()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+                </button>
+                <button class="btn btn-gold btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="exportarAuditoriaCSV()">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- TARJETAS DE KPIs SUPERIORES -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Registros de Auditoría</span>
+                            <h3 class="fw-extrabold text-white mb-0" id="kpiTotalLogs">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-journal-text text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-clock-history me-1 text-warning"></i>Últimos 100 eventos en memoria
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Operaciones de Hoy</span>
+                            <h3 class="fw-extrabold text-emerald mb-0" id="kpiLogsHoy">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <i class="bi bi-calendar-check text-emerald fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-activity me-1 text-emerald"></i>Actividad en tiempo real
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Módulos Auditados</span>
+                            <h3 class="fw-extrabold text-info mb-0" id="kpiModulosActivos">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <i class="bi bi-layers-fill text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-shield-lock me-1 text-info"></i>SCM, Créditos, Ventas, Usuarios
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Seguridad & Integridad</span>
+                            <h4 class="fw-extrabold text-white mb-0" style="font-size: 1.15rem;">ACID / 100%</h4>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);">
+                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-shield-fill-check me-1 text-success"></i>Trazabilidad sin pérdida
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA PRINCIPAL: TABLA DE AUDITORÍA CON BUSCADOR EN TIEMPO REAL -->
+        <div class="card-vip p-4 mb-4">
+            
+            <!-- Barra de Herramientas y Filtro en Tiempo Real -->
+            <div class="row g-3 align-items-center mb-3">
+                <div class="col-12 col-md-6 col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.6) !important;">
+                            <i class="bi bi-search text-warning"></i>
+                        </span>
+                        <input type="text" id="inputBuscarLogs" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar por usuario, acción, módulo o fecha en tiempo real...">
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 col-lg-3">
+                    <select id="filtroModulo" class="form-select form-select-vip">
+                        <option value="TODOS">Todos los Módulos</option>
+                        <option value="SCM_COMPRAS">SCM / Compras</option>
+                        <option value="CREDITOS">Créditos B2B</option>
+                        <option value="VENTAS">Ventas & Pedidos</option>
+                        <option value="LOGISTICA">Logística / Despacho</option>
+                        <option value="USUARIOS">Gestión de Usuarios</option>
+                        <option value="PRODUCTOS">Inventario / Repuestos</option>
+                        <option value="AUTH">Autenticación / Login</option>
+                        <option value="SISTEMA">Sistema ERP</option>
+                    </select>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 col-lg-4 text-md-end d-flex align-items-center justify-content-md-end gap-2 flex-wrap">
+                    <button class="btn btn-outline-success btn-sm fw-bold px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm" onclick="exportarTablaCSV('tablaAuditoriaCompleta', 'Auditoria_GOLDEN')">
+                        <i class="bi bi-file-earmark-excel fs-6"></i>
+                        <span>Exportar Datos</span>
+                    </button>
+                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalLogs">0 Eventos</span>
+                </div>
+            </div>
+
+            <!-- Tabla de Datos (Estilo DataTables Dark VIP) -->
+            <div class="table-responsive">
+                <table id="tablaAuditoriaCompleta" class="table table-vip align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3" style="width: 170px;">Fecha y Hora</th>
+                            <th style="width: 190px;">Usuario Responsable</th>
+                            <th style="width: 160px;">Módulo</th>
+                            <th>Acción / Descripción de la Operación</th>
+                            <th class="text-center" style="width: 110px;">Nivel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaAuditoria">
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-secondary">
+                                <span class="spinner-border spinner-border-sm text-warning me-2"></span>Cargando pista de auditoría...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pie de Tabla -->
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10 small text-secondary">
+                <div id="infoPaginacion">Mostrando 0 registros</div>
+                <div><i class="bi bi-shield-shaded text-warning me-1"></i>ERP GOLDEN Security Audit Trail</div>
+            </div>
+
+        </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts de Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="menu.js?v=15"></script>
+    <script src="auditoria.js?v=15"></script>
+</body>
+</html>

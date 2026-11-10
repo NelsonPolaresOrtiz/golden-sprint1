@@ -3,107 +3,715 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda VIP - GOLDEN</title>
+    <title>Catálogo Oficial & Ventas B2B - ERP GOLDEN</title>
+    <!-- Bootstrap 5.3.3 & Iconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Fuentes Tipográficas High-End (Incluye Código de Barras Libre Barcode 128) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Libre+Barcode+39+Text&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <link rel="stylesheet" href="styles.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', system-ui, sans-serif; }
-        
-        /* DISEÑO DE LA CABECERA (HERO) */
-        .hero-tienda {
-            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95)), url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=1200&q=80') center/cover;
-            color: white;
-            padding: 4rem 0;
-            border-bottom: 5px solid #f59e0b;
+        /* Hero Showroom Apple/Tesla Style */
+        .hero-showroom {
+            background: linear-gradient(180deg, rgba(13, 18, 31, 0.95) 0%, rgba(7, 10, 18, 0.8) 100%),
+                        radial-gradient(at 50% 0%, rgba(245, 158, 11, 0.15) 0px, transparent 65%);
+            padding: 3.5rem 0 2.5rem 0;
+            border-bottom: 1px solid var(--border-glass-gold);
+            position: relative;
         }
 
-        /* DISEÑO DE LAS TARJETAS (CARDS) */
-        .card-producto {
-            border: none;
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            background: #ffffff;
+        /* Tarjeta de Producto High-End */
+        .card-producto-vip {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
             overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .card-producto:hover {
+
+        .card-producto-vip:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important;
+            border-color: var(--border-glass-hover);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(245, 158, 11, 0.2);
         }
-        
-        /* IMAGEN SIMULADA CON COLORES */
-        .img-placeholder {
-            height: 170px;
+
+        /* Contenedor de la Imagen: Fondo blanco o gris muy claro para resaltar los envases */
+        .wix-img-wrapper {
+            height: 180px;
+            background: #ffffff !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 5rem;
-            transition: transform 0.3s ease;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-top-left-radius: 19px;
+            border-top-right-radius: 19px;
         }
-        .card-producto:hover .img-placeholder { transform: scale(1.05); }
-        .aceite-bg { background: linear-gradient(135deg, #fcd34d, #f59e0b); color: #fff; }
-        .filtro-bg { background: linear-gradient(135deg, #cbd5e1, #64748b); color: #fff; }
-        .default-bg { background: #e2e8f0; color: #94a3b8; }
 
-        /* BOTONES DE FILTRO */
-        .btn-filter { border-radius: 20px; font-weight: 500; }
-        .btn-filter.active { background-color: #0f172a; color: #f59e0b; border-color: #0f172a; }
+        .wix-img-wrapper img {
+            height: 160px !important;
+            width: 100% !important;
+            max-height: 160px !important;
+            object-fit: contain !important;
+            padding: 10px !important;
+            background-color: #ffffff !important;
+            border-radius: 8px 8px 0 0 !important;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .card-producto-wix:hover .wix-img-wrapper img {
+            transform: scale(1.08);
+        }
+
+        .aceite-bg {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(180, 83, 9, 0.15) 100%);
+            color: #fbbf24;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .filtro-bg {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(30, 58, 138, 0.15) 100%);
+            color: #93c5fd;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .default-bg {
+            background: linear-gradient(135deg, rgba(148, 163, 184, 0.15) 0%, rgba(71, 85, 105, 0.1) 100%);
+            color: #cbd5e1;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* Filtros de Categoría */
+        .btn-filter-vip {
+            background: rgba(20, 28, 46, 0.6);
+            border: 1px solid var(--border-glass);
+            color: #cbd5e1;
+            border-radius: 999px;
+            font-weight: 600;
+            padding: 0.45rem 1.25rem;
+            font-size: 0.88rem;
+            transition: all 0.25s ease;
+        }
+
+        .btn-filter-vip:hover {
+            background: rgba(245, 158, 11, 0.12);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-filter-vip.active {
+            background: var(--gold-gradient) !important;
+            color: #0b0f19 !important;
+            border-color: var(--gold-primary) !important;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            font-weight: 700;
+        }
+
+        /* Modal Glass */
+        .modal-glass-content {
+            background: rgba(13, 18, 31, 0.95);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-glass-gold);
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(245, 158, 11, 0.2);
+            color: #f8fafc;
+        }
     </style>
 </head>
-<body>
+<body class="bg-dark text-white m-0 p-0 overflow-hidden">
 
-    <!-- MENÚ INTELIGENTE -->
-    <div id="menu-contenedor"></div>
+    <!-- ESTRUCTURA MAESTRA (FLEXBOX) -->
+    <div class="d-flex vh-100 overflow-hidden bg-dark">
 
-    <!-- CABECERA ESPECTACULAR (HERO) -->
-    <div class="hero-tienda text-center shadow-sm">
-        <div class="container">
-            <h1 class="fw-bolder display-5 text-warning mb-3"><i class="bi bi-shop"></i> Tienda Oficial GOLDEN</h1>
-            <p class="lead text-light mb-0">El catálogo más completo de lubricantes y filtros para tu vehículo o flota pesada.</p>
+        <!-- LADO IZQUIERDO (SIDEBAR): Ancho 280px Fijo, Fondo #0f172a, Borde Sutil -->
+        <aside class="sidebar-master d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; background-color: #0f172a; border-right: 1px solid rgba(255, 255, 255, 0.08); z-index: 1020;">
+            
+            <!-- Branding / Logo Header -->
+            <a href="dashboard.html" class="d-flex align-items-center gap-3 text-white text-decoration-none pb-3 border-bottom border-secondary border-opacity-25 px-2">
+                <div class="d-flex align-items-center justify-content-center rounded-3 shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; font-weight: 900; font-size: 1.35rem; border: 1px solid rgba(251, 191, 36, 0.5);">
+                    G
+                </div>
+                <div class="d-flex flex-column sidebar-brand-text" style="line-height: 1.15;">
+                    <span class="fs-5 fw-bold tracking-tight text-white">
+                        GOLDEN <span style="color: #f59e0b;">ERP</span>
+                    </span>
+                    <span class="text-secondary small fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1.5px;">Enterprise Suite</span>
+                </div>
+            </a>
+
+            <!-- 2. SIDEBAR ORDENADO (Los 6 Módulos en Orden Estricto) -->
+            <ul class="nav flex-column gap-2 mt-4 flex-grow-1">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">📊</span>
+                        <span>Analítica y Monetización</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tienda.html" class="nav-sidebar-link d-flex align-items-center active">
+                        <span class="nav-icon">🛒</span>
+                        <span>E-commerce y Ventas</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="inventario.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">📦</span>
+                        <span>Gestión de Inventario</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="logistica.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">🚚</span>
+                        <span>Distribución y Logística</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="facturacion.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">💳</span>
+                        <span>Cobranza y Facturación</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="auditoria.html" class="nav-sidebar-link d-flex align-items-center">
+                        <span class="nav-icon">🔐</span>
+                        <span>Seguridad y Usuario</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Acceso Directo al Carrito desde el Sidebar -->
+            <div class="px-2 mb-3">
+                <button class="btn btn-warning w-100 fw-bold d-flex align-items-center justify-content-center gap-2 py-2 rounded-3 shadow" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); border: none; color: #0f172a;">
+                    <i class="bi bi-cart-check-fill fs-5"></i>
+                    <span>Ver Carrito</span>
+                    <span id="contadorCarrito" class="badge rounded-pill bg-danger ms-1">0</span>
+                </button>
+            </div>
+
+            <!-- Pie del Sidebar: Usuario, Alertas en Vivo y Logout -->
+            <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="d-flex flex-column text-truncate" style="line-height: 1.1;">
+                            <span class="small fw-bold text-white text-truncate" id="sidebarUserName">Cliente / Taller</span>
+                            <span class="text-warning text-uppercase" style="font-size: 0.65rem; font-weight: 700;" id="sidebarUserRol">CLIENTE</span>
+                        </div>
+                    </div>
+                    <!-- Campanita de Notificaciones de Stock -->
+                    <button id="btnCampanaSidebar" class="btn p-0 text-warning d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 34px; height: 34px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px;" onclick="mostrarModalAlertasStock()" title="Alertas de Stock Crítico">
+                        <i class="bi bi-bell-fill fs-6 text-warning"></i>
+                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.65rem; display: none; padding: 0.3em 0.5em;">0</span>
+                    </button>
+                </div>
+                <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3" onclick="cerrarSesion()" title="Finalizar Sesión Segura">
+                    <i class="bi bi-power"></i>
+                    <span class="btn-logout-text">Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- LADO DERECHO (MAIN CONTENT): Main scrolleable -->
+        <main class="flex-grow-1 overflow-auto p-4 bg-dark">
+
+    <!-- CABECERA HERO SHOWROOM -->
+    <div class="hero-showroom text-center">
+        <div class="container-fluid px-4">
+            <span class="badge-pill-vip badge-pill-gold mb-2">
+                <i class="bi bi-patch-check-fill me-1"></i> Distribuidor Mayorista Autorizado
+            </span>
+            <h1 class="fw-extrabold display-6 text-white mb-2" style="letter-spacing: -0.5px;">
+                Catálogo de Lubricantes & <span class="text-gradient-gold">Filtros Automotrices</span>
+            </h1>
+            <p class="text-secondary small mx-auto mb-3" style="max-width: 680px; font-size: 0.95rem;">
+                Suministro corporativo de alta gama para talleres, flotas pesadas y lubricentros con descuento y entrega asegurada.
+            </p>
         </div>
     </div>
 
     <!-- CATÁLOGO Y FILTROS -->
-    <div class="container py-5 mb-5">
-        
-        <!-- Botones de Filtrado Rápido -->
-        <div class="d-flex justify-content-center flex-wrap gap-2 mb-5">
-            <button class="btn btn-outline-dark btn-filter active" onclick="filtrarCategoria('Todos', this)">Todo el Catálogo</button>
-            <button class="btn btn-outline-dark btn-filter" onclick="filtrarCategoria('Aceites Minerales', this)"><i class="bi bi-droplet me-1"></i>Minerales</button>
-            <button class="btn btn-outline-dark btn-filter" onclick="filtrarCategoria('Aceites Sintéticos', this)"><i class="bi bi-droplet-half me-1"></i>Sintéticos</button>
-            <button class="btn btn-outline-dark btn-filter" onclick="filtrarCategoria('Filtros de Aceite', this)"><i class="bi bi-funnel me-1"></i>Filtros Aceite</button>
-            <button class="btn btn-outline-dark btn-filter" onclick="filtrarCategoria('Filtros de Aire', this)"><i class="bi bi-wind me-1"></i>Filtros Aire</button>
+    <div class="container-fluid px-4 py-4 mb-5">
+
+        <!-- Botones de Filtrado de Categoría -->
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+            <button class="btn btn-filter-vip active" onclick="filtrarCategoria('Todos', this)">
+                <i class="bi bi-grid-fill me-1"></i> Todo el Catálogo
+            </button>
+            <button class="btn btn-filter-vip" onclick="filtrarCategoria('Aceites Minerales', this)">
+                <i class="bi bi-droplet-fill me-1"></i> Minerales
+            </button>
+            <button class="btn btn-filter-vip" onclick="filtrarCategoria('Aceites Sintéticos', this)">
+                <i class="bi bi-droplet-half me-1"></i> Sintéticos
+            </button>
+            <button class="btn btn-filter-vip" onclick="filtrarCategoria('Filtros de Aceite', this)">
+                <i class="bi bi-funnel-fill me-1"></i> Filtros de Aceite
+            </button>
+            <button class="btn btn-filter-vip" onclick="filtrarCategoria('Filtros de Aire', this)">
+                <i class="bi bi-wind me-1"></i> Filtros de Aire
+            </button>
         </div>
 
-        <!-- Contenedor de Tarjetas -->
+        <!-- Contenedor Dinámico de Tarjetas -->
         <div class="row g-4" id="catalogoProductos">
-            <!-- Las tarjetas VIP se dibujarán aquí -->
+            <!-- Las tarjetas de repuestos se renderizan aquí -->
         </div>
     </div>
 
-    <!-- MENÚ LATERAL DEL CARRITO DE COMPRAS -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="carritoLateral" aria-labelledby="carritoLateralLabel">
-        <div class="offcanvas-header bg-dark text-warning">
-            <h5 class="offcanvas-title fw-bold" id="carritoLateralLabel"><i class="bi bi-cart-check me-2"></i>Tu Pedido</h5>
+    </main>
+</div>
+
+    <!-- ========================================== -->
+    <!-- FACTURA FLOTANTE: OFFCANVAS CARRITO        -->
+    <!-- ========================================== -->
+    <div class="offcanvas offcanvas-end offcanvas-receipt" tabindex="-1" id="carritoLateral" aria-labelledby="carritoLateralLabel" style="width: 440px;">
+        <div class="offcanvas-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-receipt text-warning fs-4"></i>
+                <div>
+                    <h6 class="offcanvas-title fw-bold text-white mb-0" id="carritoLateralLabel">Orden de Compra</h6>
+                    <small class="text-secondary" style="font-size: 0.72rem; letter-spacing: 1px;">FACTURA DIGITAL FLOTANTE</small>
+                </div>
+            </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body d-flex flex-column">
-            <div id="listaCarrito" class="flex-grow-1 overflow-auto pe-2">
-                <!-- Items del carrito -->
+
+        <div class="offcanvas-body d-flex flex-column p-4">
+            <div id="listaCarrito" class="flex-grow-1 overflow-auto pe-1">
+                <!-- Ítems del carrito se agregan aquí -->
             </div>
-            <div class="border-top pt-3 mt-3 bg-white">
-                <h5 class="fw-bold d-flex justify-content-between mb-3">
-                    Total a Pagar: <span id="totalCarrito" class="text-success fs-4">Bs. 0.00</span>
-                </h5>
-                <button class="btn btn-success w-100 fw-bold py-3 fs-5 shadow-sm" onclick="procesarCompra()">
-                    <i class="bi bi-check2-circle me-1"></i> Confirmar Compra
+
+            <!-- Resumen de Liquidación -->
+            <div class="border-top border-secondary border-opacity-25 pt-3 mt-auto">
+                <div class="receipt-divider"></div>
+
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-secondary small">Subtotal Repuestos:</span>
+                    <span id="subtotalCarrito" class="text-white small fw-bold">Bs. 0.00</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-secondary small">Impuesto / Despacho:</span>
+                    <span class="text-success small fw-bold">Bs. 0.00 (Bonificado)</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded-3" style="background: rgba(20, 28, 46, 0.85); border: 1px solid var(--border-glass-gold);">
+                    <span class="fw-bold text-white fs-6">Total a Cancelar:</span>
+                    <span id="totalCarrito" class="text-gradient-emerald fw-extrabold fs-3">Bs. 0.00</span>
+                </div>
+
+                <button id="btnConfirmarCompra" class="btn btn-vip-emerald w-100 py-3 fs-5 shadow rounded-3 d-flex align-items-center justify-content-center gap-2" onclick="procesarCompra()">
+                    <i class="bi bi-shield-check fs-4"></i>
+                    <span>Confirmar Compra</span>
                 </button>
+                <small class="text-secondary text-center d-block mt-2" style="font-size: 0.75rem;">
+                    <i class="bi bi-lock-fill text-warning me-1"></i>Transacción ACID Segura en SQLite
+                </small>
             </div>
         </div>
     </div>
 
-    <!-- Scripts de Bootstrap y los nuestros -->
+    <!-- ======================================================== -->
+    <!-- MODAL XL: FICHA TÉCNICA OFICIAL (ESTILO WIX FILTERS WOW)  -->
+    <!-- ======================================================== -->
+    <div class="modal fade" id="modalFichaTecnica" tabindex="-1" aria-labelledby="modalFichaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content modal-ficha-tecnica">
+                
+                <!-- Encabezado Ficha Técnica -->
+                <div class="modal-header border-secondary border-opacity-25 px-4 pt-4 pb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4);">
+                            <i class="bi bi-shield-shaded text-warning fs-3"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                <span class="badge bg-dark font-monospace text-warning px-2 py-1 border border-secondary border-opacity-50" id="fichaModalSku">SKU-000</span>
+                                <span class="badge-pill-vip badge-pill-gold" id="fichaModalCategoria">Categoría</span>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small" id="fichaModalCertificado"><i class="bi bi-check-circle-fill me-1"></i>OEM Certified Specification</span>
+                            </div>
+                            <h4 class="modal-title fw-extrabold text-white mb-0" id="fichaModalTitulo">Nombre del Repuesto</h4>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Cuerpo Ficha Técnica en 2 Columnas -->
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        
+                        <!-- LADO IZQUIERDO: Imagen en Grande + Acciones Rápidas y Botón Volver -->
+                        <div class="col-12 col-lg-5 d-flex flex-column">
+                            
+                            <!-- Contenedor Showcase de la Imagen -->
+                            <div class="showcase-img-box mb-3 text-center">
+                                <img id="fichaModalImagen" src="" alt="Ficha del Repuesto" class="img-fluid" onerror="this.onerror=null; this.src='https://placehold.co/400x300/ffffff/1e293b?text=Imagen+No+Disponible';" style="object-fit: contain; height: 230px; width: 100%; padding: 10px; background-color: #ffffff; border-radius: 8px;">
+                                <div class="position-absolute top-0 start-0 m-3" id="fichaModalBadgeStock">
+                                    <!-- Stock Badge -->
+                                </div>
+                            </div>
+
+                            <!-- Tarjeta de Precio & Compra Directa -->
+                            <div class="p-3 rounded-3 mb-3" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <span class="text-secondary small d-block fw-bold text-uppercase" style="font-size: 0.72rem;">Precio Mayorista B2B</span>
+                                        <h3 class="text-gradient-emerald fw-extrabold mb-0" id="fichaModalPrecio">Bs. 0.00</h3>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-dark text-white border border-secondary border-opacity-50 font-monospace small px-2 py-1">Factura + IVA Inc.</span>
+                                    </div>
+                                </div>
+
+                                <!-- Selector de Cantidad y Botón Grande de Añadir -->
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <label class="text-white small fw-bold mb-0 text-nowrap">Cantidad:</label>
+                                    <div class="input-group input-group-sm" style="max-width: 140px;">
+                                        <button class="btn btn-vip-outline px-3 fw-bold text-white" type="button" onclick="ajustarCantidadFicha(-1)">-</button>
+                                        <input type="number" id="fichaInputCantidad" class="form-control form-control-vip text-center fw-bold font-monospace" value="1" min="1" max="999">
+                                        <button class="btn btn-vip-outline px-3 fw-bold text-white" type="button" onclick="ajustarCantidadFicha(1)">+</button>
+                                    </div>
+                                    <span class="small text-secondary" id="fichaModalStockMax">(0 disponibles)</span>
+                                </div>
+
+                                <button id="btnFichaAgregarCarrito" class="btn btn-vip-gold w-100 py-3 fw-extrabold fs-5 shadow-lg rounded-3 d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-bag-plus-fill fs-4"></i>
+                                    <span>Añadir a la Orden</span>
+                                </button>
+                            </div>
+
+                            <!-- Botón Volver / Cerrar Estilizado en Tono Rojo / Dorado -->
+                            <div class="mt-auto">
+                                <button type="button" class="btn btn-outline-danger w-100 py-2 fw-semibold rounded-pill d-flex align-items-center justify-content-center gap-2" data-bs-dismiss="modal">
+                                    <i class="bi bi-arrow-left-circle me-1"></i>
+                                    <span>Volver al Catálogo</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- LADO DERECHO: Especificaciones Técnicas y Código de Barras -->
+                        <div class="col-12 col-lg-7">
+                            
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                                <h5 class="fw-bold text-white mb-0 d-flex align-items-center">
+                                    <i class="bi bi-cpu-fill text-warning me-2"></i>Especificaciones Técnicas (WIX Standard)
+                                </h5>
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 small font-monospace">ISO 9001 / IATF 16949</span>
+                            </div>
+
+                            <!-- Tabla de Especificaciones -->
+                            <div class="table-responsive rounded-3 mb-3 border border-secondary border-opacity-25" style="background: rgba(13, 18, 31, 0.65);">
+                                <table class="table table-especificaciones align-middle mb-0">
+                                    <tbody id="fichaModalEspecificaciones">
+                                        <!-- Inyectado dinámicamente por tienda.js -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Código de Barras Oficial Generado Visualmente -->
+                            <div class="p-3 rounded-3 text-center mb-2" style="background: rgba(15, 23, 42, 0.9); border: 1px dashed rgba(245, 158, 11, 0.4);">
+                                <span class="text-secondary small fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; letter-spacing: 1px;">
+                                    <i class="bi bi-upc-scan text-warning me-1"></i> Código de Barras Oficial EAN-13 / UPC
+                                </span>
+                                
+                                <div class="barcode-visual py-1" id="fichaModalBarcodeVisual">
+                                    <!-- Renderizado con fuente Libre Barcode 128 -->
+                                    *7751234005111*
+                                </div>
+                                <div class="font-monospace text-warning fw-bold small" id="fichaModalBarcodeTexto">
+                                    7751234005111
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- PARTE INFERIOR: APLICACIONES Y EQUIVALENCIAS (TABS WIX) -->
+                    <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                        
+                        <ul class="nav nav-tabs nav-tabs-wix mb-3" id="tabFichaTecnica" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-aplicaciones-btn" data-bs-toggle="tab" data-bs-target="#tab-aplicaciones" type="button" role="tab" aria-controls="tab-aplicaciones" aria-selected="true">
+                                    <i class="bi bi-car-front-fill me-2"></i>Aplicaciones Vehiculares
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-equivalencias-btn" data-bs-toggle="tab" data-bs-target="#tab-equivalencias" type="button" role="tab" aria-controls="tab-equivalencias" aria-selected="false">
+                                    <i class="bi bi-arrow-left-right me-2"></i>Equivalencias & Códigos Cruzados (OEM)
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="tabFichaContent">
+                            <!-- Pestaña 1: Aplicaciones -->
+                            <div class="tab-pane fade show active" id="tab-aplicaciones" role="tabpanel" aria-labelledby="tab-aplicaciones-btn">
+                                <div class="table-responsive rounded-3 border border-secondary border-opacity-25" style="background: rgba(13, 18, 31, 0.65); max-height: 240px;">
+                                    <table class="table table-vip table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-3">Marca</th>
+                                                <th>Modelo</th>
+                                                <th>Motorización</th>
+                                                <th class="text-end pe-3">Años Compatibles</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fichaModalAplicaciones">
+                                            <!-- Inyectado por tienda.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Pestaña 2: Equivalencias -->
+                            <div class="tab-pane fade" id="tab-equivalencias" role="tabpanel" aria-labelledby="tab-equivalencias-btn">
+                                <div class="table-responsive rounded-3 border border-secondary border-opacity-25" style="background: rgba(13, 18, 31, 0.65); max-height: 240px;">
+                                    <table class="table table-vip table-sm align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="ps-3">Fabricante / Marca</th>
+                                                <th>Número de Parte Equivalente</th>
+                                                <th class="text-end pe-3">Tipo de Intercambio</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="fichaModalEquivalencias">
+                                            <!-- Inyectado por tienda.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL VIP: RESUMEN DE COMPRA, QR DE PAGO Y WHATSAPP     -->
+    <!-- ======================================================== -->
+    <div class="modal fade" id="modalVentaExitosa" tabindex="-1" aria-labelledby="modalVentaExitosaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-glass-content">
+                <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399;">
+                            <i class="bi bi-check-lg fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="modal-title fw-bold text-white mb-0" id="modalVentaExitosaLabel">
+                                ¡Pedido Registrado con Éxito!
+                            </h4>
+                            <span class="text-warning small" id="modalSubtituloOrden">Orden Oficial #000</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="row g-4">
+                        <!-- Columna Izquierda: Detalle de Repuestos -->
+                        <div class="col-md-7">
+                            <h6 class="fw-bold text-white mb-3 d-flex align-items-center">
+                                <i class="bi bi-receipt me-2 text-warning"></i> Detalle de la Transacción:
+                            </h6>
+                            <div class="table-responsive rounded-3 mb-3 border border-secondary border-opacity-25" style="max-height: 220px; background: rgba(15, 23, 42, 0.5);">
+                                <table class="table table-sm table-vip align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Repuesto</th>
+                                            <th class="text-center">Cant.</th>
+                                            <th class="text-end">P. Unit</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modalListaItems"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background: rgba(20, 28, 46, 0.85); border: 1px solid rgba(255, 255, 255, 0.08);">
+                                <span class="fw-bold text-secondary small">Total Liquidado:</span>
+                                <span class="text-gradient-emerald fw-extrabold fs-4" id="modalTotalPagar">Bs. 0.00</span>
+                            </div>
+
+                            <div class="mt-3">
+                                <span class="badge-pill-vip badge-pill-gold">
+                                    <span class="pulse-dot pulse-dot-gold me-1"></span> Estado: PENDIENTE DE DESPACHO
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Código QR de Pago Simulado -->
+                        <div class="col-md-5 text-center d-flex flex-column justify-content-center align-items-center border-start border-secondary border-opacity-25 ps-md-4">
+                            <span class="badge-pill-vip badge-pill-gold mb-3">
+                                <i class="bi bi-qr-code-scan"></i> QR Bancario Simulado
+                            </span>
+
+                            <div class="p-3 rounded-3 shadow-lg mb-2" style="background: #ffffff; border: 2px solid var(--gold-primary);">
+                                <div id="contenedorQR">
+                                    <canvas id="qrCodeCanvas" width="160" height="160"></canvas>
+                                </div>
+                            </div>
+
+                            <p class="small text-white mb-0 fw-bold">
+                                Compatible BCP / Sol / QR Simple
+                            </p>
+                            <small class="text-secondary" style="font-size: 0.75rem;">
+                                Escanea desde tu App Bancaria para transferir.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Botones Comerciales: WhatsApp, Descarga PDF y Seguir Comprando -->
+                    <div class="border-top border-secondary border-opacity-25 pt-3 mt-4">
+                        <div class="row g-2">
+                            <div class="col-sm-5">
+                                <a id="btnWhatsAppPedido" href="#" target="_blank" class="btn btn-success fw-bold w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2 rounded-3" style="background: #25d366; border: none;">
+                                    <i class="bi bi-whatsapp fs-4"></i>
+                                    <span>Enviar por WhatsApp</span>
+                                </a>
+                            </div>
+                            <div class="col-sm-4">
+                                <button type="button" class="btn btn-danger fw-bold w-100 py-3 rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background: var(--ruby-gradient); border: none;" onclick="descargarReciboUltimoPedidoPDF()">
+                                    <i class="bi bi-file-earmark-pdf-fill fs-5"></i>
+                                    <span>Recibo PDF</span>
+                                </button>
+                            </div>
+                            <div class="col-sm-3">
+                                <button type="button" class="btn btn-vip-outline fw-bold w-100 py-3 rounded-3" data-bs-dismiss="modal">
+                                    <i class="bi bi-check2 me-1"></i> Cerrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- PLANTILLA HTML DE FACTURA CARTA / A4 (Estricta para exportación con html2pdf) -->
+    <!-- ========================================================================= -->
+    <div id="plantilla-factura" style="display: none; padding: 40px; background: #ffffff !important; color: #000000 !important; width: 800px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; margin: 0 auto; line-height: 1.4;">
+        
+        <!-- CABECERA -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 25px;">
+            <div>
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px;">
+                    GOLDEN ERP <span style="color: #d4af37;">- ENTERPRISE SUITE</span>
+                </h1>
+                <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; color: #475569;">
+                    Importaciones & Distribuciones Automotrices S.R.L.
+                </p>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
+                    NIT: 1029384756 | Santa Cruz de la Sierra - Bolivia
+                </p>
+            </div>
+            <div style="text-align: right;">
+                <div id="factura-numero" style="font-size: 20px; font-weight: 800; color: #0f172a;">
+                    Factura Comercial N° 008
+                </div>
+                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
+                    Documento Fiscal Oficial
+                </div>
+            </div>
+        </div>
+
+        <!-- DATOS DEL CLIENTE -->
+        <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px 20px; margin-bottom: 25px; font-size: 13px;">
+            <div>
+                <div style="margin-bottom: 4px; color: #334155;">
+                    <strong style="color: #0f172a;">Cliente:</strong> <span id="factura-cliente">Taller Mecánico Central</span>
+                </div>
+                <div style="color: #334155;">
+                    <strong style="color: #0f172a;">Email:</strong> <span id="factura-email">contacto@tallermecanico.bo</span>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="margin-bottom: 4px; color: #334155;">
+                    <strong style="color: #0f172a;">Fecha:</strong> <span id="factura-fecha">10/11/2026, 01:08</span>
+                </div>
+                <div style="color: #334155;">
+                    <strong style="color: #0f172a;">Estado:</strong> <span id="factura-estado" style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #dcfce7; color: #15803d; font-weight: 700; font-size: 11px;">PAGADO</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE DETALLES -->
+        <table style="border-collapse: collapse; width: 100%; margin-bottom: 25px; font-size: 13px; color: #000000;">
+            <thead>
+                <tr style="background: #1e293b; color: #ffffff;">
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: center; width: 12%;">CANTIDAD</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: left; width: 52%;">DESCRIPCIÓN</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 18%;">P. UNITARIO</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 18%;">SUBTOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="factura-items">
+                <tr style="border-bottom: 1px solid #cbd5e1;">
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #000000;">6</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000;">Grasa Multipropósito con Litio (Kg)</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #000000;">Bs. 55.00</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #000000;">Bs. 330.00</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #cbd5e1; background: #f8fafc;">
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #000000;">2</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000;">Filtro de Aceite Blindado Spin-On Hilux</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #000000;">Bs. 45.00</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #000000;">Bs. 90.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- TOTALES -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+            <div style="width: 270px; font-size: 13px; color: #000000;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #475569;">
+                    <span>Subtotal:</span>
+                    <span id="factura-subtotal" style="font-weight: 600; color: #0f172a;">Bs. 287.10</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #475569;">
+                    <span>IVA (13%):</span>
+                    <span id="factura-iva" style="font-weight: 600; color: #0f172a;">Bs. 42.90</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 2px solid #0f172a; margin-top: 4px; font-size: 16px;">
+                    <strong style="color: #0f172a;">TOTAL GENERAL:</strong>
+                    <strong id="factura-total" style="color: #0f172a;">Bs. 330.00</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 11px; color: #64748b; max-width: 550px; line-height: 1.5;">
+                <p style="margin: 0 0 4px 0;">Este documento es una representación impresa de un comprobante electrónico.</p>
+                <p style="margin: 0;">Autorizado por el Servicio de Impuestos Nacionales - ERP GOLDEN ENTERPRISE SUITE.</p>
+            </div>
+            <!-- Recuadro pequeño simulando un Código QR de validación -->
+            <div style="display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; border: 1px solid #cbd5e1; background: #ffffff; padding: 4px; box-sizing: border-box;">
+                <img id="factura-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=GOLDEN-ERP-FACTURA-008" alt="QR" style="width: 60px; height: 60px; display: block;" onerror="this.style.display='none'">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Motor de Facturación PDF, QR Code, Bootstrap y SweetAlert2 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="menu.js?v=2"></script>
-    <script src="tienda.js?v=5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="menu.js?v=13"></script>
+    <script src="tienda.js?v=13"></script>
 </body>
 </html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadena de Suministro (SCM) & Compras - ERP GOLDEN</title>
+
+    <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                if (u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                    window.location.href = 'tienda.html';
+                } else if (u.rol !== 'ADMIN') {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <!-- Bootstrap 5.3.3 & Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
+    <div id="menu-contenedor"></div>
+
+    <!-- PANTALLA COMPLETA 100% -->
+    <div class="container-fluid px-4 py-4">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
+            <div>
+                <h2 class="fw-bolder text-white mb-0 d-flex align-items-center">
+                    <i class="bi bi-truck-flatbed text-warning me-2"></i>Cadena de Suministro (SCM) & Compras
+                </h2>
+                <p class="text-secondary mb-0 mt-1 small">
+                    Monitoreo predictivo de inventario, detección de stock crítico y aprovisionamiento inteligente con proveedores OEM.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarSugerenciasCompras()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+                </button>
+                <button class="btn btn-gold btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="abrirModalGenerarOrden()">
+                    <i class="bi bi-file-earmark-plus-fill me-1"></i> Generar Orden de Compra
+                </button>
+            </div>
+        </div>
+
+        <!-- TARJETAS DE KPIs SUPERIORES -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Repuestos Críticos</span>
+                            <h3 class="fw-extrabold text-danger mb-0" id="kpiRepuestosCriticos">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);">
+                            <i class="bi bi-exclamation-octagon-fill text-danger fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-graph-down me-1 text-danger"></i>Existencias &le; Stock mínimo
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Unidades a Reponer</span>
+                            <h3 class="fw-extrabold text-warning mb-0" id="kpiUnidadesSugeridas">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-boxes text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-arrow-up-circle me-1 text-warning"></i>Para alcanzar nivel óptimo
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Inversión Estimada SCM</span>
+                            <h3 class="fw-extrabold text-white mb-0" id="kpiInversionTotal">$0.00</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <i class="bi bi-cash-stack text-emerald fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-tag-fill me-1 text-emerald"></i>Costo mayorista estimado (70% PVP)
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Proveedores Homologados</span>
+                            <h3 class="fw-extrabold text-info mb-0" id="kpiTotalProveedores">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <i class="bi bi-building text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-shield-check me-1 text-info"></i>Convenios OEM directos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 1 (PRINCIPAL): SUGERENCIAS INTELIGENTES DE REABASTECIMIENTO -->
+        <div class="card-vip p-4 mb-4">
+            
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <div>
+                    <h5 class="fw-bold text-white mb-1">
+                        <i class="bi bi-cpu-fill text-warning me-2"></i>Sugerencias Inteligentes de Reabastecimiento
+                    </h5>
+                    <p class="text-secondary small mb-0">
+                        Cálculo algorítmico continuo para evitar quiebres de stock. Fórmula: <code class="text-warning">Nivel Óptimo = 3 &times; Stock Mínimo</code>.
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalSugerencias">0 Repuestos Críticos</span>
+                </div>
+            </div>
+
+            <!-- Buscador en Tiempo Real de Sugerencias -->
+            <div class="row g-2 align-items-center mb-3">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.6) !important;">
+                            <i class="bi bi-search text-warning"></i>
+                        </span>
+                        <input type="text" id="inputBuscarSugerencias" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar repuesto crítico por SKU, nombre o categoría...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Sugerencias SCM -->
+            <div class="table-responsive">
+                <table class="table table-vip align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3" style="width: 130px;">SKU</th>
+                            <th>Repuesto / Categoría</th>
+                            <th class="text-center" style="width: 110px;">Stock Actual</th>
+                            <th class="text-center" style="width: 110px;">Stock Mín.</th>
+                            <th class="text-center" style="width: 110px;">Nivel Óptimo</th>
+                            <th class="text-center" style="width: 130px;">Cant. Sugerida</th>
+                            <th class="text-end" style="width: 120px;">Costo Unit. Est.</th>
+                            <th class="text-end" style="width: 120px;">Subtotal Est.</th>
+                            <th class="text-center" style="width: 120px;">Urgencia</th>
+                            <th class="text-end pe-3" style="width: 110px;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaSugerenciasCompras">
+                        <tr>
+                            <td colspan="10" class="text-center py-5 text-secondary">
+                                <span class="spinner-border spinner-border-sm text-warning me-2"></span>Analizando niveles de inventario...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10 small text-secondary">
+                <div id="infoSugerenciasCount">Calculando métricas...</div>
+                <div><i class="bi bi-lightning-charge-fill text-warning me-1"></i>SCM Algorithmic Restocking Engine</div>
+            </div>
+
+        </div>
+
+        <!-- TARJETA 2: PROVEEDORES HOMOLOGADOS & CONDICIONES COMERCIALES -->
+        <div class="card-vip p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-white mb-1">
+                        <i class="bi bi-building-check text-warning me-2"></i>Directorio de Proveedores Homologados & SCM
+                    </h5>
+                    <p class="text-secondary small mb-0">Canales de abastecimiento directo para repuestos de alta rotación.</p>
+                </div>
+                <span class="badge-pill-vip badge-pill-emerald" id="badgeProveedoresCount">3 Proveedores Activos</span>
+            </div>
+
+            <div class="row g-3" id="contenedorProveedores">
+                <!-- Se inyecta dinámicamente con compras.js -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts de Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="menu.js?v=15"></script>
+    <script src="compras.js?v=15"></script>
+</body>
+</html>

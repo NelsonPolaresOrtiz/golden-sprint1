@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créditos B2B & Cobranzas - ERP GOLDEN</title>
+
+    <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                if (u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                    window.location.href = 'tienda.html';
+                } else if (u.rol !== 'ADMIN') {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <!-- Bootstrap 5.3.3 & Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
+    <div id="menu-contenedor"></div>
+
+    <!-- PANTALLA COMPLETA 100% -->
+    <div class="container-fluid px-4 py-4">
+
+        <!-- ENCABEZADO DE SECCIÓN -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
+            <div>
+                <h2 class="fw-bolder text-white mb-0 d-flex align-items-center">
+                    <i class="bi bi-credit-card-2-front-fill text-warning me-2"></i>Gestión de Créditos B2B & Cartera
+                </h2>
+                <p class="text-secondary mb-0 mt-1 small">
+                    Administración de líneas de financiamiento mayorista, evaluación de riesgo crediticio y control de cobranzas.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarCreditos()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+                </button>
+                <button class="btn btn-gold btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="abrirReporteCartera()">
+                    <i class="bi bi-file-earmark-bar-graph me-1"></i> Resumen de Cartera
+                </button>
+            </div>
+        </div>
+
+        <!-- TARJETAS DE KPIs SUPERIORES -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Límite Total Aprobado</span>
+                            <h3 class="fw-extrabold text-white mb-0" id="kpiLimiteTotal">$0.00</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-bank text-warning fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-shield-check me-1 text-warning"></i>Cupo global para talleres B2B
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Saldo Deudor Total</span>
+                            <h3 class="fw-extrabold text-danger mb-0" id="kpiDeudaTotal">$0.00</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);">
+                            <i class="bi bi-cash-coin text-danger fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-arrow-up-right me-1 text-danger"></i>Cuentas por cobrar vivas
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Crédito Disponible Total</span>
+                            <h3 class="fw-extrabold text-emerald mb-0" id="kpiDisponibleTotal">$0.00</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <i class="bi bi-wallet2 text-emerald fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-check2-circle me-1 text-emerald"></i>Margen disponible para nuevos pedidos
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card-vip p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Talleres B2B Registrados</span>
+                            <h3 class="fw-extrabold text-info mb-0" id="kpiTotalTalleres">0</h3>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <i class="bi bi-tools text-info fs-4"></i>
+                        </div>
+                    </div>
+                    <div class="small text-secondary mt-2">
+                        <i class="bi bi-people me-1 text-info"></i>Convenios comerciales activos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA PRINCIPAL: TABLA DE CONTROL DE CARTERA Y COBRANZAS -->
+        <div class="card-vip p-4 mb-4">
+            
+            <div class="row g-3 align-items-center mb-3">
+                <div class="col-12 col-md-6 col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.6) !important;">
+                            <i class="bi bi-search text-warning"></i>
+                        </span>
+                        <input type="text" id="inputBuscarCreditos" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar taller por razón social, correo o ID en tiempo real...">
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 col-lg-3">
+                    <select id="filtroSituacion" class="form-select form-select-vip">
+                        <option value="TODOS">Todas las Situaciones</option>
+                        <option value="NORMAL">Al Corriente (Normal)</option>
+                        <option value="ALERTA">En Alerta (&ge;80% Uso)</option>
+                        <option value="SOBREGIRO">Sobregiro / Bloqueado</option>
+                    </select>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 col-lg-4 text-md-end">
+                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalCreditos">0 Talleres</span>
+                </div>
+            </div>
+
+            <!-- Tabla de Créditos B2B -->
+            <div class="table-responsive">
+                <table class="table table-vip align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3" style="width: 240px;">Cliente / Razón Social</th>
+                            <th>Contacto / Email</th>
+                            <th class="text-end" style="width: 130px;">Límite Aprobado</th>
+                            <th class="text-end" style="width: 130px;">Saldo Deudor</th>
+                            <th class="text-end" style="width: 130px;">Disponible</th>
+                            <th style="width: 170px;">% Utilización</th>
+                            <th class="text-center" style="width: 120px;">Estado</th>
+                            <th class="text-end pe-3" style="width: 240px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCreditos">
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-secondary">
+                                <span class="spinner-border spinner-border-sm text-warning me-2"></span>Sincronizando estado de cartera y saldos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10 small text-secondary">
+                <div id="infoCreditosCount">Calculando saldos...</div>
+                <div><i class="bi bi-shield-check text-warning me-1"></i>B2B Credit Risk & Collection Ledger</div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL OFFCANVAS / DETALLE DE ESTADO DE CUENTA -->
+    <div class="modal fade" id="modalDetalleCredito" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content text-light" style="background: #0d121f; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px;">
+                <div class="modal-header border-secondary border-opacity-25 pb-3">
+                    <h5 class="modal-title fw-bold text-white d-flex align-items-center" id="modalDetalleTitulo">
+                        <i class="bi bi-file-earmark-person-fill text-warning me-2"></i>Estado de Cuenta del Cliente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="modalDetalleCuerpo">
+                    <!-- Dinámico con JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="menu.js?v=15"></script>
+    <script src="creditos.js?v=15"></script>
+</body>
+</html>

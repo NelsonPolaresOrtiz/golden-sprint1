@@ -1,0 +1,886 @@
+/* ==========================================================================
+   ERP & E-COMMERCE GOLDEN - DESIGN SYSTEM VIP (APPLE / TESLA / STRIPE STYLE)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+    /* Superficies y Fondos High-End */
+    --bg-space: #070a12;
+    --bg-dark: #0d121f;
+    --bg-card: rgba(17, 24, 39, 0.75);
+    --bg-card-hover: rgba(24, 34, 53, 0.9);
+    --bg-card-light: rgba(255, 255, 255, 0.95);
+    --bg-glass-input: rgba(15, 23, 42, 0.6);
+
+    /* Acentos y Gradientes de Lujo */
+    --gold-primary: #f59e0b;
+    --gold-light: #fbbf24;
+    --gold-dark: #b45309;
+    --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+    --gold-glow: 0 0 25px rgba(245, 158, 11, 0.35);
+
+    --emerald-primary: #10b981;
+    --emerald-light: #34d399;
+    --emerald-gradient: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+    --emerald-glow: 0 0 20px rgba(16, 185, 129, 0.3);
+
+    --ruby-primary: #ef4444;
+    --ruby-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #b91c1c 100%);
+
+    --slate-primary: #3b82f6;
+    --slate-gradient: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%);
+
+    /* Bordes Glassmorphism */
+    --border-glass: rgba(255, 255, 255, 0.08);
+    --border-glass-gold: rgba(245, 158, 11, 0.3);
+    --border-glass-hover: rgba(245, 158, 11, 0.5);
+
+    /* Sombras Profesionales */
+    --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.25);
+    --shadow-card: 0 12px 35px -5px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-glass);
+    --shadow-card-hover: 0 22px 45px -10px rgba(245, 158, 11, 0.15), 0 12px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-glass-hover);
+    --shadow-glow-gold: 0 10px 30px rgba(245, 158, 11, 0.3);
+}
+
+/* Tipografía y Base */
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-space);
+    color: #e2e8f0;
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.06) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+    background-attachment: fixed;
+    letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   FORZAR TEXTO CLARO Y LEGIBLE EN TODAS LAS TABLAS (MODO OSCURO VIP)
+   ========================================================================== */
+
+table, 
+.table, 
+.table-vip {
+    --bs-table-color: #cbd5e1 !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-striped-color: #f8fafc !important;
+    --bs-table-active-color: #ffffff !important;
+    --bs-table-hover-color: #ffffff !important;
+    color: #cbd5e1 !important;
+    margin-bottom: 0;
+}
+
+.table > :not(caption) > * > * {
+    color: #cbd5e1 !important;
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+table td, 
+.table td, 
+.table-vip td,
+table th, 
+.table th, 
+.table-vip th {
+    color: #cbd5e1 !important;
+    vertical-align: middle;
+}
+
+.table-vip thead th {
+    background: rgba(13, 18, 31, 0.95) !important;
+    color: #e2e8f0 !important;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.table-vip tbody td {
+    padding: 1rem 1.25rem;
+    color: #cbd5e1 !important;
+    transition: background 0.2s ease;
+}
+
+.table-vip tbody tr:hover td {
+    background: rgba(245, 158, 11, 0.06) !important;
+    color: #ffffff !important;
+}
+
+/* Clases específicas para celdas claras */
+.table td small,
+.table-vip td small,
+.table td .text-secondary,
+.table-vip td .text-secondary,
+.table td .text-muted,
+.table-vip td .text-muted {
+    color: #94a3b8 !important;
+}
+
+/* ==========================================================================
+   MEJORA DE CONTRASTE Y ACCESIBILIDAD WCAG AAA (MODO OSCURO)
+   ========================================================================== */
+
+.text-muted {
+    color: #94a3b8 !important; /* Slate 400 luminoso */
+}
+
+.text-secondary {
+    color: #cbd5e1 !important; /* Slate 300 de alto contraste */
+}
+
+p.text-muted, small.text-muted, span.text-muted, div.text-muted, h6.text-muted {
+    color: #94a3b8 !important;
+}
+
+p.text-secondary, small.text-secondary, span.text-secondary {
+    color: #cbd5e1 !important;
+}
+
+.form-label, .form-label.text-muted, .form-label.text-secondary {
+    color: #cbd5e1 !important;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.form-control-vip::placeholder {
+    color: #94a3b8 !important;
+    opacity: 0.8;
+}
+
+/* Scrollbar VIP */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 999px;
+    border: 2px solid #090d16;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-primary);
+}
+
+/* ==========================================================================
+   COMPONENTES GLASSMORPHISM & CARDS FLOTANTES
+   ========================================================================== */
+
+.glass-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-glass-hover);
+}
+
+.glass-panel {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+}
+
+.glass-header {
+    background: rgba(13, 18, 31, 0.85);
+    border-bottom: 1px solid var(--border-glass);
+    padding: 1.1rem 1.5rem;
+}
+
+/* ==========================================================================
+   TEXTOS Y GRADIENTES APPLE/STRIPE
+   ========================================================================== */
+
+.text-gradient-gold {
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.text-gradient-silver {
+    background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.text-gradient-emerald {
+    background: var(--emerald-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* ==========================================================================
+   BOTONES VIP CON MICROINTERACCIONES
+   ========================================================================== */
+
+.btn-vip-gold {
+    background: var(--gold-gradient);
+    color: #0b0f19;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 0.65rem 1.4rem;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-vip-gold::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: skewX(-25deg);
+    transition: left 0.6s ease;
+}
+
+.btn-vip-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(245, 158, 11, 0.45);
+    color: #000000;
+}
+
+.btn-vip-gold:hover::after {
+    left: 140%;
+}
+
+.btn-vip-gold:active {
+    transform: translateY(0);
+}
+
+.btn-vip-emerald {
+    background: var(--emerald-gradient);
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 0.65rem 1.4rem;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-vip-emerald:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45);
+    color: #ffffff;
+}
+
+.btn-vip-outline {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    color: #cbd5e1;
+    border-radius: 12px;
+    padding: 0.55rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-vip-outline:hover {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: var(--gold-primary);
+    color: var(--gold-light);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   INPUTS GLASSMORPHISM
+   ========================================================================== */
+
+.form-control-vip, .form-select-vip {
+    background: rgba(15, 23, 42, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 12px !important;
+    color: #f8fafc !important;
+    padding: 0.75rem 1.1rem !important;
+    font-size: 0.95rem;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+}
+
+.form-control-vip:focus, .form-select-vip:focus {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-color: var(--gold-primary) !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+    outline: none;
+}
+
+.input-group-text-vip {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    border-radius: 12px 0 0 12px;
+}
+
+/* ==========================================================================
+   PILL BADGES MODERNOS
+   ========================================================================== */
+
+.badge-pill-vip {
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.badge-pill-gold {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.badge-pill-emerald {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.badge-pill-ruby {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.badge-pill-slate {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+/* Indicador Pulsante (Pulse Dot) */
+.pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.pulse-dot-emerald {
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: pulseGlow 2s infinite;
+}
+.pulse-dot-gold {
+    background: #f59e0b;
+    box-shadow: 0 0 8px #f59e0b;
+    animation: pulseGlow 2s infinite;
+}
+.pulse-dot-ruby {
+    background: #ef4444;
+    box-shadow: 0 0 8px #ef4444;
+    animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ==========================================================================
+   TARJETAS KPI (DASHBOARD & LOGÍSTICA)
+   ========================================================================== */
+
+.kpi-card-vip {
+    position: relative;
+    padding: 1.75rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-glass);
+    background: linear-gradient(145deg, rgba(20, 28, 46, 0.9) 0%, rgba(10, 15, 27, 0.8) 100%);
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: all 0.35s ease;
+}
+
+.kpi-card-vip:hover {
+    transform: translateY(-5px);
+    border-color: var(--border-glass-gold);
+    box-shadow: var(--shadow-card-hover);
+}
+
+.kpi-card-vip .kpi-icon-wrap {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+}
+
+.kpi-card-gold .kpi-icon-wrap {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--gold-light);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.kpi-card-emerald .kpi-icon-wrap {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald-light);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.kpi-card-ruby .kpi-icon-wrap {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.kpi-card-slate .kpi-icon-wrap {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* ==========================================================================
+   OFFCANVAS CARRITO - FACTURA FLOTANTE
+   ========================================================================== */
+
+.offcanvas-receipt {
+    background: #0d121f !important;
+    border-left: 1px solid var(--border-glass-gold) !important;
+    box-shadow: -15px 0 50px rgba(0, 0, 0, 0.7);
+    color: #f1f5f9;
+}
+
+.offcanvas-receipt .offcanvas-header {
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid var(--border-glass);
+    padding: 1.4rem 1.5rem;
+}
+
+.receipt-item-card {
+    background: rgba(20, 28, 46, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.25s ease;
+}
+
+.receipt-item-card:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(24, 34, 53, 0.85);
+}
+
+.receipt-divider {
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    margin: 1.25rem 0;
+}
+
+/* ==========================================================================
+   SWEETALERT2 VIP DARK THEME (NOTIFICACIONES Y CONFIRMACIONES)
+   ========================================================================== */
+
+.swal2-container {
+    z-index: 100000 !important;
+}
+
+.swal2-popup.swal2-toast {
+    background: #0d121f !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 15px rgba(245, 158, 11, 0.15) !important;
+    color: #f8fafc !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    padding: 0.85rem 1.15rem !important;
+}
+
+.swal2-popup.swal2-toast .swal2-title {
+    color: #f8fafc !important;
+    font-size: 0.92rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px;
+}
+
+.swal2-popup.swal2-modal {
+    background: #0d121f !important;
+    border: 1px solid var(--border-glass-gold) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(245, 158, 11, 0.15) !important;
+    color: #f8fafc !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    padding: 2rem !important;
+}
+
+.swal2-popup.swal2-modal .swal2-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.35rem !important;
+}
+
+.swal2-popup.swal2-modal .swal2-html-container {
+    color: #cbd5e1 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5;
+}
+
+.swal2-timer-progress-bar {
+    background: var(--gold-gradient) !important;
+}
+
+.swal2-actions {
+    margin-top: 1.5rem !important;
+    gap: 0.75rem !important;
+}
+
+.swal2-confirm, .swal2-cancel {
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 0.65rem 1.4rem !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal2-confirm:hover, .swal2-cancel:hover {
+    transform: translateY(-2px) !important;
+}
+
+/* ==========================================================================
+   CATÁLOGO AUTOMOTRIZ DE ALTA GAMA (ESTILO WIX FILTERS SHOWROOM)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap');
+
+.card-producto-wix {
+    background: rgba(13, 18, 31, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* Efecto Hover Puro: Ilumina bordes en tono dorado y eleva la tarjeta */
+.card-producto-wix:hover {
+    transform: translateY(-8px);
+    border-color: rgba(245, 158, 11, 0.85) !important;
+    box-shadow: 0 22px 45px -10px rgba(0, 0, 0, 0.9), 0 0 35px rgba(245, 158, 11, 0.4);
+}
+
+/* Contenedor de la Imagen: Fondo blanco o gris muy claro para resaltar los envases */
+.wix-img-wrapper {
+    height: 180px;
+    background: #ffffff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-top-left-radius: 19px;
+    border-top-right-radius: 19px;
+}
+
+.wix-img-wrapper img {
+    height: 160px !important;
+    width: 100% !important;
+    max-height: 160px !important;
+    object-fit: contain !important;
+    padding: 10px !important;
+    background-color: #ffffff !important;
+    border-radius: 8px 8px 0 0 !important;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-producto-wix:hover .wix-img-wrapper img {
+    transform: scale(1.08);
+}
+
+/* Bloque Inferior Interactivo del SKU: Cambia de color al hover */
+.wix-sku-bar {
+    background: rgba(9, 13, 24, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.65rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.35s ease;
+}
+
+.wix-sku-bar .wix-sku-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fbbf24;
+    transition: color 0.35s ease;
+}
+
+.wix-sku-bar .wix-sku-action {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.35s ease;
+}
+
+/* Al pasar el ratón, el bloque del SKU se ilumina en dorado con texto contrastado */
+.card-producto-wix:hover .wix-sku-bar {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%) !important;
+    border-color: #f59e0b !important;
+}
+
+.card-producto-wix:hover .wix-sku-bar .wix-sku-label {
+    color: #070a12 !important;
+    font-weight: 800 !important;
+}
+
+.card-producto-wix:hover .wix-sku-bar .wix-sku-action {
+    color: #070a12 !important;
+    font-weight: 800 !important;
+}
+
+/* ==========================================================================
+   MODAL FICHA TÉCNICA WIX STYLE ("EFECTO WOW")
+   ========================================================================== */
+
+.modal-ficha-tecnica {
+    background: rgba(10, 14, 26, 0.98);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    border-radius: 24px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95), 0 0 60px rgba(245, 158, 11, 0.25);
+    color: #f8fafc;
+    overflow: hidden;
+}
+
+.showcase-img-box {
+    background: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.showcase-img-box img {
+    height: 230px !important;
+    width: 100% !important;
+    max-height: 230px !important;
+    object-fit: contain !important;
+    padding: 10px !important;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.18));
+    transition: transform 0.4s ease;
+}
+
+.showcase-img-box:hover img {
+    transform: scale(1.05);
+}
+
+/* Tipografía de Código de Barras */
+.barcode-visual {
+    font-family: 'Libre Barcode 128', 'Libre Barcode 39 Text', cursive;
+    font-size: 3.2rem;
+    line-height: 1;
+    letter-spacing: 3px;
+    color: #f8fafc;
+    user-select: none;
+    transform: scaleY(1.15);
+}
+
+.table-especificaciones td {
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.88rem;
+}
+
+.table-especificaciones tr:hover td {
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.table-especificaciones .spec-key {
+    color: #94a3b8;
+    font-weight: 600;
+    width: 40%;
+}
+
+.table-especificaciones .spec-val {
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+/* Pestañas / Tabs WIX */
+.nav-tabs-wix {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    gap: 0.5rem;
+}
+
+.nav-tabs-wix .nav-link {
+    color: #94a3b8;
+    font-weight: 700;
+    border: 1px solid transparent;
+    border-radius: 12px 12px 0 0;
+    padding: 0.65rem 1.25rem;
+    transition: all 0.25s ease;
+}
+
+.nav-tabs-wix .nav-link:hover {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.nav-tabs-wix .nav-link.active {
+    color: #070a12 !important;
+    background: var(--gold-gradient) !important;
+    border-color: #f59e0b !important;
+    font-weight: 800;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+}
+
+/* ==========================================================================
+   MASTER DASHBOARD LAYOUT & ULTRA-CLEAN SIDEBAR (BOOTSTRAP 5 FLEXBOX)
+   ========================================================================== */
+.sidebar-master {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    background-color: #0f172a !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.nav-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: 0.65rem;
+    font-weight: 500;
+    font-size: 0.92rem;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid transparent;
+    line-height: 1.2;
+}
+
+.nav-sidebar-link:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+    transform: translateX(3px);
+}
+
+.nav-sidebar-link.active {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(217, 119, 6, 0.12) 100%) !important;
+    border-color: rgba(245, 158, 11, 0.45) !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+    font-weight: 700;
+}
+
+.nav-sidebar-link .nav-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    width: 28px;
+    height: 28px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-kpi-master {
+    background: linear-gradient(145deg, #131b2e 0%, #0d1322 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-kpi-master:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.card-table-master {
+    background-color: #111827 !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 1rem !important;
+    overflow: hidden;
+}
+
+/* Adaptación Responsiva del Sidebar Maestro para Tablets y Móviles */
+@media (max-width: 991.98px) {
+    .sidebar-master {
+        width: 76px !important;
+        min-width: 76px !important;
+        max-width: 76px !important;
+        padding: 0.75rem 0.4rem !important;
+    }
+    .sidebar-master .sidebar-brand-text,
+    .sidebar-master .nav-sidebar-link span:not(.nav-icon),
+    .sidebar-master #sidebarUserName,
+    .sidebar-master #sidebarUserRol,
+    .sidebar-master .btn-logout-text {
+        display: none !important;
+    }
+    .sidebar-master .nav-sidebar-link {
+        justify-content: center !important;
+        padding: 0.75rem 0 !important;
+        gap: 0 !important;
+    }
+    .sidebar-master .nav-sidebar-link .nav-icon {
+        font-size: 1.4rem !important;
+    }
+}
