@@ -25,244 +25,263 @@
     <!-- Estilos de Alta Gama ERP GOLDEN -->
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-dark text-white m-0 p-0 overflow-hidden">
+<body class="bg-dark text-white">
 
     <!-- ========================================================================= -->
-    <!-- 1. ESTRUCTURA MAESTRA (FLEXBOX): Layout Completo Viewport 100vh          -->
+    <!-- 1. MENÚ COMPARTIDO GLASSMORPHIC (Navbar Horizontal Idéntico al ERP)       -->
     <!-- ========================================================================= -->
-    <div class="d-flex vh-100 overflow-hidden bg-dark">
-
-        <!-- ===================================================================== -->
-        <!-- LADO IZQUIERDO (SIDEBAR): Ancho 280px Fijo, Fondo #0f172a, Borde Sutil-->
-        <!-- ===================================================================== -->
-        <aside class="sidebar-master d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; background-color: #0f172a; border-right: 1px solid rgba(255, 255, 255, 0.08); z-index: 1020;">
-            
-            <!-- Encabezado / Branding Corporativo -->
-            <a href="dashboard.html" class="d-flex align-items-center gap-3 text-white text-decoration-none pb-3 border-bottom border-secondary border-opacity-25 px-2">
-                <div class="d-flex align-items-center justify-content-center rounded-3 shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; font-weight: 900; font-size: 1.35rem; border: 1px solid rgba(251, 191, 36, 0.5);">
-                    G
-                </div>
-                <div class="d-flex flex-column" style="line-height: 1.15;">
-                    <span class="fs-5 fw-bold tracking-tight text-white">
-                        GOLDEN <span style="color: #f59e0b;">ERP</span>
-                    </span>
-                    <span class="text-secondary small fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1.5px;">Enterprise Suite</span>
-                </div>
-            </a>
-
-            <!-- ================================================================= -->
-            <!-- 2. SIDEBAR ORDENADO (Los 6 Módulos en Orden Estricto y Alineado)   -->
-            <!-- ================================================================= -->
-            <ul class="nav flex-column gap-2 mt-4 flex-grow-1">
-                <li class="nav-item">
-                    <a href="dashboard.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">📊</span>
-                        <span>Analítica y Monetización</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="tienda.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">🛒</span>
-                        <span>E-commerce y Ventas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="inventario.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">📦</span>
-                        <span>Gestión de Inventario</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="logistica.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">🚚</span>
-                        <span>Distribución y Logística</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="facturacion.html" class="nav-sidebar-link d-flex align-items-center active">
-                        <span class="nav-icon">💳</span>
-                        <span>Cobranza y Facturación</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="auditoria.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">🔐</span>
-                        <span>Seguridad y Usuario</span>
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Pie del Sidebar: Usuario, Alertas en Vivo y Logout -->
-            <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="d-flex align-items-center gap-2 overflow-hidden">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
-                            <i class="bi bi-person-fill"></i>
-                        </div>
-                        <div class="d-flex flex-column text-truncate" style="line-height: 1.1;">
-                            <span class="small fw-bold text-white text-truncate" id="sidebarUserName">Administrador</span>
-                            <span class="text-warning text-uppercase" style="font-size: 0.65rem; font-weight: 700;" id="sidebarUserRol">ADMIN</span>
-                        </div>
+    <div id="menu-contenedor">
+        <!-- Renderizado estático inicial para evitar parpadeos, sincronizado por menu.js -->
+        <nav class="navbar navbar-expand-lg sticky-top shadow-lg" style="background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(245, 158, 11, 0.25); z-index: 1030;">
+            <div class="container-fluid px-4 py-1">
+                <!-- Brand Logo -->
+                <a class="navbar-brand fw-extrabold d-flex align-items-center gap-2 text-decoration-none py-1" href="dashboard.html">
+                    <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.1) 100%); border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);">
+                        <i class="bi bi-shield-shaded text-warning fs-5"></i>
                     </div>
-                    <!-- Campanita de Notificaciones de Stock -->
-                    <button id="btnCampanaSidebar" class="btn p-0 text-warning d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 34px; height: 34px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px;" onclick="mostrarModalAlertasStock()" title="Alertas de Stock Crítico">
-                        <i class="bi bi-bell-fill fs-6 text-warning"></i>
-                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.65rem; display: none; padding: 0.3em 0.5em;">0</span>
-                    </button>
-                </div>
-                <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3" onclick="cerrarSesion()" title="Finalizar Sesión Segura">
-                    <i class="bi bi-power"></i>
-                    <span>Cerrar Sesión</span>
+                    <div class="d-flex flex-column" style="line-height: 1.1;">
+                        <span class="fw-bolder tracking-wide text-white" style="letter-spacing: 0.5px; font-size: 1.15rem;">
+                            GOLDEN <span class="text-gradient-gold">ERP</span>
+                        </span>
+                        <span class="text-muted" style="font-size: 0.65rem; letter-spacing: 1.5px; font-weight: 700;">ENTERPRISE SUITE</span>
+                    </div>
+                </a>
+
+                <!-- Botón Responsive -->
+                <button class="navbar-toggler border-0 p-2 text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Menú">
+                    <i class="bi bi-list fs-2"></i>
                 </button>
-            </div>
-        </aside>
 
-        <!-- ===================================================================== -->
-        <!-- LADO DERECHO (MAIN CONTENT): Scroll Independiente con Padding 4       -->
-        <!-- ===================================================================== -->
-        <main class="flex-grow-1 overflow-auto p-4 bg-dark">
-            
-            <!-- HEADER LIMPIO CON TÍTULO Y ACCIONES -->
-            <header class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
-                <div>
-                    <h2 class="fw-bolder text-white mb-1 d-flex align-items-center">
-                        <span class="me-2 fs-3">💳</span>Cobranza & Facturación
-                    </h2>
-                    <p class="text-secondary mb-0 small">
-                        Control de comprobantes fiscales, estados de liquidación y emisión oficial de facturas PDF en tamaño Carta / A4.
-                    </p>
-                </div>
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <button class="btn btn-outline-success btn-sm rounded-pill px-3 d-flex align-items-center gap-2 fw-semibold shadow-sm" onclick="exportarFacturasCSV()">
-                        <i class="bi bi-file-earmark-excel-fill text-success"></i>
-                        <span>Exportar CSV</span>
-                    </button>
-                    <button class="btn btn-outline-warning btn-sm rounded-pill px-3 d-flex align-items-center gap-2 fw-semibold shadow-sm" onclick="cargarFacturacion()">
-                        <i class="bi bi-arrow-clockwise"></i>
-                        <span>Actualizar</span>
-                    </button>
-                </div>
-            </header>
+                <!-- Links de Navegación -->
+                <div class="collapse navbar-collapse" id="menuPrincipal">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="dashboard.html">
+                                <i class="bi bi-speedometer2 text-warning"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="index.html">
+                                <i class="bi bi-people-fill text-warning"></i> Usuarios
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="compras.html">
+                                <i class="bi bi-truck-flatbed text-warning"></i> Proveedores/SCM
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 active text-warning fw-bold" 
+                               style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);" 
+                               href="facturacion.html">
+                                <i class="bi bi-credit-card-2-front-fill text-warning"></i> Cobranza y Facturación
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="creditos.html">
+                                <i class="bi bi-bank text-warning"></i> Créditos B2B
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="inventario.html">
+                                <i class="bi bi-box-seam-fill text-warning"></i> Inventario
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="tienda.html">
+                                <i class="bi bi-shop text-warning"></i> Catálogo / Ventas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="logistica.html">
+                                <i class="bi bi-truck text-warning"></i> Logística
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 text-light text-opacity-75" href="auditoria.html">
+                                <i class="bi bi-shield-check text-warning"></i> Auditoría
+                            </a>
+                        </li>
+                    </ul>
 
-            <!-- 3 TARJETAS KPI (Ingresos, Pendientes, Emitidas) EN UN <div class="row"> -->
-            <div class="row g-4 mb-4">
-                <!-- KPI 1: Ingresos Totales -->
-                <div class="col-12 col-md-4">
-                    <div class="card card-kpi-master h-100 p-3 shadow-sm border-0" style="border: 1px solid rgba(16, 185, 129, 0.3) !important;">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <span class="text-secondary small fw-bold text-uppercase tracking-wide d-block mb-1">
-                                    <i class="bi bi-cash-stack text-success me-1"></i>Ingresos Totales (Cobrado)
-                                </span>
-                                <h2 class="fw-bolder text-white mb-0" id="kpiIngresosTotales">Bs. 0.00</h2>
-                            </div>
-                            <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 1.4rem;">
-                                <i class="bi bi-check-circle-fill"></i>
-                            </div>
+                    <!-- Área Derecha: Campanita, Usuario y Salir -->
+                    <div class="d-flex align-items-center flex-wrap gap-2 mt-3 mt-lg-0">
+                        <div class="position-relative">
+                            <button id="btnCampanaNotificaciones" class="btn p-0 rounded-circle text-warning d-flex align-items-center justify-content-center position-relative" style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3);" onclick="mostrarModalAlertasStock()" title="Alertas de Stock en Tiempo Real">
+                                <i class="bi bi-bell-fill fs-5 text-warning"></i>
+                                <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.68rem; display: none; padding: 0.35em 0.55em;">0</span>
+                            </button>
                         </div>
-                        <div class="small text-secondary mt-3 pt-2 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-shield-check text-success me-1"></i>Liquidado en Banco / Caja</span>
-                            <span class="badge bg-success-subtle text-success fw-bold">100% Cobrado</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KPI 2: Facturas Pendientes -->
-                <div class="col-12 col-md-4">
-                    <div class="card card-kpi-master h-100 p-3 shadow-sm border-0" style="border: 1px solid rgba(245, 158, 11, 0.3) !important;">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <span class="text-secondary small fw-bold text-uppercase tracking-wide d-block mb-1">
-                                    <i class="bi bi-clock-history text-warning me-1"></i>Pendientes de Cobro
-                                </span>
-                                <h2 class="fw-bolder text-white mb-0" id="kpiPendientesCobro">Bs. 0.00</h2>
-                            </div>
-                            <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 1.4rem;">
-                                <i class="bi bi-hourglass-split"></i>
+                        <div id="userInfoBadge" class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background: rgba(20, 28, 46, 0.85); border: 1px solid rgba(255, 255, 255, 0.12);">
+                            <span class="pulse-dot pulse-dot-emerald"></span>
+                            <div class="d-flex flex-column" style="line-height: 1.1;">
+                                <span class="fw-bold small text-white text-nowrap" id="navUserName">Administrador</span>
+                                <span class="text-warning text-uppercase" style="font-size: 0.68rem; font-weight: 700;" id="navUserRol">ADMIN</span>
                             </div>
                         </div>
-                        <div class="small text-secondary mt-3 pt-2 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-exclamation-triangle text-warning me-1"></i>Órdenes en gestión</span>
-                            <span class="badge bg-warning-subtle text-warning fw-bold" id="badgeCountPendientes">0 Órdenes</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- KPI 3: Facturas Emitidas -->
-                <div class="col-12 col-md-4">
-                    <div class="card card-kpi-master h-100 p-3 shadow-sm border-0" style="border: 1px solid rgba(59, 130, 246, 0.3) !important;">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <span class="text-secondary small fw-bold text-uppercase tracking-wide d-block mb-1">
-                                    <i class="bi bi-receipt-cutoff text-info me-1"></i>Facturas Emitidas
-                                </span>
-                                <h2 class="fw-bolder text-white mb-0" id="kpiTotalFacturas">0</h2>
-                            </div>
-                            <div class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-size: 1.4rem;">
-                                <i class="bi bi-file-earmark-check-fill"></i>
-                            </div>
-                        </div>
-                        <div class="small text-secondary mt-3 pt-2 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
-                            <span><i class="bi bi-qr-code text-info me-1"></i>Con código de control QR</span>
-                            <span class="badge bg-info-subtle text-info fw-bold">Validadas</span>
-                        </div>
+                        <button class="btn btn-outline-danger btn-sm fw-bold px-3 py-2 rounded-3 d-flex align-items-center gap-1" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);" onclick="cerrarSesion()" title="Cerrar Sesión Segura">
+                            <i class="bi bi-power"></i>
+                            <span class="d-none d-sm-inline">Salir</span>
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <!-- TABLA DE COBRANZAS EN UN <div class="card shadow-sm"> CON ESQUINAS REDONDEADAS -->
-            <div class="card card-table-master shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-transparent py-3 px-4 border-bottom border-secondary border-opacity-25 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-table text-warning fs-5"></i>
-                        <h5 class="fw-bold text-white mb-0">Libro Diario de Facturación & Cobranzas</h5>
-                        <span class="badge rounded-pill bg-warning-subtle text-warning ms-2" id="badgeTotalFacturasTabla">0 Registros</span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="input-group input-group-sm" style="width: 250px;">
-                            <span class="input-group-text bg-dark border-secondary border-opacity-50 text-secondary">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" id="buscadorFacturas" class="form-control bg-dark border-secondary border-opacity-50 text-white" placeholder="Buscar por cliente o N°..." oninput="filtrarTablaFacturacion()">
-                        </div>
-                        <select id="filtroEstadoFactura" class="form-select form-select-sm bg-dark border-secondary border-opacity-50 text-white" style="width: 140px;" onchange="filtrarTablaFacturacion()">
-                            <option value="TODOS">Todos</option>
-                            <option value="PAGADO">Pagados</option>
-                            <option value="PENDIENTE">Pendientes</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle mb-0" id="tablaFacturacionEl">
-                        <thead class="text-secondary text-uppercase small" style="background-color: #0b0f19; letter-spacing: 0.5px;">
-                            <tr>
-                                <th class="ps-4 py-3" style="width: 140px;">N° Factura</th>
-                                <th class="py-3">Cliente / Razón Social</th>
-                                <th class="py-3">Fecha de Emisión</th>
-                                <th class="py-3 text-end" style="width: 160px;">Total Cobrado</th>
-                                <th class="py-3 text-center" style="width: 140px;">Estado Fiscal</th>
-                                <th class="pe-4 py-3 text-end" style="width: 180px;">Comprobante Oficial</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaFacturasBody">
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-secondary">
-                                    <span class="spinner-border spinner-border-sm text-warning me-2"></span>Cargando facturas y cobranzas...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </main>
+        </nav>
     </div>
 
     <!-- ========================================================================= -->
-    <!-- PLANTILLA HTML DE FACTURA CARTA / A4 (Estricta para exportación con html2pdf) -->
-    <!-- Contenedor oculto con display: none para que no rompa el diseño            -->
+    <!-- 2. CONTENEDOR PRINCIPAL FLUIDO (Sin saltos de diseño con los demás módulos) -->
     <!-- ========================================================================= -->
-    <div id="plantilla-factura" style="display: none; padding: 40px; background: #ffffff !important; color: #000000 !important; width: 800px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; margin: 0 auto; line-height: 1.4;">
+    <div class="container-fluid px-4 py-4">
+
+        <!-- TÍTULO DE SECCIÓN Y ACCIONES -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
+            <div>
+                <h2 class="fw-bolder text-white mb-0 d-flex align-items-center">
+                    <i class="bi bi-credit-card-2-front-fill text-warning me-2"></i>
+                    Cobranza & Facturación Oficial
+                </h2>
+                <p class="text-secondary mb-0 mt-1 small">Gestión fiscal, control de pagos y emisión de comprobantes certificados en PDF para B2B / B2C.</p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center gap-2 fw-semibold" onclick="exportarFacturasCSV()" title="Exportar Reporte a Formato Excel / CSV">
+                    <i class="bi bi-file-earmark-spreadsheet-fill text-success"></i>
+                    <span>Exportar Excel / CSV</span>
+                </button>
+                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarFacturacion()" title="Recargar y sincronizar con la base de datos">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Sincronizar
+                </button>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- 3. TARJETAS DE RESUMEN EJECUTIVO (KPIS EN TIEMPO REAL)                -->
+        <!-- ===================================================================== -->
+        <div class="row g-4 mb-4">
+            <!-- KPI 1: Ingresos Totales -->
+            <div class="col-md-4">
+                <div class="kpi-card-vip kpi-card-emerald h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
+                                <span class="pulse-dot pulse-dot-emerald me-2"></span> Ingresos Totales Facturados
+                            </span>
+                            <h2 class="fw-extrabold text-white mb-0 mt-2" id="kpiIngresosTotales">
+                                Bs. <span class="text-success">0.00</span>
+                            </h2>
+                            <small class="text-muted mt-1 d-block">Monto consolidado pagado y entregado</small>
+                        </div>
+                        <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 2: Cuentas por Cobrar -->
+            <div class="col-md-4">
+                <div class="kpi-card-vip kpi-card-amber h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
+                                <span class="pulse-dot pulse-dot-amber me-2"></span> Saldo Pendiente de Cobro
+                            </span>
+                            <h2 class="fw-extrabold text-white mb-0 mt-2" id="kpiPendientesCobro">
+                                Bs. <span class="text-warning">0.00</span>
+                            </h2>
+                            <small class="text-muted mt-1 d-block">
+                                <span class="badge bg-warning text-dark fw-bold me-1" id="badgeCountPendientes">0 Órdenes</span>
+                                en reparto o pendientes de liquidación
+                            </small>
+                        </div>
+                        <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 3: Facturas Emitidas -->
+            <div class="col-md-4">
+                <div class="kpi-card-vip kpi-card-sapphire h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
+                                <span class="pulse-dot me-2" style="background: #38bdf8;"></span> Facturas Emitidas
+                            </span>
+                            <h2 class="fw-extrabold text-white mb-0 mt-2" id="kpiTotalFacturas">
+                                <span class="text-info">0</span> <small class="fs-6 text-secondary fw-normal">Emitidas</small>
+                            </h2>
+                            <small class="text-muted mt-1 d-block">Comprobantes fiscales generados</small>
+                        </div>
+                        <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================== -->
+        <!-- 4. TABLA GERENCIAL DE COBRANZAS Y FACTURACIÓN                         -->
+        <!-- ===================================================================== -->
+        <div class="card-vip overflow-hidden shadow-lg border-0 mb-5">
+            <!-- Barra de Filtros y Búsqueda -->
+            <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 p-3">
+                <div class="row g-3 align-items-center justify-content-between">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary border-opacity-50 text-secondary">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" id="buscadorFacturas" class="form-control bg-dark text-white border-secondary border-opacity-50" placeholder="Buscar por cliente, N° de factura, NIT o correo..." oninput="filtrarTablaFacturacion()">
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-md-end align-items-center gap-2">
+                        <label for="filtroEstadoFactura" class="small text-secondary fw-bold text-nowrap d-none d-sm-inline">Estado:</label>
+                        <select id="filtroEstadoFactura" class="form-select form-select-vip" style="width: auto;" onchange="filtrarTablaFacturacion()">
+                            <option value="TODOS" selected>Todos los Estados</option>
+                            <option value="PAGADO">Solo Pagados</option>
+                            <option value="PENDIENTE">Solo Pendientes</option>
+                        </select>
+                        <span class="badge bg-secondary bg-opacity-25 text-light px-3 py-2 rounded-pill" id="badgeTotalFacturasTabla">
+                            0 Facturas
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Datos -->
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" id="tablaFacturacionEl">
+                    <thead style="background: rgba(15, 23, 42, 0.85); font-size: 0.82rem; letter-spacing: 0.5px;">
+                        <tr class="text-secondary text-uppercase border-bottom border-secondary border-opacity-50">
+                            <th class="py-3 ps-4" style="width: 14%;">N° Factura</th>
+                            <th class="py-3" style="width: 28%;">Cliente / Razón Social</th>
+                            <th class="py-3" style="width: 18%;">Fecha Emisión</th>
+                            <th class="py-3 text-end" style="width: 16%;">Total Facturado</th>
+                            <th class="py-3 text-center" style="width: 12%;">Estado</th>
+                            <th class="py-3 pe-4 text-end" style="width: 12%;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaFacturasBody" class="border-top-0" style="font-size: 0.92rem;">
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-secondary">
+                                <span class="spinner-border spinner-border-sm text-warning me-2"></span>Cargando facturas y cobranzas...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 5. PLANTILLA HTML DE FACTURA CARTA / A4 (Estricta para exportación con html2pdf) -->
+    <!-- Contenedor oculto con max-width: 790px y table-layout: fixed para evitar cortes -->
+    <!-- ========================================================================= -->
+    <div id="plantilla-factura" style="display: none; padding: 30px; background: #ffffff !important; color: #000000 !important; width: 100%; max-width: 790px; margin: 0 auto; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.4;">
         
         <!-- CABECERA -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 25px;">
@@ -307,26 +326,26 @@
             </div>
         </div>
 
-        <!-- TABLA DE DETALLES -->
-        <table style="border-collapse: collapse; width: 100%; margin-bottom: 25px; font-size: 13px; color: #000000;">
+        <!-- TABLA DE DETALLES (table-layout: fixed para evitar corte derecho en Letter/A4) -->
+        <table style="border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 25px; font-size: 13px; color: #000000;">
             <thead>
                 <tr style="background: #1e293b; color: #ffffff;">
                     <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: center; width: 12%;">CANTIDAD</th>
-                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: left; width: 52%;">DESCRIPCIÓN</th>
-                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 18%;">P. UNITARIO</th>
-                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 18%;">SUBTOTAL</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: left; width: 50%;">DESCRIPCIÓN</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 19%;">P. UNITARIO</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 19%;">SUBTOTAL</th>
                 </tr>
             </thead>
             <tbody id="factura-items">
                 <tr style="border-bottom: 1px solid #cbd5e1;">
                     <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #000000;">6</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000;">Grasa Multipropósito con Litio (Kg)</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Grasa Multipropósito con Litio (Kg)</td>
                     <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #000000;">Bs. 55.00</td>
                     <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #000000;">Bs. 330.00</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #cbd5e1; background: #f8fafc;">
                     <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #000000;">2</td>
-                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000;">Filtro de Aceite Blindado Spin-On Hilux</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Filtro de Aceite Blindado Spin-On Hilux</td>
                     <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #000000;">Bs. 45.00</td>
                     <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #000000;">Bs. 90.00</td>
                 </tr>
@@ -357,7 +376,7 @@
                 <p style="margin: 0 0 4px 0;">Este documento es una representación impresa de un comprobante electrónico.</p>
                 <p style="margin: 0;">Autorizado por el Servicio de Impuestos Nacionales - ERP GOLDEN ENTERPRISE SUITE.</p>
             </div>
-            <!-- Recuadro pequeño simulando un Código QR de validación -->
+            <!-- Recuadro simulando un Código QR de validación fiscal -->
             <div style="display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; border: 1px solid #cbd5e1; background: #ffffff; padding: 4px; box-sizing: border-box;">
                 <img id="factura-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=GOLDEN-ERP-FACTURA-008" alt="QR" style="width: 60px; height: 60px; display: block;" onerror="this.style.display='none'">
             </div>
@@ -365,11 +384,11 @@
 
     </div>
 
-    <!-- Motor de Facturación PDF, Bootstrap y SweetAlert2 -->
+    <!-- Motores JS: html2pdf, Bootstrap 5, SweetAlert2 y scripts del ERP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="menu.js?v=15"></script>
-    <script src="facturacion.js?v=1"></script>
+    <script src="menu.js?v=16"></script>
+    <script src="facturacion.js?v=2"></script>
 </body>
 </html>

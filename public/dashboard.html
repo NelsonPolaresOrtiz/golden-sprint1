@@ -25,94 +25,13 @@
     <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-dark text-white m-0 p-0 overflow-hidden">
+<body>
 
-    <!-- ESTRUCTURA MAESTRA (FLEXBOX) -->
-    <div class="d-flex vh-100 overflow-hidden bg-dark">
+    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
+    <div id="menu-contenedor"></div>
 
-        <!-- LADO IZQUIERDO (SIDEBAR): Ancho 280px Fijo, Fondo #0f172a, Borde Sutil -->
-        <aside class="sidebar-master d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; background-color: #0f172a; border-right: 1px solid rgba(255, 255, 255, 0.08); z-index: 1020;">
-            
-            <!-- Branding / Logo Header -->
-            <a href="dashboard.html" class="d-flex align-items-center gap-3 text-white text-decoration-none pb-3 border-bottom border-secondary border-opacity-25 px-2">
-                <div class="d-flex align-items-center justify-content-center rounded-3 shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; font-weight: 900; font-size: 1.35rem; border: 1px solid rgba(251, 191, 36, 0.5);">
-                    G
-                </div>
-                <div class="d-flex flex-column sidebar-brand-text" style="line-height: 1.15;">
-                    <span class="fs-5 fw-bold tracking-tight text-white">
-                        GOLDEN <span style="color: #f59e0b;">ERP</span>
-                    </span>
-                    <span class="text-secondary small fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1.5px;">Enterprise Suite</span>
-                </div>
-            </a>
-
-            <!-- 2. SIDEBAR ORDENADO (Los 6 Módulos en Orden Estricto) -->
-            <ul class="nav flex-column gap-2 mt-4 flex-grow-1">
-                <li class="nav-item">
-                    <a href="dashboard.html" class="nav-sidebar-link d-flex align-items-center active">
-                        <span class="nav-icon">📊</span>
-                        <span>Analítica y Monetización</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="tienda.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">🛒</span>
-                        <span>E-commerce y Ventas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="inventario.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">📦</span>
-                        <span>Gestión de Inventario</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="logistica.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">🚚</span>
-                        <span>Distribución y Logística</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="facturacion.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">💳</span>
-                        <span>Cobranza y Facturación</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="auditoria.html" class="nav-sidebar-link d-flex align-items-center">
-                        <span class="nav-icon">🔐</span>
-                        <span>Seguridad y Usuario</span>
-                    </a>
-                </li>
-            </ul>
-
-            <!-- Pie del Sidebar: Usuario, Alertas en Vivo y Logout -->
-            <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <div class="d-flex align-items-center gap-2 overflow-hidden">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
-                            <i class="bi bi-person-fill"></i>
-                        </div>
-                        <div class="d-flex flex-column text-truncate" style="line-height: 1.1;">
-                            <span class="small fw-bold text-white text-truncate" id="sidebarUserName">Administrador</span>
-                            <span class="text-warning text-uppercase" style="font-size: 0.65rem; font-weight: 700;" id="sidebarUserRol">ADMIN</span>
-                        </div>
-                    </div>
-                    <!-- Campanita de Notificaciones de Stock -->
-                    <button id="btnCampanaSidebar" class="btn p-0 text-warning d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 34px; height: 34px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px;" onclick="mostrarModalAlertasStock()" title="Alertas de Stock Crítico">
-                        <i class="bi bi-bell-fill fs-6 text-warning"></i>
-                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.65rem; display: none; padding: 0.3em 0.5em;">0</span>
-                    </button>
-                </div>
-                <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3" onclick="cerrarSesion()" title="Finalizar Sesión Segura">
-                    <i class="bi bi-power"></i>
-                    <span class="btn-logout-text">Cerrar Sesión</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- LADO DERECHO (MAIN CONTENT): Main scrolleable -->
-        <main class="flex-grow-1 overflow-auto p-4 bg-dark">
+    <!-- PANTALLA COMPLETA 100% -->
+    <div class="container-fluid px-4 py-4">
 
         <!-- Título de Sección con Filtro de Fecha Gerencial -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
@@ -241,7 +160,6 @@
             </div>
         </div>
 
-        </main>
     </div>
 
     <!-- Scripts de Librerías, SweetAlert2 y Aplicación -->

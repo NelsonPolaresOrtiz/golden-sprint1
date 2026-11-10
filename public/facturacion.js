@@ -10,20 +10,25 @@ document.addEventListener('DOMContentLoaded', () => {
         ? protegerRuta('facturacion') 
         : JSON.parse(localStorage.getItem('usuario_golden') || '{}');
 
-    // 2. Cargar datos del usuario en el Sidebar
+    // 2. Renderizar Menú Glassmorphic Horizontal Superior
+    if (typeof renderizarMenu === 'function') {
+        renderizarMenu('facturacion');
+    }
+
+    // 3. Sincronizar datos del usuario activo
     if (usuario && usuario.nombre) {
-        const elName = document.getElementById('sidebarUserName');
-        const elRol = document.getElementById('sidebarUserRol');
+        const elName = document.getElementById('navUserName') || document.getElementById('sidebarUserName');
+        const elRol = document.getElementById('navUserRol') || document.getElementById('sidebarUserRol');
         if (elName) elName.innerText = usuario.nombre;
         if (elRol) elRol.innerText = usuario.rol || 'USUARIO';
     }
 
-    // 3. Iniciar monitor de alertas de stock para la campanita
+    // 4. Iniciar monitor de alertas de stock para la campanita
     if (typeof iniciarMonitorAlertasStock === 'function') {
         setTimeout(iniciarMonitorAlertasStock, 300);
     }
 
-    // 4. Cargar facturación y cobranzas
+    // 5. Cargar facturación y cobranzas
     cargarFacturacion();
 });
 

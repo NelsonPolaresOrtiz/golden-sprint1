@@ -6,26 +6,6 @@ function renderizarMenu(paginaActiva) {
     const usuarioSesion = obtenerUsuarioSesion();
     const rol = usuarioSesion ? usuarioSesion.rol : null;
 
-    // 0. Si la vista actual ya implementa el Sidebar Maestro Flexbox
-    const sidebarEl = document.querySelector('.sidebar-master');
-    if (sidebarEl) {
-        const elName = document.getElementById('sidebarUserName');
-        const elRol = document.getElementById('sidebarUserRol');
-        if (elName && usuarioSesion) elName.innerText = usuarioSesion.nombre;
-        if (elRol && usuarioSesion) elRol.innerText = usuarioSesion.rol;
-
-        sidebarEl.querySelectorAll('.nav-sidebar-link').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && href.includes(paginaActiva)) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
-        });
-        setTimeout(iniciarMonitorAlertasStock, 300);
-        return;
-    }
-
     // Identificación de tipo de usuario
     const esCliente = rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
     const esAdmin = rol === 'ADMIN';
