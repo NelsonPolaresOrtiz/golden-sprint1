@@ -113,8 +113,8 @@ function renderizarTablaCreditos(creditos) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="text-center py-5 text-secondary">
-                    <i class="bi bi-inbox fs-3 d-block mb-2 text-secondary opacity-50"></i>
-                    No se encontraron clientes o talleres que coincidan con la búsqueda.
+                    <i class="bi bi-search fs-3 d-block mb-2 text-warning opacity-50"></i>
+                    No se encontraron registros que coincidan con la búsqueda.
                 </td>
             </tr>
         `;
@@ -210,9 +210,11 @@ function filtrarCreditos() {
 
         const nom = (c.cliente_nombre || '').toLowerCase();
         const mail = (c.cliente_email || '').toLowerCase();
-        const idStr = String(c.cliente_id);
+        const idStr = String(c.cliente_id || '');
+        const tel = String(c.telefono || c.cliente_telefono || '').toLowerCase();
+        const nit = String(c.nit || c.cliente_nit || '').toLowerCase();
 
-        return nom.includes(termino) || mail.includes(termino) || idStr.includes(termino);
+        return nom.includes(termino) || mail.includes(termino) || idStr.includes(termino) || tel.includes(termino) || nit.includes(termino);
     });
 
     renderizarTablaCreditos(filtrados);

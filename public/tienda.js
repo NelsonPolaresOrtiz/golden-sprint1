@@ -6,6 +6,27 @@ const FALLBACK_IMG_OFFLINE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.
 let productosTienda = [];
 let carrito = [];
 let categoriaActual = 'Todos';
+let terminoBusqueda = '';
+
+// Definición de Arrays de Imágenes Locales (100% Offline)
+const imgsAceite = ['Aceite_Sintetico.jpg', 'Aceite_Sintetico1.jpg', 'Aceite_Sintetico2.jpg', 'Aceite_Sintetico3.jpg', 'Aceite_Sintetico4.jpg', 'Aceite_Sintetico5.jpg', 'Aceite_Sintetico6.jpg', 'Aceite_Sintetico7.jpg'];
+const imgsFiltroAceite = ['Filtro_de_Aceite.jpg', 'Filtro_de_Aceite1.jpg', 'Filtro_de_Aceite2.jpg', 'Filtro_de_Aceite3.jpg', 'Filtro_de_Aceite4.jpg', 'Filtro_de_Aceite5.jpg', 'Filtro_de_Aceite6.jpg'];
+const imgsFiltroAire = ['Filtro_de_Aire3.jpg', 'Filtro_de_Aire4.jpg', 'Filtro_de_Aire5.jpg', 'Filtro_de_Aire6.jpg', 'Filtros_de_Aire.jpg', 'Filtros_de_Aire1.jpg', 'Filtros_de_Aire2.jpg'];
+const imgsGrasa = ['Grasa_Minerales.jpg', 'Grasa_Minerales1.jpg', 'Grasa_Minerales2.jpg', 'Grasa_Minerales3.jpg', 'Grasa_Minerales4.jpg', 'Grasa_Minerales5.jpg', 'Grasa_Minerales6.jpg'];
+
+function obtenerRutaImagenLocal(producto, index = 0) {
+    if (!producto) return './img/' + imgsGrasa[0];
+    const nombreProd = (producto.nombre || '').toLowerCase();
+    if (nombreProd.includes('filtro de aceite')) {
+        return './img/' + imgsFiltroAceite[index % imgsFiltroAceite.length];
+    } else if (nombreProd.includes('aire') || nombreProd.includes('cabina')) {
+        return './img/' + imgsFiltroAire[index % imgsFiltroAire.length];
+    } else if ((nombreProd.includes('aceite') || nombreProd.includes('mineral') || nombreProd.includes('sintético') || nombreProd.includes('sintetico')) && !nombreProd.includes('freno')) {
+        return './img/' + imgsAceite[index % imgsAceite.length];
+    } else {
+        return './img/' + imgsGrasa[index % imgsGrasa.length];
+    }
+}
 
 // Helper Toast con SweetAlert2 para notificaciones flotantes modernas
 const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
@@ -29,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!usuario) return;
 
     renderizarMenu('tienda');
+    inicializarBuscadorCatalogo();
     cargarCatalogo();
 });
 
@@ -37,72 +59,231 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 async function cargarCatalogo() {
     const contenedor = document.getElementById('catalogoProductos');
-    contenedor.innerHTML = '<div class="col-12 text-center py-5"><span class="spinner-border spinner-border-sm text-warning me-2"></span><span class="text-secondary">Cargando catálogo oficial...</span></div>';
+    if (contenedor) {
+        contenedor.innerHTML = '<div class="col-12 text-center py-5"><span class="spinner-border spinner-border-sm text-warning me-2"></span><span class="text-secondary">Cargando catálogo oficial...</span></div>';
+    }
 
     try {
         const res = await fetch(`${API_URL}/productos?t=${Date.now()}`);
         if (!res.ok) throw new Error('Error al consultar productos');
         productosTienda = await res.json();
+        renderizarOfertasDestacadas();
         renderizarCatalogo();
     } catch (error) {
         console.error("Error al cargar catálogo:", error);
-        contenedor.innerHTML = '<div class="col-12 text-center py-5 text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Error al conectar con el servidor de inventario.</div>';
+        if (contenedor) {
+            contenedor.innerHTML = '<div class="col-12 text-center py-5 text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Error al conectar con el servidor de inventario.</div>';
+        }
         Toast.fire({ icon: 'error', title: 'Error al cargar catálogo de productos' });
     }
+}
+
+// ==========================================
+// 1.1 SECCIÓN DE OFERTAS DESTACADAS DEL MES
+// ==========================================
+function renderizarOfertasDestacadas() {
+    const contenedor = document.getElementById('contenedorOfertasDestacadas');
+    if (!contenedor) return;
+
+    // Buscar productos en promoción con stock >= 20
+    let ofertas = productosTienda.filter(p => p.stock >= 20);
+    // Si hay menos de 4, completar con los de mayor stock
+    if (ofertas.length < 4) {
+        ofertas = [...productosTienda].sort((a, b) => b.stock - a.stock);
+    }
+    const destacadas = ofertas.slice(0, 4);
+
+    if (destacadas.length === 0) {
+        contenedor.innerHTML = '<div class="col-12 text-center py-3 text-secondary">No hay promociones activas en este momento.</div>';
+        return;
+    }
+
+    let html = '';
+    destacadas.forEach((p, idx) => {
+        const rutaImg = obtenerRutaImagenLocal(p, idx);
+        p.rutaImg = rutaImg;
+        const nombreEsc = escaparHTML(p.nombre);
+        const precioOrig = parseFloat(p.precio || 0);
+        const precioOferta = Math.round(precioOrig * 0.85 * 100) / 100;
+        const ahorro = precioOrig - precioOferta;
+
+        html += `
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card-producto-wix card-oferta-destacada h-100 d-flex flex-column position-relative shadow-sm" 
+                     onclick="abrirFichaTecnica(${p.id})" 
+                     title="Clic para ver Ficha Técnica Completa">
+                    
+                    <!-- Badge Superior Rojo/Ámbar: -15% DTO MAYORISTA -->
+                    <div class="position-absolute top-0 start-0 m-2" style="z-index: 5;">
+                        <span class="badge px-2 py-1 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-1" 
+                              style="background: linear-gradient(135deg, #ef4444 0%, #d97706 100%); color: #ffffff; font-size: 0.72rem; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.25);">
+                            <i class="bi bi-fire"></i> -15% DTO MAYORISTA
+                        </span>
+                    </div>
+
+                    <!-- Imagen del Producto Centrada con Fondo Blanco -->
+                    <div class="wix-img-wrapper" style="background-color: #ffffff; border-radius: 8px 8px 0 0; overflow: hidden; position: relative;">
+                        <img src="${rutaImg}" alt="${nombreEsc}" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;" style="object-fit: contain; height: 150px; width: 100%; padding: 10px; background-color: #ffffff;">
+                        <div class="position-absolute bottom-0 end-0 m-2">
+                            <span class="badge bg-dark bg-opacity-75 text-warning font-monospace px-2 py-1 border border-secondary border-opacity-25 small" style="font-size: 0.68rem;">
+                                ${p.sku}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Cuerpo de la Tarjeta -->
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+                        <span class="badge-pill-vip badge-pill-slate small align-self-start mb-2" style="font-size: 0.68rem;">
+                            ${p.categoria}
+                        </span>
+
+                        <h6 class="fw-bold text-white mb-2" style="font-size: 0.92rem; line-height: 1.35; min-height: 2.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${nombreEsc}">
+                            ${nombreEsc}
+                        </h6>
+
+                        <!-- Precios: Original tachado en gris y nuevo descuento en grande -->
+                        <div class="mt-auto pt-2 border-top border-secondary border-opacity-25 mb-2">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="text-secondary small text-decoration-line-through font-monospace" style="font-size: 0.85rem; color: #94a3b8 !important;">
+                                    Bs. ${precioOrig.toFixed(2)}
+                                </span>
+                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 small" style="font-size: 0.68rem;">
+                                    Ahorro: Bs. ${ahorro.toFixed(2)}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <span class="text-warning d-block" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Precio Oferta B2B</span>
+                                    <h4 class="text-gradient-emerald fw-extrabold mb-0" style="font-size: 1.3rem;">
+                                        Bs. ${precioOferta.toFixed(2)}
+                                    </h4>
+                                </div>
+                                <span class="badge-pill-vip badge-pill-emerald small" style="font-size: 0.65rem;">
+                                    <span class="pulse-dot pulse-dot-emerald me-1"></span>Stock: ${p.stock}
+                                </span>
+                            </div>
+
+                            <!-- Botón directo: Añadir Oferta a la Orden -->
+                            <button class="btn btn-warning w-100 fw-bold shadow text-dark btn-sm py-2 d-flex align-items-center justify-content-center gap-1" 
+                                    style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border: none; font-size: 0.85rem;"
+                                    onclick="event.stopPropagation(); agregarOfertaAlCarrito(${p.id}, ${precioOferta})">
+                                <i class="bi bi-cart-plus-fill fs-6"></i>
+                                <span>Añadir Oferta a la Orden</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    contenedor.innerHTML = html;
+}
+
+// ==========================================
+// 1.2 BUSCADOR INTELIGENTE EN TIEMPO REAL
+// ==========================================
+function inicializarBuscadorCatalogo() {
+    const input = document.getElementById('buscadorCatalogo');
+    const btnLimpiar = document.getElementById('btnLimpiarBuscador');
+    if (!input) return;
+
+    input.addEventListener('input', (e) => {
+        terminoBusqueda = e.target.value.toLowerCase().trim();
+        if (btnLimpiar) {
+            if (terminoBusqueda) {
+                btnLimpiar.classList.remove('d-none');
+            } else {
+                btnLimpiar.classList.add('d-none');
+            }
+        }
+        renderizarCatalogo();
+    });
+}
+
+function limpiarBuscadorCatalogo() {
+    const input = document.getElementById('buscadorCatalogo');
+    const btnLimpiar = document.getElementById('btnLimpiarBuscador');
+    if (input) {
+        input.value = '';
+        terminoBusqueda = '';
+        input.focus();
+    }
+    if (btnLimpiar) btnLimpiar.classList.add('d-none');
+    renderizarCatalogo();
 }
 
 let productoFichaActual = null;
 
 function renderizarCatalogo() {
-    // 1. Definición de Arrays de Imágenes Locales (100% Offline)
-    const imgsAceite = ['Aceite_Sintetico.jpg', 'Aceite_Sintetico1.jpg', 'Aceite_Sintetico2.jpg', 'Aceite_Sintetico3.jpg', 'Aceite_Sintetico4.jpg', 'Aceite_Sintetico5.jpg', 'Aceite_Sintetico6.jpg', 'Aceite_Sintetico7.jpg'];
-    const imgsFiltroAceite = ['Filtro_de_Aceite.jpg', 'Filtro_de_Aceite1.jpg', 'Filtro_de_Aceite2.jpg', 'Filtro_de_Aceite3.jpg', 'Filtro_de_Aceite4.jpg', 'Filtro_de_Aceite5.jpg', 'Filtro_de_Aceite6.jpg'];
-    const imgsFiltroAire = ['Filtro_de_Aire3.jpg', 'Filtro_de_Aire4.jpg', 'Filtro_de_Aire5.jpg', 'Filtro_de_Aire6.jpg', 'Filtros_de_Aire.jpg', 'Filtros_de_Aire1.jpg', 'Filtros_de_Aire2.jpg'];
-    const imgsGrasa = ['Grasa_Minerales.jpg', 'Grasa_Minerales1.jpg', 'Grasa_Minerales2.jpg', 'Grasa_Minerales3.jpg', 'Grasa_Minerales4.jpg', 'Grasa_Minerales5.jpg', 'Grasa_Minerales6.jpg'];
-
     const contenedor = document.getElementById('catalogoProductos');
     if (!contenedor) return;
     contenedor.innerHTML = '';
 
     let productosFiltrados = productosTienda;
-    if (categoriaActual !== 'Todos') {
-        productosFiltrados = productosTienda.filter(p => p.categoria === categoriaActual);
+
+    // 1. Filtrado por categoría seleccionada o Modo "Ofertas"
+    if (categoriaActual === 'Ofertas') {
+        productosFiltrados = productosFiltrados.filter(p => p.stock >= 20);
+    } else if (categoriaActual !== 'Todos') {
+        productosFiltrados = productosFiltrados.filter(p => p.categoria === categoriaActual);
+    }
+
+    // 2. Buscador inteligente en tiempo real (SKU, nombre, categoría o especificaciones)
+    if (terminoBusqueda) {
+        productosFiltrados = productosFiltrados.filter(p => {
+            const sku = (p.sku || '').toLowerCase();
+            const nom = (p.nombre || '').toLowerCase();
+            const cat = (p.categoria || '').toLowerCase();
+            let specs = '';
+            if (p.especificaciones) {
+                specs = typeof p.especificaciones === 'string'
+                    ? p.especificaciones.toLowerCase()
+                    : JSON.stringify(p.especificaciones).toLowerCase();
+            }
+            return sku.includes(terminoBusqueda) || 
+                   nom.includes(terminoBusqueda) || 
+                   cat.includes(terminoBusqueda) || 
+                   specs.includes(terminoBusqueda);
+        });
     }
 
     if (productosFiltrados.length === 0) {
         contenedor.innerHTML = `
             <div class="col-12 text-center py-5">
-                <i class="bi bi-box-seam display-1 text-muted d-block mb-3 opacity-50"></i>
-                <h4 class="text-white fw-bold">No se encontraron repuestos en esta categoría</h4>
-                <p class="text-secondary small">Selecciona otra categoría o registra productos en el módulo de Inventario.</p>
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3);">
+                    <i class="bi bi-search fs-2 text-warning"></i>
+                </div>
+                <h4 class="text-white fw-bold">No se encontraron registros que coincidan con la búsqueda</h4>
+                <p class="text-secondary small mx-auto" style="max-width: 480px;">
+                    No existen repuestos que coincidan con el término "${escaparHTML(terminoBusqueda)}" o la categoría seleccionada.
+                </p>
+                <button class="btn btn-vip-outline btn-sm rounded-pill px-4 mt-2" onclick="limpiarBuscadorCatalogo()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Restablecer Filtros
+                </button>
             </div>`;
         return;
     }
 
     let html = '';
     productosFiltrados.forEach((producto, index) => {
-        // 2. Lógica de asignación dinámica evaluando estrictamente el nombre del producto
-        const nombreProd = (producto.nombre || '').toLowerCase();
-        let rutaImg = '';
-
-        if (nombreProd.includes('filtro de aceite')) {
-            rutaImg = './img/' + imgsFiltroAceite[index % imgsFiltroAceite.length];
-        } else if (nombreProd.includes('aire') || nombreProd.includes('cabina')) {
-            rutaImg = './img/' + imgsFiltroAire[index % imgsFiltroAire.length];
-        } else if ((nombreProd.includes('aceite') || nombreProd.includes('mineral') || nombreProd.includes('sintético') || nombreProd.includes('sintetico')) && !nombreProd.includes('freno')) {
-            rutaImg = './img/' + imgsAceite[index % imgsAceite.length];
-        } else {
-            // Para cualquier otro producto (grasa, refrigerante, frenos, aditivo)
-            rutaImg = './img/' + imgsGrasa[index % imgsGrasa.length];
-        }
-
+        const rutaImg = obtenerRutaImagenLocal(producto, index);
         producto.rutaImg = rutaImg;
         const p = producto;
 
+        const esOferta = (p.stock >= 20 || categoriaActual === 'Ofertas');
+        const precioOrig = parseFloat(p.precio || 0);
+        const precioOferta = esOferta ? Math.round(precioOrig * 0.85 * 100) / 100 : precioOrig;
+
         const sinStock = p.stock <= 0;
-        const botonHTML = sinStock
-            ? `<button class="btn btn-secondary w-100 fw-bold rounded-3 opacity-50 btn-sm py-2" disabled><i class="bi bi-x-circle me-1"></i> Agotado</button>`
-            : `<button class="btn btn-vip-gold w-100 fw-bold shadow-sm text-dark btn-sm py-2" onclick="event.stopPropagation(); agregarAlCarrito(${p.id})"><i class="bi bi-bag-plus-fill me-1"></i> Añadir a la Orden</button>`;
+        let botonHTML = '';
+        if (sinStock) {
+            botonHTML = `<button class="btn btn-secondary w-100 fw-bold rounded-3 opacity-50 btn-sm py-2" disabled><i class="bi bi-x-circle me-1"></i> Agotado</button>`;
+        } else if (esOferta) {
+            botonHTML = `<button class="btn btn-warning w-100 fw-bold shadow text-dark btn-sm py-2" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border: none;" onclick="event.stopPropagation(); agregarOfertaAlCarrito(${p.id}, ${precioOferta})"><i class="bi bi-bag-plus-fill me-1"></i> Añadir Oferta a la Orden</button>`;
+        } else {
+            botonHTML = `<button class="btn btn-vip-gold w-100 fw-bold shadow-sm text-dark btn-sm py-2" onclick="event.stopPropagation(); agregarAlCarrito(${p.id})"><i class="bi bi-bag-plus-fill me-1"></i> Añadir a la Orden</button>`;
+        }
 
         const badgeStock = sinStock
             ? '<span class="badge-pill-vip badge-pill-ruby">Agotado</span>'
@@ -122,19 +303,33 @@ function renderizarCatalogo() {
 
         html += `
             <div class="col-sm-6 col-md-4 col-lg-3">
-                <div class="card-producto-wix h-100 d-flex flex-column" onclick="abrirFichaTecnica(${p.id})" title="Clic para abrir Ficha Técnica Completa (WIX Style)">
+                <div class="card-producto-wix h-100 d-flex flex-column ${esOferta ? 'border-warning border-opacity-50' : ''}" onclick="abrirFichaTecnica(${p.id})" title="Clic para abrir Ficha Técnica Completa (WIX Style)">
                     
                     <!-- Imagen del Repuesto Centrada con Fondo Blanco de Alto Contraste -->
                     <div class="wix-img-wrapper" style="background-color: #ffffff; border-radius: 8px 8px 0 0; overflow: hidden; position: relative;">
                         <img src="${rutaImg}" alt="${nombreEscapado}" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;" style="object-fit: contain; height: 160px; width: 100%; padding: 10px; background-color: #ffffff; border-radius: 8px 8px 0 0;">
+                        
                         <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge bg-dark bg-opacity-75 text-warning font-monospace px-2 py-1 border border-secondary border-opacity-25 small" style="font-size: 0.68rem;">
-                                ${p.sku}
-                            </span>
+                            ${esOferta ? `
+                                <span class="badge px-2 py-1 rounded-pill fw-bold shadow-sm d-flex align-items-center gap-1" style="background: linear-gradient(135deg, #ef4444 0%, #d97706 100%); color: #ffffff; font-size: 0.65rem; border: 1px solid rgba(255,255,255,0.25);">
+                                    <i class="bi bi-fire"></i> -15% DTO
+                                </span>
+                            ` : `
+                                <span class="badge bg-dark bg-opacity-75 text-warning font-monospace px-2 py-1 border border-secondary border-opacity-25 small" style="font-size: 0.68rem;">
+                                    ${p.sku}
+                                </span>
+                            `}
                         </div>
                         <div class="position-absolute top-0 end-0 m-2">
                             ${badgeStock}
                         </div>
+                        ${esOferta ? `
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge bg-dark bg-opacity-75 text-warning font-monospace px-2 py-1 border border-secondary border-opacity-25 small" style="font-size: 0.65rem;">
+                                    ${p.sku}
+                                </span>
+                            </div>
+                        ` : ''}
                     </div>
 
                     <!-- Cuerpo de la Tarjeta con Flexbox Vertical -->
@@ -143,8 +338,8 @@ function renderizarCatalogo() {
                             ${p.categoria}
                         </span>
 
-                        <h5 class="fw-bold text-white mb-1" style="font-size: 0.95rem; line-height: 1.35; min-height: 2.6rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${escaparHTML(p.nombre)}">
-                            ${escaparHTML(p.nombre)}
+                        <h5 class="fw-bold text-white mb-1" style="font-size: 0.95rem; line-height: 1.35; min-height: 2.6rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${nombreEscapado}">
+                            ${nombreEscapado}
                         </h5>
 
                         <p class="text-secondary small mb-3 text-truncate" style="font-size: 0.78rem;">
@@ -153,10 +348,24 @@ function renderizarCatalogo() {
 
                         <!-- Bloque de Precio y Botón de Compra -->
                         <div class="mt-auto border-top border-secondary border-opacity-25 pt-2 mb-2">
+                            ${esOferta ? `
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="text-secondary small text-decoration-line-through font-monospace" style="font-size: 0.8rem; color: #94a3b8 !important;">
+                                        Bs. ${precioOrig.toFixed(2)}
+                                    </span>
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 small" style="font-size: 0.65rem;">
+                                        -15% DTO MAYORISTA
+                                    </span>
+                                </div>
+                            ` : ''}
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div>
-                                    <span class="text-secondary d-block" style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase;">Mayorista B2B</span>
-                                    <h4 class="text-gradient-emerald fw-extrabold mb-0" style="font-size: 1.25rem;">Bs. ${parseFloat(p.precio).toFixed(2)}</h4>
+                                    <span class="text-secondary d-block" style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase;">
+                                        ${esOferta ? 'Oferta Mayorista' : 'Mayorista B2B'}
+                                    </span>
+                                    <h4 class="text-gradient-emerald fw-extrabold mb-0" style="font-size: 1.25rem;">
+                                        Bs. ${precioOferta.toFixed(2)}
+                                    </h4>
                                 </div>
                                 <span class="badge bg-dark text-secondary border border-secondary border-opacity-25 small" style="font-size: 0.68rem;">IVA Inc.</span>
                             </div>
@@ -185,7 +394,9 @@ function renderizarCatalogo() {
 function filtrarCategoria(categoria, botonElemento) {
     categoriaActual = categoria;
     document.querySelectorAll('.btn-filter-vip').forEach(btn => btn.classList.remove('active'));
-    botonElemento.classList.add('active');
+    if (botonElemento) {
+        botonElemento.classList.add('active');
+    }
     renderizarCatalogo();
 }
 
@@ -420,7 +631,11 @@ function handleImageError(img) {
 // ==========================================
 // 3. GESTIÓN DEL CARRITO (FACTURA FLOTANTE)
 // ==========================================
-function agregarAlCarrito(idProducto, cantidadDeseada = 1) {
+function agregarOfertaAlCarrito(idProducto, precioOferta) {
+    agregarAlCarrito(idProducto, 1, precioOferta, true);
+}
+
+function agregarAlCarrito(idProducto, cantidadDeseada = 1, precioEspecial = null, esOferta = false) {
     const producto = productosTienda.find(p => p.id === idProducto);
     if (!producto || producto.stock <= 0) {
         Toast.fire({ icon: 'warning', title: 'Este repuesto no tiene existencias disponibles' });
@@ -429,6 +644,7 @@ function agregarAlCarrito(idProducto, cantidadDeseada = 1) {
 
     const itemExistente = carrito.find(item => item.id === idProducto);
     const cantAgregar = Math.max(1, parseInt(cantidadDeseada) || 1);
+    const precioFinal = precioEspecial !== null ? parseFloat(precioEspecial) : parseFloat(producto.precio);
 
     if (itemExistente) {
         if (itemExistente.cantidad + cantAgregar > producto.stock) {
@@ -436,6 +652,10 @@ function agregarAlCarrito(idProducto, cantidadDeseada = 1) {
             return;
         }
         itemExistente.cantidad += cantAgregar;
+        if (precioEspecial !== null) {
+            itemExistente.precio = precioFinal;
+            itemExistente.esOferta = true;
+        }
         Toast.fire({ icon: 'success', title: `+${cantAgregar} unidades añadidas (${itemExistente.cantidad} en orden)` });
     } else {
         if (cantAgregar > producto.stock) {
@@ -446,11 +666,17 @@ function agregarAlCarrito(idProducto, cantidadDeseada = 1) {
             id: producto.id,
             nombre: producto.nombre,
             sku: producto.sku,
-            precio: parseFloat(producto.precio),
+            precio: precioFinal,
             stockMaximo: producto.stock,
-            cantidad: cantAgregar
+            cantidad: cantAgregar,
+            esOferta: Boolean(esOferta || precioEspecial !== null)
         });
-        Toast.fire({ icon: 'success', title: `${cantAgregar > 1 ? cantAgregar + ' unidades añadidas' : 'Repuesto añadido'} a la orden` });
+        Toast.fire({ 
+            icon: 'success', 
+            title: esOferta || precioEspecial !== null 
+                ? `🔥 Oferta añadida a la orden (-15% DTO)` 
+                : `${cantAgregar > 1 ? cantAgregar + ' unidades añadidas' : 'Repuesto añadido'} a la orden` 
+        });
     }
 
     actualizarCarrito();
@@ -517,12 +743,16 @@ function actualizarCarrito() {
         const subtotal = item.precio * item.cantidad;
         total += subtotal;
         cantidadTotal += item.cantidad;
+        const esItemOferta = Boolean(item.esOferta);
 
         lista.innerHTML += `
             <div class="receipt-item-card">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                        <h6 class="mb-0 fw-bold text-white" style="font-size: 0.95rem;">${item.nombre}</h6>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h6 class="mb-0 fw-bold text-white" style="font-size: 0.95rem;">${item.nombre}</h6>
+                            ${esItemOferta ? '<span class="badge rounded-pill fw-bold" style="background: linear-gradient(135deg, #ef4444 0%, #d97706 100%); color: #fff; font-size: 0.62rem; padding: 2px 6px;">-15% DTO</span>' : ''}
+                        </div>
                         <small class="text-warning font-monospace" style="font-size: 0.72rem;">${item.sku} • Bs. ${item.precio.toFixed(2)} c/u</small>
                     </div>
                     <button class="btn btn-sm text-danger p-0 border-0" onclick="eliminarDelCarrito(${item.id})" title="Quitar">

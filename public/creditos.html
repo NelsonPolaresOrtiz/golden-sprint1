@@ -29,8 +29,8 @@
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
-    <div id="menu-contenedor"></div>
+    <!-- MENÚ COMPARTIDO GLASSMORPHIC (STICKY HEADER) -->
+    <div id="menu-contenedor" style="position: sticky; top: 0; z-index: 1000; width: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(245, 158, 11, 0.2);"></div>
 
     <!-- PANTALLA COMPLETA 100% -->
     <div class="container-fluid px-4 py-4">
@@ -135,7 +135,7 @@
                         <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.6) !important;">
                             <i class="bi bi-search text-warning"></i>
                         </span>
-                        <input type="text" id="inputBuscarCreditos" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar taller por razón social, correo o ID en tiempo real...">
+                        <input type="text" id="inputBuscarCreditos" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar por cliente, taller, teléfono, NIT, correo o ID...">
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 col-md-3 col-lg-3">

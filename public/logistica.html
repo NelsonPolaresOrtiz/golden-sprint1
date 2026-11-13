@@ -61,8 +61,8 @@
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
-    <div id="menu-contenedor"></div>
+    <!-- MENÚ COMPARTIDO GLASSMORPHIC (STICKY HEADER) -->
+    <div id="menu-contenedor" style="position: sticky; top: 0; z-index: 1000; width: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(245, 158, 11, 0.2);"></div>
 
     <!-- PANTALLA COMPLETA 100% -->
     <div class="container-fluid px-4 py-4">
@@ -150,11 +150,17 @@
 
         <!-- TABLA DE DESPACHOS -->
         <div class="glass-panel">
-            <div class="glass-header d-flex justify-content-between align-items-center">
+            <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <span class="fw-bold text-white fs-6 d-flex align-items-center">
                     <i class="bi bi-list-task text-warning me-2"></i>Manifiesto de Órdenes & Estados de Despacho
                 </span>
-                <span class="badge-pill-vip badge-pill-gold" id="badgeTotalOrdenes">0 Pedidos</span>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="input-group" style="max-width: 320px;">
+                        <span class="input-group-text input-group-text-vip"><i class="bi bi-search text-warning"></i></span>
+                        <input type="text" id="buscadorLogistica" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar cliente, taller, orden o estado..." oninput="filtrarPedidosLogistica()">
+                    </div>
+                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalOrdenes">0 Pedidos</span>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-vip align-middle mb-0">

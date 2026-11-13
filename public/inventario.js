@@ -75,7 +75,7 @@ function renderizarTabla(productos, filtroBusqueda = '') {
 
     if (!productos || productos.length === 0) {
         if (filtroBusqueda) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-search fs-3 d-block mb-2 text-warning"></i>No se encontraron repuestos que coincidan con "<strong>${filtroBusqueda}</strong>".</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-search fs-3 d-block mb-2 text-warning"></i>No se encontraron registros que coincidan con la búsqueda.</td></tr>`;
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>No se registran repuestos en el inventario.</td></tr>';
         }

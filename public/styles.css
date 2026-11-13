@@ -57,6 +57,30 @@ body {
     letter-spacing: -0.01em;
 }
 
+/* ========================================================================= */
+/* BARRA DE NAVEGACIÓN PRINCIPAL SUPERIOR (HEADER / NAVBAR STICKY VIP)      */
+/* ========================================================================= */
+#menu-contenedor {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+#menu-contenedor .navbar {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    position: static !important;
+    margin-bottom: 0 !important;
+}
+
 /* ==========================================================================
    FORZAR TEXTO CLARO Y LEGIBLE EN TODAS LAS TABLAS (MODO OSCURO VIP)
    ========================================================================== */

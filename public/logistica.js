@@ -101,27 +101,29 @@ function actualizarKPIsLogistica() {
     if (elBadgeTotal) elBadgeTotal.innerText = `${Array.isArray(pedidosGlobal) ? pedidosGlobal.length : 0} Pedidos`;
 }
 
-function renderizarTablaPedidos() {
+function renderizarTablaPedidos(lista = null) {
     const tbody = document.getElementById('tablaPedidos');
     if (!tbody) {
         console.warn("Elemento 'tablaPedidos' no encontrado en el DOM.");
         return;
     }
 
-    if (!Array.isArray(pedidosGlobal) || pedidosGlobal.length === 0) {
+    const items = lista !== null ? lista : pedidosGlobal;
+
+    if (!Array.isArray(items) || items.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center py-5 text-secondary">
-                    <i class="bi bi-calendar-x display-4 text-warning d-block mb-3 opacity-40"></i>
-                    <h6 class="fw-bold text-white">No hay órdenes en el período seleccionado</h6>
-                    <p class="small text-secondary">Modifica el rango de fechas en la parte superior o genera compras en el catálogo.</p>
+                    <i class="bi bi-search display-4 text-warning d-block mb-3 opacity-50"></i>
+                    <h6 class="fw-bold text-white">No se encontraron registros que coincidan con la búsqueda</h6>
+                    <p class="small text-secondary">Intenta con otro número de orden, nombre de cliente o modifica el período.</p>
                 </td>
             </tr>`;
         return;
     }
 
     let html = '';
-    pedidosGlobal.forEach(p => {
+    items.forEach(p => {
         let claseEstado = 'select-pendiente';
         if (p.estado === 'EN CAMINO') claseEstado = 'select-camino';
         if (p.estado === 'ENTREGADO') claseEstado = 'select-entregado';
@@ -161,6 +163,34 @@ function renderizarTablaPedidos() {
     });
 
     tbody.innerHTML = html;
+}
+
+function filtrarPedidosLogistica() {
+    const query = (document.getElementById('buscadorLogistica')?.value || '').toLowerCase().trim();
+    if (!query) {
+        renderizarTablaPedidos();
+        return;
+    }
+
+    const filtrados = pedidosGlobal.filter(p => {
+        const idStr = String(p.id).toLowerCase();
+        const ordStr = `00${p.id}`.toLowerCase();
+        const cliStr = String(p.cliente || '').toLowerCase();
+        const mailStr = String(p.cliente_email || '').toLowerCase();
+        const estStr = String(p.estado || '').toLowerCase();
+        const telStr = String(p.telefono || p.cliente_telefono || '').toLowerCase();
+        const nitStr = String(p.nit || p.cliente_nit || '').toLowerCase();
+
+        return idStr.includes(query) || 
+               ordStr.includes(query) || 
+               cliStr.includes(query) || 
+               mailStr.includes(query) || 
+               estStr.includes(query) || 
+               telStr.includes(query) || 
+               nitStr.includes(query);
+    });
+
+    renderizarTablaPedidos(filtrados);
 }
 
 // ========================================================

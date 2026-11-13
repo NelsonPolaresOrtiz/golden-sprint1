@@ -45,7 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const filtrados = listaUsuariosGlobal.filter(u =>
                 (u.nombre && u.nombre.toLowerCase().includes(texto)) ||
                 (u.email && u.email.toLowerCase().includes(texto)) ||
-                (u.rol && u.rol.toLowerCase().includes(texto))
+                (u.rol && u.rol.toLowerCase().includes(texto)) ||
+                (u.telefono && u.telefono.toLowerCase().includes(texto)) ||
+                (u.nit && u.nit.toLowerCase().includes(texto)) ||
+                (u.id && String(u.id).includes(texto))
             );
             renderizarUsuarios(filtrados, texto);
         });
@@ -164,7 +167,7 @@ function renderizarUsuarios(usuarios, filtroBusqueda = '') {
 
     if (!usuarios || usuarios.length === 0) {
         if (filtroBusqueda) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-secondary"><i class="bi bi-search me-2"></i>No se encontraron usuarios que coincidan con "<strong>${filtroBusqueda}</strong>".</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-secondary"><i class="bi bi-search fs-3 d-block mb-2 text-warning opacity-50"></i>No se encontraron registros que coincidan con la búsqueda.</td></tr>`;
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-secondary">No existen usuarios registrados.</td></tr>';
         }

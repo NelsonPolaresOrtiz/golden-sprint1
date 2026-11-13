@@ -116,6 +116,53 @@
             font-weight: 700;
         }
 
+        .btn-filter-vip.btn-filter-oferta {
+            border-color: rgba(239, 68, 68, 0.45);
+            color: #fca5a5;
+        }
+
+        .btn-filter-vip.btn-filter-oferta:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ffffff;
+            border-color: rgba(239, 68, 68, 0.7);
+        }
+
+        .btn-filter-vip.btn-filter-oferta.active {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+            color: #ffffff !important;
+            border-color: #ef4444 !important;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.45);
+            font-weight: 700;
+        }
+
+        .search-bar-catalogo {
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 999px;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .search-bar-catalogo:focus-within {
+            border-color: var(--gold-primary) !important;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.3) !important;
+            transform: translateY(-1px);
+        }
+
+        .card-oferta-destacada {
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .card-oferta-destacada:hover {
+            border-color: rgba(245, 158, 11, 0.65);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 25px rgba(245, 158, 11, 0.25);
+            transform: translateY(-4px);
+        }
+
         /* Modal Glass */
         .modal-glass-content {
             background: rgba(13, 18, 31, 0.95);
@@ -130,8 +177,8 @@
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
-    <div id="menu-contenedor"></div>
+    <!-- MENÚ COMPARTIDO GLASSMORPHIC (STICKY HEADER) -->
+    <div id="menu-contenedor" style="position: sticky; top: 0; z-index: 1000; width: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(245, 158, 11, 0.2);"></div>
 
     <!-- CABECERA HERO SHOWROOM -->
     <div class="hero-showroom text-center">
@@ -148,13 +195,75 @@
         </div>
     </div>
 
-    <!-- CATÁLOGO Y FILTROS -->
-    <div class="container-fluid px-4 py-4 mb-5">
+    <!-- ======================================================== -->
+    <!-- 1. SECCIÓN SUPERIOR: PROMOCIONES & LIQUIDACIÓN MAYORISTA -->
+    <!-- ======================================================== -->
+    <div class="container-fluid px-4 pt-2 pb-3" id="seccionOfertasDestacadas">
+        <div class="p-4 rounded-4 shadow-lg position-relative overflow-hidden" 
+             style="background: linear-gradient(135deg, rgba(26, 36, 56, 0.85) 0%, rgba(13, 18, 31, 0.95) 100%); border: 1px solid rgba(245, 158, 11, 0.35); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+            
+            <!-- Encabezado de la Sección de Ofertas -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary border-opacity-25 gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171;">
+                        <i class="bi bi-fire fs-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bolder text-white mb-0 d-flex align-items-center gap-2">
+                            🔥 Promociones & Liquidación Mayorista B2B del Mes
+                        </h4>
+                        <span class="text-secondary small" style="font-size: 0.82rem;">
+                            Lotes seleccionados con alta disponibilidad y <strong>-15% DTO MAYORISTA</strong> inmediato.
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <span class="badge px-3 py-2 rounded-pill fw-bold text-uppercase d-inline-flex align-items-center gap-1" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.75rem; letter-spacing: 0.8px;">
+                        <i class="bi bi-lightning-charge-fill text-warning"></i> Ofertas Especiales B2B
+                    </span>
+                </div>
+            </div>
+
+            <!-- Fila Horizontal de 3 o 4 Tarjetas de Ofertas Destacadas -->
+            <div class="row g-3" id="contenedorOfertasDestacadas">
+                <div class="col-12 text-center py-4 text-secondary">
+                    <span class="spinner-border spinner-border-sm text-warning me-2"></span>Cargando promociones del mes...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 2. CATÁLOGO GENERAL Y BUSCADOR INTELIGENTE EN TIEMPO REAL -->
+    <!-- ======================================================== -->
+    <div class="container-fluid px-4 py-3 mb-5">
+
+        <!-- Buscador Inteligente en Tiempo Real con ícono de lupa -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-12 col-md-10 col-lg-8">
+                <div class="input-group input-group-lg search-bar-catalogo shadow-lg overflow-hidden">
+                    <span class="input-group-text bg-transparent border-0 text-warning ps-4 pe-2">
+                        <i class="bi bi-search fs-5"></i>
+                    </span>
+                    <input type="text" 
+                           id="buscadorCatalogo" 
+                           class="form-control bg-transparent border-0 text-white py-3 ps-2 pe-3" 
+                           placeholder="🔍 Buscar repuesto por código SKU (ej. LIQ-FRE-024, GRA-LUB-025), nombre, viscosidad o marca..." 
+                           style="outline: none; box-shadow: none; font-size: 0.95rem;">
+                    <button class="btn btn-transparent border-0 text-secondary pe-4 d-none" id="btnLimpiarBuscador" type="button" onclick="limpiarBuscadorCatalogo()" title="Limpiar búsqueda">
+                        <i class="bi bi-x-circle-fill fs-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Botones de Filtrado de Categoría -->
         <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
             <button class="btn btn-filter-vip active" onclick="filtrarCategoria('Todos', this)">
                 <i class="bi bi-grid-fill me-1"></i> Todo el Catálogo
+            </button>
+            <button class="btn btn-filter-vip btn-filter-oferta" onclick="filtrarCategoria('Ofertas', this)">
+                <i class="bi bi-fire me-1"></i> 🔥 En Oferta
             </button>
             <button class="btn btn-filter-vip" onclick="filtrarCategoria('Aceites Minerales', this)">
                 <i class="bi bi-droplet-fill me-1"></i> Minerales

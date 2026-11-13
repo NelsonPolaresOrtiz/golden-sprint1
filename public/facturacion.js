@@ -142,8 +142,8 @@ function renderizarTablaFacturas(lista) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="6" class="text-center py-5 text-secondary">
-                    <i class="bi bi-inbox fs-3 d-block mb-2 text-warning opacity-50"></i>
-                    No se encontraron comprobantes o facturas registradas.
+                    <i class="bi bi-search fs-3 d-block mb-2 text-warning opacity-50"></i>
+                    No se encontraron registros que coincidan con la búsqueda.
                 </td>
             </tr>
         `;
@@ -208,8 +208,10 @@ function filtrarTablaFacturacion() {
         const facStr = `fac-${String(f.id).padStart(3, '0')}`.toLowerCase();
         const clienteStr = String(f.cliente || '').toLowerCase();
         const emailStr = String(f.cliente_email || '').toLowerCase();
+        const telStr = String(f.telefono || f.cliente_telefono || '').toLowerCase();
+        const nitStr = String(f.nit || f.cliente_nit || '').toLowerCase();
 
-        const coincideTexto = !query || idStr.includes(query) || facStr.includes(query) || clienteStr.includes(query) || emailStr.includes(query);
+        const coincideTexto = !query || idStr.includes(query) || facStr.includes(query) || clienteStr.includes(query) || emailStr.includes(query) || telStr.includes(query) || nitStr.includes(query);
 
         const estadoUpper = String(f.estado || 'PENDIENTE').toUpperCase();
         const esPagado = estadoUpper === 'ENTREGADO' || estadoUpper === 'PAGADO';

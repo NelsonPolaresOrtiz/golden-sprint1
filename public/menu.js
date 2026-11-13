@@ -114,7 +114,7 @@ function renderizarMenu(paginaActiva) {
     }
 
     const menuHTML = `
-    <nav class="navbar navbar-expand-lg sticky-top shadow-lg" style="background: rgba(9, 13, 22, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(245, 158, 11, 0.25); z-index: 1030;">
+    <nav class="navbar navbar-expand-lg" style="background: transparent; border-bottom: none;">
         <div class="container-fluid px-4 py-1">
             <!-- Brand Logo -->
             <a class="navbar-brand fw-extrabold d-flex align-items-center gap-2 text-decoration-none py-1" href="${logoHref}">
@@ -183,6 +183,14 @@ function renderizarMenu(paginaActiva) {
 
     const contenedor = document.getElementById('menu-contenedor');
     if (contenedor) {
+        contenedor.style.position = 'sticky';
+        contenedor.style.top = '0';
+        contenedor.style.zIndex = '1000';
+        contenedor.style.width = '100%';
+        contenedor.style.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+        contenedor.style.backdropFilter = 'blur(10px)';
+        contenedor.style.webkitBackdropFilter = 'blur(10px)';
+        contenedor.style.borderBottom = '1px solid rgba(245, 158, 11, 0.2)';
         contenedor.innerHTML = menuHTML;
         setTimeout(iniciarMonitorAlertasStock, 300);
     }
