@@ -2,18 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <title>Acceso al Sistema - GOLDEN ERP</title>
 
-    <!-- Si un cliente ya está logueado, redirigir directo a la Tienda Oficial -->
+    <!-- Redirección Automática de Sesión Activa según Rol Oficial -->
     <script>
         (function() {
             try {
-                var raw = localStorage.getItem('usuario_golden');
+                if (window.location.search.includes('forzarLogin=1') || window.location.search.includes('logout=1')) return;
+                var raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
                 if (raw) {
                     var u = JSON.parse(raw);
-                    if (u.rol === 'CLIENTE' || u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                    var r = (u.rol || '').toUpperCase().trim();
+                    if (r === 'CLIENTE' || r === 'CLIENTE_B2B' || r === 'CLIENTE_B2C') {
                         window.location.href = 'tienda.html';
+                    } else if (r === 'ADMIN') {
+                        window.location.href = 'dashboard.html';
+                    } else if (r === 'EMPAQUE' || r === 'DESPACHO' || r === 'REPARTIDOR' || r === 'ALMACENERO') {
+                        window.location.href = 'logistica.html';
                     }
                 }
             } catch(e) {}
@@ -1140,7 +1146,7 @@
     <!-- Scripts de Bootstrap, SweetAlert2 y Aplicación -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="menu.js?v=21"></script>
-    <script src="app.js?v=21"></script>
+    <script src="menu.js?v=29"></script>
+    <script src="app.js?v=29"></script>
 </body>
 </html>

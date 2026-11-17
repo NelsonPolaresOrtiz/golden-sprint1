@@ -2,19 +2,22 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <title>Proveedores y Compras - GOLDEN ERP</title>
 
-    <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
+    <!-- Guardia de Seguridad RBAC Inmediata (Sin Parpadeo) -->
     <script>
         (function() {
             try {
-                var raw = localStorage.getItem('usuario_golden');
+                var raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
                 if (!raw) { window.location.href = 'index.html'; return; }
                 var u = JSON.parse(raw);
-                if (u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                var r = (u.rol || '').toUpperCase().trim();
+                if (r === 'CLIENTE' || r === 'CLIENTE_B2B' || r === 'CLIENTE_B2C') {
                     window.location.href = 'tienda.html';
-                } else if (u.rol !== 'ADMIN') {
+                    return;
+                }
+                if (r !== 'ADMIN' && r !== 'TRABAJADOR') {
                     window.location.href = 'dashboard.html';
                 }
             } catch(e) { window.location.href = 'index.html'; }

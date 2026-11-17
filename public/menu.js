@@ -5,11 +5,11 @@
 
 function renderizarMenu(paginaActiva) {
     const usuarioSesion = obtenerUsuarioSesion();
-    const rol = usuarioSesion ? usuarioSesion.rol : null;
+    const rol = usuarioSesion && usuarioSesion.rol ? String(usuarioSesion.rol).toUpperCase().trim() : null;
 
     // Identificación estricta de tipo de usuario
-    const esCliente = rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
-    const esAdminOTrabajador = rol === 'ADMIN' || rol === 'TRABAJADOR';
+    const esCliente = !rol || rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
+    const esAdminOTrabajador = rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'TRABAJADOR' || rol === 'SUPERADMIN' || rol === 'GERENTE';
     const esEmpaque = rol === 'EMPAQUE' || rol === 'ALMACENERO';
     const esAlmacenero = esEmpaque;
     const esDespacho = rol === 'DESPACHO' || rol === 'REPARTIDOR';
@@ -45,8 +45,8 @@ function renderizarMenu(paginaActiva) {
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link-stitch ${paginaActiva === 'usuarios' ? 'active' : ''}" href="index.html">
-                        <i class="bi bi-people-fill me-1 text-danger"></i> Gestion de Usuarios
+                    <a class="nav-link-stitch ${paginaActiva === 'usuarios' ? 'active' : ''}" href="usuarios.html">
+                        <i class="bi bi-people-fill me-1 text-danger"></i> Talleres
                     </a>
                 </li>
                 <li class="nav-item">
@@ -117,6 +117,125 @@ function renderizarMenu(paginaActiva) {
         }
     }
 
+    // Construcción de Enlaces para el Menú Lateral Deslizable (Drawer / Offcanvas)
+    let linksDrawerHTML = '';
+    if (esCliente) {
+        linksDrawerHTML = `
+            <a class="nav-drawer-link ${paginaActiva === 'tienda' ? 'active' : ''}" href="tienda.html">
+                <i class="bi bi-shop text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Catálogo de Repuestos</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Aceites, filtros y compras en línea</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link" href="javascript:void(0)" onclick="navegarAMisPedidos(); bootstrap.Offcanvas.getInstance(document.getElementById('drawerNavegacionGlobal'))?.hide();">
+                <i class="bi bi-truck text-warning fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Mis Pedidos &amp; Despachos</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Estado y seguimiento en tiempo real</small>
+                </div>
+            </a>
+        `;
+    } else if (esAdminOTrabajador) {
+        linksDrawerHTML = `
+            <a class="nav-drawer-link ${paginaActiva === 'dashboard' ? 'active' : ''}" href="dashboard.html">
+                <i class="bi bi-speedometer2 text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Panel de Control</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Métricas generales y KPIs</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'usuarios' ? 'active' : ''}" href="usuarios.html">
+                <i class="bi bi-people-fill text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Talleres &amp; Clientes</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Directorio B2B y cuentas de usuario</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'compras' ? 'active' : ''}" href="compras.html">
+                <i class="bi bi-truck-flatbed text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Compras &amp; SCM</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Órdenes y proveedores de repuestos</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'facturacion' ? 'active' : ''}" href="facturacion.html">
+                <i class="bi bi-credit-card-2-front-fill text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Cobranzas &amp; Facturación</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Gestión de pagos y comprobantes QR</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'creditos' ? 'active' : ''}" href="creditos.html">
+                <i class="bi bi-bank text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Líneas de Crédito B2B</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Saldos, límites y amortizaciones</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'auditoria' ? 'active' : ''}" href="auditoria.html">
+                <i class="bi bi-shield-check text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Auditoría del Sistema</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Bitácora de seguridad y trazabilidad</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'inventario' ? 'active' : ''}" href="inventario.html">
+                <i class="bi bi-box-seam-fill text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Almacén e Inventario</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Kardex, stock y presentaciones</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'tienda' ? 'active' : ''}" href="tienda.html">
+                <i class="bi bi-shop text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Catálogo Comercial</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Vista pública de venta mayorista</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'logistica' ? 'active' : ''}" href="logistica.html">
+                <i class="bi bi-truck text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Logística &amp; Despacho</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Empaque, choferes y entregas</small>
+                </div>
+            </a>
+        `;
+    } else {
+        if (esAlmacenero) {
+            linksDrawerHTML += `
+                <a class="nav-drawer-link ${paginaActiva === 'inventario' ? 'active' : ''}" href="inventario.html">
+                    <i class="bi bi-box-seam-fill text-danger fs-5"></i>
+                    <div class="d-flex flex-column">
+                        <span class="fw-bold">Almacén e Inventario</span>
+                        <small class="text-muted" style="font-size: 0.72rem;">Kardex y preparación</small>
+                    </div>
+                </a>
+            `;
+        }
+        linksDrawerHTML += `
+            <a class="nav-drawer-link ${paginaActiva === 'tienda' ? 'active' : ''}" href="tienda.html">
+                <i class="bi bi-shop text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Catálogo Comercial</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Productos y stock</small>
+                </div>
+            </a>
+        `;
+        if (esAlmacenero || esRepartidor) {
+            linksDrawerHTML += `
+                <a class="nav-drawer-link ${paginaActiva === 'logistica' ? 'active' : ''}" href="logistica.html">
+                    <i class="bi bi-truck text-danger fs-5"></i>
+                    <div class="d-flex flex-column">
+                        <span class="fw-bold">Logística &amp; Despacho</span>
+                        <small class="text-muted" style="font-size: 0.72rem;">Órdenes y rutas de entrega</small>
+                    </div>
+                </a>
+            `;
+        }
+    }
+
     // Etiqueta legible y humana del rol para el navbar
     let rolLegible = 'Invitado';
     if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
@@ -139,81 +258,133 @@ function renderizarMenu(paginaActiva) {
 
     const menuHTML = `
     <nav class="navbar navbar-expand-lg" style="background: transparent; border: none; padding: 0.4rem 0.75rem;">
-        <div class="container-fluid px-2 px-xl-3 py-1">
-            <!-- Isotipo Oficial: Engranaje + Gota estilizado en SVG Inline para garantizar que nunca se rompa o pixelee -->
-            <a class="brand-logo" href="${logoHref}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0;">
-                <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
-                    <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
-                    <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
-                    <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
-                    <!-- Gota de Aceite de Alta Precisión -->
-                    <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
-                    <!-- Detalle de brillo en la gota -->
-                    <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
-                    <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                    <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                    <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                </svg>
-                <!-- Texto de la Marca en Dos Líneas compactas -->
-                <div style="display: flex; flex-direction: column; line-height: 1.1;">
-                    <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
-                    <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
-                </div>
-            </a>
+        <div class="container-fluid px-2 px-xl-3 py-1 d-flex align-items-center justify-content-between">
+            
+            <!-- Lado Izquierdo: Botón Hamburguesa (<1024px) + Isotipo de Marca Oficial -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Botón Hamburguesa Responsive para Pantallas < 1024px -->
+                <button class="btn btn-hamburger-golden d-flex align-items-center justify-content-center p-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#drawerNavegacionGlobal" aria-controls="drawerNavegacionGlobal" title="Abrir Menú de Módulos">
+                    <i class="bi bi-list fs-2 text-white"></i>
+                </button>
 
-            <!-- Botón Hamburguesa Responsive -->
-            <button class="navbar-toggler border-0 p-2 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir navegación">
-                <i class="bi bi-list fs-2"></i>
-            </button>
+                <!-- Isotipo Oficial: Engranaje + Gota estilizado en SVG Inline -->
+                <a class="brand-logo" href="${logoHref}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0;">
+                    <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                        <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                        <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                        <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                        <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                    </svg>
+                    <!-- Texto de la Marca en Dos Líneas compactas -->
+                    <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                        <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
+                        <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
+                    </div>
+                </a>
+            </div>
 
-            <!-- Enlaces de Navegación según Rol -->
-            <div class="collapse navbar-collapse" id="menuPrincipal">
-                <ul class="navbar-nav me-auto mb-0 ms-lg-2 gap-1 flex-nowrap align-items-center" style="white-space: nowrap;">
+            <!-- Centro: Enlaces de Navegación Desktop (Visible >= 1024px) -->
+            <div class="navbar-desktop-container">
+                <ul class="navbar-nav mb-0 gap-1 flex-nowrap align-items-center" style="white-space: nowrap;">
                     ${linksNavHTML}
                 </ul>
+            </div>
 
-                <!-- Área Derecha: Campanita de Stock, Identificación de Usuario, Carrito y Salir (1 Sola Fila Horizontal) -->
-                <div class="d-flex align-items-center flex-nowrap gap-2 ms-auto mt-2 mt-lg-0 flex-shrink-0" style="white-space: nowrap;">
-                    
-                    ${!esCliente ? `
-                    <!-- Campanita de Reposición: Solo visible para Administración y Almacén -->
-                    <div class="position-relative flex-shrink-0">
-                        <button id="btnCampanaNotificaciones" class="btn p-0 text-white d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 30px; height: 30px; background: #27272A; border: 1px solid #3F3F46; border-radius: 6px;" onclick="mostrarModalAlertasStock()" title="Control de reposición y stock crítico">
-                            <i class="bi bi-bell-fill" style="color: #F59E0B; font-size: 0.8rem;"></i>
-                            <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge bg-danger border border-dark" style="font-size: 0.6rem; display: none; padding: 0.2em 0.35em; border-radius: 4px;">
-                                0
-                            </span>
-                        </button>
-                    </div>
-                    ` : ''}
-
-                    <!-- Identificación de Usuario Compacta y Humana -->
-                    <div id="userInfoBadge" class="nav-user-badge-stitch flex-shrink-0" style="padding: 4px 8px;">
-                        <span class="pulse-dot pulse-dot-emerald"></span>
-                        <div class="d-flex flex-column" style="line-height: 1.15;">
-                            <span class="fw-bold text-white text-nowrap" style="font-size: 0.76rem;" id="navUserName">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
-                            <span class="text-nowrap" style="font-family: 'Work Sans', sans-serif; font-size: 0.62rem; font-weight: 600; color: #D97706; letter-spacing: 0.2px;" id="navUserRol">${rolLegible}</span>
-                        </div>
-                    </div>
-
-                    ${paginaActiva === 'tienda' ? `
-                    <!-- Botón Pedido / Carrito -->
-                    <button class="btn btn-stitch-primary d-flex align-items-center gap-1 px-2 py-1 flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="border-radius: 6px; background-color: #C81E1E; border: 1px solid #C81E1E; color: #FFFFFF; font-size: 0.76rem;">
-                        <i class="bi bi-cart3 fs-6"></i>
-                        <span>Mi pedido</span>
-                        <span id="contadorCarrito" class="badge bg-white text-dark font-monospace ms-1" style="font-size: 0.68rem; border-radius: 4px;">0</span>
-                    </button>
-                    ` : ''}
-
-                    <!-- Botón Salir Compacto Integrado al Header Oscuro -->
-                    <button id="btnHeaderSalir" class="btn btn-sm d-flex align-items-center gap-1 flex-shrink-0 btn-header-logout" onclick="cerrarSesion()" title="Cerrar sesión">
-                        <i class="bi bi-power"></i>
-                        <span>Salir</span>
+            <!-- Área Derecha: Campanita de Stock, Identificación de Usuario, Carrito y Salir (1 Sola Fila Horizontal) -->
+            <div class="d-flex align-items-center flex-nowrap gap-2 ms-auto flex-shrink-0" style="white-space: nowrap;">
+                
+                ${!esCliente ? `
+                <!-- Campanita de Reposición: Solo visible para Administración y Almacén -->
+                <div class="position-relative flex-shrink-0">
+                    <button id="btnCampanaNotificaciones" class="btn p-0 text-white d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 32px; height: 32px; background: #27272A; border: 1px solid #3F3F46; border-radius: 6px;" onclick="mostrarModalAlertasStock()" title="Control de reposición y stock crítico">
+                        <i class="bi bi-bell-fill" style="color: #F59E0B; font-size: 0.85rem;"></i>
+                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge bg-danger border border-dark" style="font-size: 0.6rem; display: none; padding: 0.2em 0.35em; border-radius: 4px;">
+                            0
+                        </span>
                     </button>
                 </div>
+                ` : ''}
+
+                <!-- Identificación de Usuario Compacta y Humana -->
+                <div id="userInfoBadge" class="nav-user-badge-stitch flex-shrink-0 d-none d-sm-flex" style="padding: 4px 8px;">
+                    <span class="pulse-dot pulse-dot-emerald"></span>
+                    <div class="d-flex flex-column" style="line-height: 1.15;">
+                        <span class="fw-bold text-white text-nowrap" style="font-size: 0.76rem;" id="navUserName">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
+                        <span class="text-nowrap" style="font-family: 'Work Sans', sans-serif; font-size: 0.62rem; font-weight: 600; color: #D97706; letter-spacing: 0.2px;" id="navUserRol">${rolLegible}</span>
+                    </div>
+                </div>
+
+                ${paginaActiva === 'tienda' ? `
+                <!-- Botón Pedido / Carrito -->
+                <button class="btn btn-stitch-primary d-flex align-items-center gap-1 px-2 py-1 flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="border-radius: 6px; background-color: #C81E1E; border: 1px solid #C81E1E; color: #FFFFFF; font-size: 0.76rem;">
+                    <i class="bi bi-cart3 fs-6"></i>
+                    <span class="d-none d-md-inline">Mi pedido</span>
+                    <span id="contadorCarrito" class="badge bg-white text-dark font-monospace ms-1" style="font-size: 0.68rem; border-radius: 4px;">0</span>
+                </button>
+                ` : ''}
+
+                <!-- Botón Salir Compacto Integrado al Header Oscuro -->
+                <button id="btnHeaderSalir" class="btn btn-sm d-flex align-items-center gap-1 flex-shrink-0 btn-header-logout" onclick="cerrarSesion()" title="Cerrar sesión">
+                    <i class="bi bi-power"></i>
+                    <span class="d-none d-sm-inline">Salir</span>
+                </button>
             </div>
         </div>
-    </nav>`;
+    </nav>
+
+    <!-- DRAWER OFFCANVAS ADAPTABLE (< 1024px) -->
+    <div class="offcanvas offcanvas-start text-white border-0" tabindex="-1" id="drawerNavegacionGlobal" aria-labelledby="drawerNavegacionGlobalLabel" style="width: 310px; background-color: #141619; border-right: 3px solid #B91C1C !important; z-index: 1060;">
+        <div class="offcanvas-header pb-3" style="border-bottom: 1px solid #292524; background-color: #1C1917;">
+            <div class="d-flex align-items-center gap-2">
+                <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                    <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                    <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                </svg>
+                <div class="d-flex flex-column" style="line-height: 1.1;">
+                    <span style="font-family: 'Archivo', sans-serif; font-size: 1.15rem; font-weight: 900; color: #FAFAFA;">GOLDEN</span>
+                    <span style="font-family: 'Work Sans', sans-serif; font-size: 0.52rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.08em;">LUBRICANTES &amp; FILTROS</span>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="offcanvas-body d-flex flex-column justify-content-between p-3" style="overflow-y: auto;">
+            <div>
+                <!-- Tarjeta de Usuario Activo en el Drawer -->
+                <div class="p-3 mb-3 rounded-3" style="background: #1C1917; border: 1px solid #3F3F46;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 40px; height: 40px; background: #B91C1C; font-size: 1rem;">
+                            ${(usuarioSesion ? usuarioSesion.nombre : 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div class="d-flex flex-column text-truncate" style="line-height: 1.2;">
+                            <span class="text-white fw-bold text-truncate" style="font-size: 0.88rem;">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
+                            <div class="d-flex align-items-center gap-1 mt-1">
+                                <span class="badge bg-danger text-uppercase px-2 py-0" style="font-size: 0.65rem;">${rolLegible}</span>
+                                <span class="badge bg-dark border text-muted" style="font-size: 0.65rem;">ACTIVO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Enlaces de Módulos (9 Módulos Completos) -->
+                <div class="d-flex flex-column gap-1">
+                    ${linksDrawerHTML}
+                </div>
+            </div>
+
+            <!-- Pie del Drawer: Botón Salir -->
+            <div class="pt-3 border-top border-secondary border-opacity-25 mt-4">
+                <button class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 py-2" onclick="cerrarSesion()">
+                    <i class="bi bi-power fs-5"></i>
+                    <span class="fw-bold">Cerrar Sesión Segura</span>
+                </button>
+            </div>
+        </div>
+    </div>`;
 
     const contenedor = document.getElementById('menu-contenedor');
     if (contenedor) {
@@ -229,6 +400,7 @@ function renderizarMenu(paginaActiva) {
         }
     }
 }
+window.renderizarMenu = renderizarMenu;
 
 /**
  * Renderizador del Sidebar Maestro para vistas auxiliares
@@ -337,7 +509,7 @@ window.renderizarSidebar = renderizarSidebar;
 
 function obtenerUsuarioSesion() {
     try {
-        const raw = localStorage.getItem('usuario_golden');
+        const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
         return raw ? JSON.parse(raw) : null;
     } catch (e) {
         return null;
@@ -353,14 +525,15 @@ function protegerRuta(paginaActual, rolesPermitidos) {
     const usuario = obtenerUsuarioSesion();
 
     if (!usuario) {
-        if (paginaActual !== 'login' && paginaActual !== 'usuarios') {
+        if (paginaActual !== 'login') {
             window.location.href = 'index.html';
             return null;
         }
         return null;
     }
 
-    const esCliente = usuario.rol === 'CLIENTE' || usuario.rol === 'CLIENTE_B2B' || usuario.rol === 'CLIENTE_B2C';
+    const rol = (usuario && usuario.rol ? String(usuario.rol).toUpperCase().trim() : '');
+    const esCliente = !rol || rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
 
     if (!rolesPermitidos && (typeof paginaActual === 'string' && ['ADMIN', 'TRABAJADOR', 'ALMACENERO', 'REPARTIDOR', 'CLIENTE', 'CLIENTE_B2B', 'CLIENTE_B2C'].includes(paginaActual) || Array.isArray(paginaActual))) {
         rolesPermitidos = Array.isArray(paginaActual) ? paginaActual : [paginaActual];
@@ -404,6 +577,8 @@ function protegerRuta(paginaActual, rolesPermitidos) {
 
     return usuario;
 }
+window.obtenerUsuarioSesion = obtenerUsuarioSesion;
+window.protegerRuta = protegerRuta;
 
 // ==========================================
 // CONFIGURACIÓN GLOBAL SWEETALERT2 STITCH UI

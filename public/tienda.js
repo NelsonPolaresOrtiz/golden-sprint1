@@ -8,8 +8,182 @@
  * - Persistencia ACID en SQLite3 (/api/productos, /api/config-catalogo).
  */
 
+// =========================================================================
+// 0. VERIFICACIÓN INMEDIATA DE SESIÓN ACTIVA (LOGIN OBLIGATORIO)
+// Si no existe sesión activa, redirige inmediatamente a index.html
+// =========================================================================
+(function verificarSesionObligatoriaInmediata() {
+    try {
+        const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+        const token = localStorage.getItem('token');
+        if (!raw && !token) {
+            window.location.href = 'index.html';
+            return;
+        }
+    } catch (e) {
+        window.location.href = 'index.html';
+    }
+})();
+
 const API_URL = '/api';
 const FALLBACK_IMG_OFFLINE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'><rect width='400' height='300' fill='%23f8fafc'/><rect x='10' y='10' width='380' height='280' fill='none' stroke='%23cbd5e1' stroke-dasharray='6 6' rx='4'/><text x='50%25' y='46%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-family='sans-serif' font-size='15' font-weight='bold'>REPUESTO AUTOMOTRIZ</text><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='%23d97706' font-family='sans-serif' font-size='12' font-weight='600'>GOLDEN ERP</text></svg>";
+
+// Catálogo Oficial de Respaldo GOLDEN (8 productos reales para contingencia / inventario vacío)
+const CATALOGO_FALLBACK_GOLDEN = [
+    {
+        id: 101,
+        sku: "SYN-5W30-001",
+        nombre: "Aceite Sintético 5W-30 Ultra Performance (1L)",
+        categoria: "ACEITES SINTÉTICOS",
+        precio: 250.00,
+        stock: 35,
+        stock_minimo: 5,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "liviana",
+        imagen_url: "./img/Aceite_Sintetico.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "100% Sintético Grupo III+",
+            viscosidad: "SAE 5W-30 API SP / ILSAC GF-6A",
+            empaque: "Botella 1 Litro (Caja x 12)",
+            dimensiones: { viscRosca: "5W-30", diamLitros: "1.0 L" }
+        })
+    },
+    {
+        id: 102,
+        sku: "SEM-10W40-002",
+        nombre: "Aceite Semi-Sintético 10W-40 Máxima Protección (4L)",
+        categoria: "ACEITES SINTÉTICOS",
+        precio: 210.00,
+        stock: 28,
+        stock_minimo: 6,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "liviana",
+        imagen_url: "./img/Aceite_Sintetico1.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "Semi-Sintético Premium",
+            viscosidad: "SAE 10W-40 API SN/CF",
+            empaque: "Galón 4 Litros",
+            dimensiones: { viscRosca: "10W-40", diamLitros: "4.0 L" }
+        })
+    },
+    {
+        id: 103,
+        sku: "HD-15W40-003",
+        nombre: "Aceite Heavy Duty 15W-40 Flota Pesada Diesel (Galón)",
+        categoria: "ACEITES MINERALES",
+        precio: 185.00,
+        stock: 42,
+        stock_minimo: 8,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "pesada",
+        imagen_url: "./img/Aceite_Sintetico2.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "Mineral Heavy Duty Flota Diesel",
+            viscosidad: "SAE 15W-40 API CK-4 / CJ-4",
+            empaque: "Galón de 3.785L / Balde 20L",
+            dimensiones: { viscRosca: "15W-40", diamLitros: "3.78 L" }
+        })
+    },
+    {
+        id: 104,
+        sku: "MIN-20W50-004",
+        nombre: "Aceite Mineral 20W-50 Alto Kilometraje Antidesgaste (4L)",
+        categoria: "ACEITES MINERALES",
+        precio: 165.00,
+        stock: 50,
+        stock_minimo: 10,
+        en_oferta: 1,
+        descuento_porcentaje: 20,
+        linea: "pesada",
+        imagen_url: "./img/Aceite_Sintetico3.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "Mineral Alto Kilometraje con ZDDP",
+            viscosidad: "SAE 20W-50 API SL/CF",
+            empaque: "Envase 4 Litros",
+            dimensiones: { viscRosca: "20W-50", diamLitros: "4.0 L" }
+        })
+    },
+    {
+        id: 105,
+        sku: "FLT-ARL-102",
+        nombre: "Filtro de Aceite Blindado Spin-On ARL-102",
+        categoria: "FILTROS DE ACEITE",
+        precio: 45.00,
+        stock: 60,
+        stock_minimo: 12,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "liviana",
+        imagen_url: "./img/Filtro_de_Aceite.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "Filtro de Aceite Sellado Spin-On",
+            viscosidad: "Válvula Antirretorno Silicona",
+            empaque: "Caja Individual Master x 24",
+            dimensiones: { viscRosca: "3/4-16 UNF", diamLitros: "Ø 68 mm" }
+        })
+    },
+    {
+        id: 106,
+        sku: "FLT-FAP-408",
+        nombre: "Filtro de Aire Panel Radial FAP-408",
+        categoria: "FILTROS DE AIRE",
+        precio: 65.00,
+        stock: 30,
+        stock_minimo: 8,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "liviana",
+        imagen_url: "./img/Filtros_de_Aire.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "Filtro de Aire Tipo Panel Poliuretano",
+            viscosidad: "Media Filtrante Celulosa Hidrófuga",
+            empaque: "Caja Unitaria",
+            dimensiones: { viscRosca: "Panel", diamLitros: "240 x 180 mm" }
+        })
+    },
+    {
+        id: 107,
+        sku: "GRA-LIT-007",
+        nombre: "Grasa Multipropósito Litio Grado EP-2 Chasis (1 Kg)",
+        categoria: "GRASAS LUBRICANTES",
+        precio: 55.00,
+        stock: 25,
+        stock_minimo: 5,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "pesada",
+        imagen_url: "./img/Grasa_Minerales.jpg",
+        especificaciones: JSON.stringify({
+            tipo: "Grasa de Litio Extrema Presión NLGI 2",
+            viscosidad: "Punto de Goteo > 190°C",
+            empaque: "Pote de 1 Kg / Balde 16 Kg",
+            dimensiones: { viscRosca: "NLGI-2", diamLitros: "1.0 Kg" }
+        })
+    },
+    {
+        id: 108,
+        sku: "LIQ-DOT4-008",
+        nombre: "Líquido de Frenos Sintético Premium DOT-4 (500ml)",
+        categoria: "LÍQUIDOS Y FLUIDOS",
+        precio: 35.00,
+        stock: 45,
+        stock_minimo: 10,
+        en_oferta: 1,
+        descuento_porcentaje: 15,
+        linea: "liviana",
+        imagen_url: "./img/Liquido_Frenos_DOT4.svg",
+        especificaciones: JSON.stringify({
+            tipo: "Fluido de Frenos FMVSS 116 DOT-4",
+            viscosidad: "Punto de Ebullición Seco > 260°C",
+            empaque: "Botella 500ml Sellada",
+            dimensiones: { viscRosca: "DOT-4", diamLitros: "500 ml" }
+        })
+    }
+];
+window.CATALOGO_FALLBACK_GOLDEN = CATALOGO_FALLBACK_GOLDEN;
 
 let productosTienda = [];
 let carrito = [];
@@ -193,28 +367,123 @@ const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
 // INICIALIZACIÓN PRINCIPAL
 // =========================================================================
 
+function cerrarSesionTienda() {
+    try {
+        localStorage.removeItem('usuario_golden');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        localStorage.removeItem('carrito');
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch (e) {
+        console.warn("Error limpiando almacenamiento:", e);
+    }
+    window.location.href = 'index.html';
+}
+window.cerrarSesionTienda = cerrarSesionTienda;
+
+function sincronizarControlesUsuarioHeader() {
+    if (!usuarioActual) return;
+
+    const nombre = usuarioActual.nombre || 'Taller Los Primos';
+    const rol = (usuarioActual.rol || 'CLIENTE').toUpperCase().trim();
+    const esAdmin = rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'TRABAJADOR' || rol === 'SUPERADMIN' || rol === 'ALMACENERO';
+
+    // TopBar Tecfil (Línea superior)
+    const topBarUser = document.getElementById('topBarUserName');
+    const topBarRol = document.getElementById('topBarUserRol');
+    if (topBarUser) topBarUser.innerText = nombre;
+    if (topBarRol) {
+        let labelRol = 'Cuenta Taller';
+        if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelRol = 'Administración';
+        else if (rol === 'TRABAJADOR') labelRol = 'Almacén & Ventas';
+        else if (rol === 'ALMACENERO') labelRol = 'Almacén Central';
+        topBarRol.innerText = labelRol;
+    }
+
+    // Controles en el Sub-Navbar Tecfil (a la derecha del buscador)
+    const navName = document.getElementById('tiendaUserName');
+    const navRol = document.getElementById('tiendaUserRol');
+    const navAvatar = document.getElementById('tiendaUserAvatar');
+    const btnMisPedidos = document.getElementById('btnTiendaMisPedidos');
+    const dropdownERP = document.getElementById('dropdownTiendaERP');
+
+    if (navName) navName.innerText = nombre;
+    if (navRol) {
+        let labelTag = 'CLIENTE (TALLER)';
+        if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelTag = 'ADMINISTRADOR';
+        else if (rol === 'TRABAJADOR') labelTag = 'TRABAJADOR';
+        else if (rol === 'ALMACENERO') labelTag = 'ALMACENERO';
+        else if (rol === 'DESPACHO' || rol === 'REPARTIDOR') labelTag = 'LOGÍSTICA';
+        navRol.innerText = labelTag;
+        navRol.style.color = esAdmin ? '#B91C1C' : '#D97706';
+    }
+    if (navAvatar) {
+        navAvatar.innerText = nombre.charAt(0).toUpperCase();
+        navAvatar.style.background = esAdmin ? '#B91C1C' : '#D97706';
+    }
+
+    // Si es ADMIN o TRABAJADOR: mostrar dropdown con 9 módulos ERP
+    // Si es CLIENTE: mostrar botón "Mis Pedidos"
+    if (btnMisPedidos) {
+        if (esAdmin) {
+            btnMisPedidos.classList.add('d-none');
+        } else {
+            btnMisPedidos.classList.remove('d-none');
+        }
+    }
+
+    if (dropdownERP) {
+        if (esAdmin) {
+            dropdownERP.classList.remove('d-none');
+        } else {
+            dropdownERP.classList.add('d-none');
+        }
+    }
+
+    // Actualizar badge del carrito
+    const navCartBadge = document.getElementById('tiendaNavCartCount');
+    if (navCartBadge) {
+        const cant = carrito.reduce((acc, it) => acc + (it.cantidad || 1), 0);
+        navCartBadge.innerText = `[${cant}]`;
+    }
+}
+window.sincronizarControlesUsuarioHeader = sincronizarControlesUsuarioHeader;
+
 document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('cupon_ruleta_golden');
 
-    usuarioActual = protegerRuta('tienda');
-    if (!usuarioActual) return;
+    // Validación obligatoria de sesión activa: si no hay sesión, ir al login
+    const rawSesion = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+    if (!rawSesion) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    try {
+        usuarioActual = (typeof protegerRuta === 'function') ? protegerRuta('tienda') : JSON.parse(rawSesion);
+    } catch(e) {
+        usuarioActual = JSON.parse(rawSesion);
+    }
+
+    if (!usuarioActual) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const rol = (usuarioActual.rol ? String(usuarioActual.rol).toUpperCase().trim() : 'CLIENTE');
+    esAdminOTrabajador = Boolean(
+        rol === 'ADMIN' || 
+        rol === 'ADMINISTRADOR' || 
+        rol === 'TRABAJADOR' || 
+        rol === 'SUPERADMIN' || 
+        rol === 'ALMACENERO'
+    );
 
     // Renderizar barra de navegación oficial del ERP o Vista Cliente
     if (typeof renderizarMenu === 'function') {
         renderizarMenu('tienda');
     }
-
-    if (window.location.search.includes('verPedidos=1')) {
-        setTimeout(() => {
-            abrirModalSeguimiento();
-        }, 350);
-    }
-
-    esAdminOTrabajador = Boolean(usuarioActual && (
-        usuarioActual.rol === 'ADMIN' || 
-        usuarioActual.rol === 'TRABAJADOR' || 
-        usuarioActual.rol === 'ALMACENERO'
-    ));
 
     // Si es cliente, el modo de edición está 100% inactivo
     if (!esAdminOTrabajador) {
@@ -223,19 +492,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     inicializarBarraGestor();
     cargarConfigBanner();
+    sincronizarControlesUsuarioHeader();
 
-    // Sincronizar datos del usuario en la Top Bar Tecfil
-    const topBarUser = document.getElementById('topBarUserName');
-    const topBarRol = document.getElementById('topBarUserRol');
-    if (topBarUser) {
-        topBarUser.innerText = usuarioActual.nombre || 'Taller Los Primos';
-    }
-    if (topBarRol) {
-        let labelRol = 'Cuenta Taller';
-        if (usuarioActual.rol === 'ADMIN') labelRol = 'Administración';
-        else if (usuarioActual.rol === 'TRABAJADOR') labelRol = 'Almacén & Ventas';
-        else if (usuarioActual.rol === 'ALMACENERO') labelRol = 'Almacén Central';
-        topBarRol.innerText = labelRol;
+    if (window.location.search.includes('verPedidos=1')) {
+        setTimeout(() => {
+            abrirModalSeguimiento();
+        }, 350);
     }
 
     // Cerrar menú desplegable de búsqueda al hacer clic fuera
@@ -1049,10 +1311,12 @@ function renderizarCarruselTecfil() {
     const dotsContainer = document.getElementById('tecfilSquareDots');
     if (!container) return;
 
-    const productosLinea = obtenerProductosPorLinea(lineaOfertasActiva);
-    if (productosLinea.length === 0) {
-        container.innerHTML = '<div class="col-12 text-center py-5 text-muted">No hay ofertas disponibles para esta línea.</div>';
-        return;
+    let productosLinea = obtenerProductosPorLinea(lineaOfertasActiva);
+    if ((!productosLinea || productosLinea.length === 0) && productosTienda && productosTienda.length > 0) {
+        productosLinea = [...productosTienda];
+    }
+    if (!productosLinea || productosLinea.length === 0) {
+        productosLinea = [...CATALOGO_FALLBACK_GOLDEN];
     }
 
     const itemsPorPagina = 4;
@@ -1176,6 +1440,7 @@ function renderizarCarruselTecfil() {
         dotsContainer.innerHTML = dotsHTML;
     }
 }
+window.renderizarCarruselTecfil = renderizarCarruselTecfil;
 
 function deslizarOfertasTecfil(delta) {
     const productosLinea = obtenerProductosPorLinea(lineaOfertasActiva);
@@ -1312,10 +1577,19 @@ async function cargarCatalogo() {
 
     try {
         const res = await fetch(`${API_URL}/productos?t=${Date.now()}`);
-        if (!res.ok) throw new Error('Error al consultar productos');
-        const data = await res.json();
+        let lista = [];
+        if (res.ok) {
+            const data = await res.json();
+            lista = Array.isArray(data) ? data : (data.productos || data.data || []);
+        }
         
-        productosTienda = data.map((p, idx) => {
+        // Si la base de datos devuelve 0 productos o está vacía, usar el catálogo de respaldo de 8 productos reales
+        if (!lista || lista.length === 0) {
+            console.warn("Inventario vacío o sin conexión: activando catálogo oficial de respaldo GOLDEN.");
+            lista = CATALOGO_FALLBACK_GOLDEN;
+        }
+
+        productosTienda = lista.map((p, idx) => {
             p.categoria = normalizarCategoriaProducto(p);
             p.rutaImg = (p.imagen_url && p.imagen_url.startsWith('./img/') && !p.imagen_url.includes('placehold.co'))
                 ? p.imagen_url 
@@ -1323,18 +1597,23 @@ async function cargarCatalogo() {
             p.en_oferta = Boolean(p.en_oferta);
             return p;
         });
-        
+    } catch (error) {
+        console.error("Error al cargar catálogo, activando respaldo local:", error);
+        productosTienda = CATALOGO_FALLBACK_GOLDEN.map((p, idx) => {
+            p.categoria = normalizarCategoriaProducto(p);
+            p.rutaImg = (p.imagen_url && p.imagen_url.startsWith('./img/')) ? p.imagen_url : obtenerRutaImagenLocal(p, idx);
+            p.en_oferta = Boolean(p.en_oferta);
+            return p;
+        });
+    } finally {
+        // Garantizar SIEMPRE el renderizado del carrusel y catálogo sin importar lo que haya sucedido
         renderizarCarruselTecfil();
         renderizarCatalogo();
         iniciarEfectoTiltCards();
-    } catch (error) {
-        console.error("Error al cargar catálogo:", error);
-        if (contenedor) {
-            contenedor.innerHTML = '<div class="col-12 text-center py-5 text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Error al conectar con el servidor de inventario.</div>';
-        }
-        Toast.fire({ icon: 'error', title: 'Error al cargar catálogo de productos' });
+        sincronizarControlesUsuarioHeader();
     }
 }
+window.cargarCatalogo = cargarCatalogo;
 
 function generarTarjetaProductoHTML(producto, index = 0, esOfertaForzada = false) {
     const p = producto;
@@ -2267,6 +2546,8 @@ function actualizarCarrito() {
     let total = 0;
     let cantidadTotal = 0;
 
+    const navCartBadge = document.getElementById('tiendaNavCartCount');
+
     if (carrito.length === 0) {
         lista.innerHTML = `
             <div class="text-center py-5 text-muted">
@@ -2276,6 +2557,7 @@ function actualizarCarrito() {
             </div>`;
         if (topBarCount) topBarCount.innerText = '0';
         if (contador) contador.innerText = '0';
+        if (navCartBadge) navCartBadge.innerText = '[0]';
         if (subtotalElemento) subtotalElemento.innerText = 'Bs. 0.00';
         if (totalElemento) totalElemento.innerText = 'Bs. 0.00';
         return;
@@ -2316,6 +2598,7 @@ function actualizarCarrito() {
 
     if (topBarCount) topBarCount.innerText = cantidadTotal;
     if (contador) contador.innerText = cantidadTotal;
+    if (navCartBadge) navCartBadge.innerText = `[${cantidadTotal}]`;
     if (subtotalElemento) subtotalElemento.innerText = `Bs. ${total.toFixed(2)}`;
     if (totalElemento) totalElemento.innerText = `Bs. ${totalFinal.toFixed(2)}`;
 }

@@ -20,11 +20,39 @@ db.serialize(() => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
+        correo TEXT,
         password TEXT NOT NULL,
         rol TEXT NOT NULL,
         estado TEXT NOT NULL DEFAULT 'ACTIVO',
-        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+        nit TEXT,
+        telefono TEXT,
+        direccion TEXT,
+        metodo_auth TEXT DEFAULT 'local',
+        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+        fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    // Migración segura de columnas adicionales para usuarios
+    const columnasUsuarios = [
+        "ALTER TABLE usuarios ADD COLUMN correo TEXT",
+        "ALTER TABLE usuarios ADD COLUMN nit TEXT",
+        "ALTER TABLE usuarios ADD COLUMN telefono TEXT",
+        "ALTER TABLE usuarios ADD COLUMN direccion TEXT",
+        "ALTER TABLE usuarios ADD COLUMN metodo_auth TEXT DEFAULT 'local'",
+        "ALTER TABLE usuarios ADD COLUMN fecha_registro DATETIME"
+    ];
+
+    columnasUsuarios.forEach(sql => {
+        db.run(sql, (err) => {
+            // Ignorar error si la columna ya existe
+        });
+    });
+
+    // Sincronizar correo y email para consistencia total en bases existentes
+    db.run("UPDATE usuarios SET correo = email WHERE correo IS NULL OR correo = ''");
+    db.run("UPDATE usuarios SET email = correo WHERE email IS NULL OR email = ''");
+    db.run("UPDATE usuarios SET metodo_auth = 'local' WHERE metodo_auth IS NULL OR metodo_auth = ''");
+    db.run("UPDATE usuarios SET fecha_registro = fecha_creacion WHERE fecha_registro IS NULL");
 
     // 2. Tabla de Catálogo e Inventario de Repuestos
     db.run(`CREATE TABLE IF NOT EXISTS productos (
@@ -333,15 +361,15 @@ db.serialize(() => {
             const hash = bcrypt.hashSync(u.password, 10);
             if (!row) {
                 db.run(
-                    `INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (?, ?, ?, ?, ?)`,
-                    [u.nombre, u.email, hash, u.rol, 'ACTIVO'],
+                    `INSERT INTO usuarios (nombre, email, correo, password, rol, estado, metodo_auth) VALUES (?, ?, ?, ?, ?, ?, 'local')`,
+                    [u.nombre, u.email, u.email, hash, u.rol, 'ACTIVO'],
                     (insErr) => {
                         if (!insErr) console.log(`👤 Usuario inicial creado: ${u.email} (${u.rol})`);
                     }
                 );
             } else {
                 db.run(
-                    `UPDATE usuarios SET password = ?, rol = ? WHERE id = ?`,
+                    `UPDATE usuarios SET password = ?, rol = ?, correo = COALESCE(correo, email) WHERE id = ?`,
                     [hash, u.rol, row.id],
                     (updErr) => {
                         if (!updErr) console.log(`👤 Credenciales sincronizadas para rol base: ${u.email} (${u.rol})`);

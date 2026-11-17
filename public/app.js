@@ -40,6 +40,8 @@ function iniciarSecuenciaSplash() {
     const yaVisto = sessionStorage.getItem('golden_splash_visto');
     if (yaVisto === '1') {
         splash.classList.add('is-hidden');
+        splash.style.setProperty('display', 'none', 'important');
+        splash.style.setProperty('pointer-events', 'none', 'important');
         return;
     }
 
@@ -65,6 +67,8 @@ function saltarSplashIntro() {
     sessionStorage.setItem('golden_splash_visto', '1');
     splash.classList.add('is-hidden');
     splash.classList.remove('splash-zoom-exit');
+    splash.style.setProperty('display', 'none', 'important');
+    splash.style.setProperty('pointer-events', 'none', 'important');
 }
 
 window.saltarSplashIntro = saltarSplashIntro;
@@ -159,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, tipo_portal: 'INTERNO' })
                 });
                 const data = await res.json();
 
@@ -177,28 +181,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 Toast.fire({ icon: 'success', title: `Bienvenido, ${data.usuario.nombre}` });
 
-                // RBAC: Redirección según rol específico del flujo
-                if (data.usuario.rol === 'CLIENTE' || data.usuario.rol === 'CLIENTE_B2B' || data.usuario.rol === 'CLIENTE_B2C') {
+                // Redirección automática según rol oficial
+                const rol = (data.usuario.rol || '').toUpperCase().trim();
+                if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
                     window.location.href = 'tienda.html';
                     return;
                 }
 
-                if (data.usuario.rol === 'TRABAJADOR') {
-                    window.location.href = 'tienda.html';
+                if (rol === 'ADMIN') {
+                    window.location.href = 'dashboard.html';
                     return;
                 }
 
-                if (data.usuario.rol === 'EMPAQUE' || data.usuario.rol === 'DESPACHO' || data.usuario.rol === 'REPARTIDOR' || data.usuario.rol === 'ALMACENERO') {
+                if (rol === 'EMPAQUE' || rol === 'DESPACHO' || rol === 'REPARTIDOR' || rol === 'ALMACENERO') {
                     window.location.href = 'logistica.html';
                     return;
                 }
 
-                // Si es ADMIN
-                if (window.location.pathname.includes('index.html') && !window.location.search.includes('forzarLogin')) {
-                    mostrarPanelCRUD(data.usuario);
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
+                window.location.href = 'dashboard.html';
             } catch (error) {
                 if (alertBox) {
                     alertBox.textContent = 'Error de conexión con el servidor ERP.';
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password, tipo_portal: 'CLIENTE' })
                 });
                 const data = await res.json();
 
@@ -254,9 +254,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('usuario_golden', JSON.stringify(data.usuario));
                 Toast.fire({ icon: 'success', title: `Bienvenido, ${data.usuario.nombre}` });
 
+                // Redirección según rol
+                const rol = (data.usuario.rol || '').toUpperCase().trim();
                 setTimeout(() => {
+                    if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
+                        window.location.href = 'tienda.html';
+                        return;
+                    }
+                    if (rol === 'ADMIN') {
+                        window.location.href = 'dashboard.html';
+                        return;
+                    }
+                    if (rol === 'EMPAQUE' || rol === 'DESPACHO' || rol === 'REPARTIDOR' || rol === 'ALMACENERO') {
+                        window.location.href = 'logistica.html';
+                        return;
+                    }
                     window.location.href = 'tienda.html';
-                }, 400);
+                }, 350);
 
             } catch (error) {
                 if (alertBox) {
@@ -314,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API_URL}/clientes/registro`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, nit, telefono, direccion, email, password })
+                    body: JSON.stringify({ nombre, nit, telefono, direccion, email, correo: email, password, metodo_auth: 'local' })
                 });
                 const data = await res.json();
 
@@ -850,17 +864,28 @@ function prepararEdicion(id) {
     const u = listaUsuariosGlobal.find(item => item.id === id);
     if (!u) return;
 
-    document.getElementById('userId').value = u.id;
-    document.getElementById('nombre').value = u.nombre;
-    document.getElementById('email').value = u.email;
-    document.getElementById('password').value = '';
-    document.getElementById('rol').value = u.rol;
-    document.getElementById('estado').value = u.estado;
+    const elId = document.getElementById('userId');
+    const elNombre = document.getElementById('nombre');
+    const elEmail = document.getElementById('email');
+    const elPass = document.getElementById('password');
+    const elRol = document.getElementById('rol');
+    const elEstado = document.getElementById('estado');
+    const elTitle = document.getElementById('formTitle');
+    const elHint = document.getElementById('passHint');
+    const elBtn = document.getElementById('btnGuardar');
+    const elCancel = document.getElementById('btnCancelar');
 
-    document.getElementById('formTitle').innerHTML = `<i class="bi bi-pencil-square me-2 fs-5"></i> Editar Usuario #${u.id}`;
-    document.getElementById('passHint').textContent = '(Opcional: en blanco para conservar)';
-    document.getElementById('btnGuardar').innerHTML = `<i class="bi bi-check2-circle me-1"></i> Guardar Cambios`;
-    document.getElementById('btnCancelar').classList.remove('d-none');
+    if (elId) elId.value = u.id;
+    if (elNombre) elNombre.value = u.nombre;
+    if (elEmail) elEmail.value = u.email;
+    if (elPass) elPass.value = '';
+    if (elRol) elRol.value = u.rol;
+    if (elEstado) elEstado.value = u.estado;
+
+    if (elTitle) elTitle.innerHTML = `<i class="bi bi-pencil-square me-2 fs-5"></i> Editar Usuario #${u.id}`;
+    if (elHint) elHint.textContent = '(Opcional: en blanco para conservar)';
+    if (elBtn) elBtn.innerHTML = `<i class="bi bi-check2-circle me-1"></i> Guardar Cambios`;
+    if (elCancel) elCancel.classList.remove('d-none');
 }
 
 // ELIMINACIÓN CON DIÁLOGO MODAL SWEETALERT2

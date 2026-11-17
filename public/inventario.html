@@ -2,20 +2,21 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <title>Almacén e Inventario - GOLDEN ERP</title>
     
-    <!-- Redirección RBAC Cero-Parpadeo: Si es cliente, redirigir a tienda -->
+    <!-- Guardia de Seguridad RBAC Inmediata (Sin Parpadeo) -->
     <script>
         (function() {
             try {
-                const s = localStorage.getItem('usuario_golden');
-                if (!s) { window.location.href = 'index.html'; return; }
-                const u = JSON.parse(s);
-                if (u.rol === 'CLIENTE' || u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                var raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                var r = (u.rol || '').toUpperCase().trim();
+                if (r === 'CLIENTE' || r === 'CLIENTE_B2B' || r === 'CLIENTE_B2C') {
                     window.location.href = 'tienda.html';
                 }
-            } catch(e) {}
+            } catch(e) { window.location.href = 'index.html'; }
         })();
     </script>
 

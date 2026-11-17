@@ -123,41 +123,47 @@ function renderizarTabla(productos, filtroBusqueda = '') {
 // ==========================================
 // 3. BUSCADOR EN TIEMPO REAL (EVENTO INPUT)
 // ==========================================
-document.getElementById('buscadorInventario').addEventListener('input', (e) => {
-    const texto = e.target.value.toLowerCase().trim();
-    const filtrados = productosGlobal.filter(p =>
-        (p.nombre && p.nombre.toLowerCase().includes(texto)) ||
-        (p.sku && p.sku.toLowerCase().includes(texto)) ||
-        (p.categoria && p.categoria.toLowerCase().includes(texto))
-    );
-    renderizarTabla(filtrados, texto);
-});
+const inputBuscadorInv = document.getElementById('buscadorInventario');
+if (inputBuscadorInv) {
+    inputBuscadorInv.addEventListener('input', (e) => {
+        const texto = e.target.value.toLowerCase().trim();
+        const filtrados = productosGlobal.filter(p =>
+            (p.nombre && p.nombre.toLowerCase().includes(texto)) ||
+            (p.sku && p.sku.toLowerCase().includes(texto)) ||
+            (p.categoria && p.categoria.toLowerCase().includes(texto))
+        );
+        renderizarTabla(filtrados, texto);
+    });
+}
 
 // ==========================================
 // 4. CRUD DE PRODUCTOS (GUARDAR, EDITAR, ELIMINAR)
 // ==========================================
-document.getElementById('productoForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const id = document.getElementById('prodId').value;
-    const sku = document.getElementById('sku').value.trim();
-    const nombre = document.getElementById('nombre').value.trim();
-    const categoria = document.getElementById('categoria').value;
-    const precio = parseFloat(document.getElementById('precio').value);
-    const stock = parseInt(document.getElementById('stock').value, 10);
-    const stock_minimo = parseInt(document.getElementById('stockMinimo').value, 10) || 5;
+const formProductoInv = document.getElementById('productoForm');
+if (formProductoInv) {
+    formProductoInv.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('prodId').value;
+        const sku = document.getElementById('sku').value.trim();
+        const nombre = document.getElementById('nombre').value.trim();
+        const categoria = document.getElementById('categoria').value;
+        const precio = parseFloat(document.getElementById('precio').value);
+        const stock = parseInt(document.getElementById('stock').value, 10);
+        const stock_minimo = parseInt(document.getElementById('stockMinimo').value, 10) || 5;
 
-    const btnGuardar = document.getElementById('btnGuardarProd');
-    const datos = { sku, nombre, categoria, precio, stock, stock_minimo };
+        const btnGuardar = document.getElementById('btnGuardarProd');
+        const datos = { sku, nombre, categoria, precio, stock, stock_minimo };
 
-    const esEdicion = id !== '';
-    const url = esEdicion ? `${API_URL}/productos/${id}` : `${API_URL}/productos`;
-    const metodo = esEdicion ? 'PUT' : 'POST';
+        const esEdicion = id !== '';
+        const url = esEdicion ? `${API_URL}/productos/${id}` : `${API_URL}/productos`;
+        const metodo = esEdicion ? 'PUT' : 'POST';
 
-    // Feedback visual y protección contra doble clic
-    const textoOriginalBtn = btnGuardar ? btnGuardar.innerHTML : '';
-    if (btnGuardar) {
-        btnGuardar.disabled = true;
-        btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando Repuesto...`;
+        // Feedback visual y protección contra doble clic
+        const textoOriginalBtn = btnGuardar ? btnGuardar.innerHTML : '';
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando Repuesto...`;
+        }
     }
 
     try {

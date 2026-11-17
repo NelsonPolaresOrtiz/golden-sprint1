@@ -2,11 +2,545 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=index.html">
-    <title>Usuarios & Talleres - ERP GOLDEN</title>
-    <script>window.location.href = 'index.html';</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Talleres & Clientes — ERP GOLDEN</title>
+    
+    <!-- Guardia de Seguridad RBAC Inmediata (Sin Parpadeo) -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                var r = (u.rol || '').toUpperCase().trim();
+                if (r === 'CLIENTE' || r === 'CLIENTE_B2B' || r === 'CLIENTE_B2C') {
+                    window.location.href = 'tienda.html';
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <!-- Tipografía Editorial Automotriz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5.3 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
+    <link rel="stylesheet" href="styles.css?v=13">
 </head>
-<body style="background:#FAF8F5; color:#1C1917; font-family:sans-serif; text-align:center; padding-top:20vh;">
-    <p>Cargando Módulo de Usuarios & Talleres...</p>
+<body style="background-color: #FAF8F5; color: #1C1917; font-family: 'Work Sans', sans-serif;">
+
+    <!-- MENÚ COMPARTIDO (STICKY HEADER CARBÓN GRAFITO) -->
+    <div id="menu-contenedor"></div>
+
+    <!-- CONTENEDOR PRINCIPAL FLUIDO -->
+    <main class="container-fluid px-3 px-md-4 py-4" style="max-width: 1600px;">
+
+        <!-- CABECERA DE SECCIÓN CON KPIS -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-danger text-uppercase px-2 py-1" style="font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em;">Directorio B2B</span>
+                    <span class="text-muted small">Módulo de Clientes, Talleres y Cuentas de Acceso</span>
+                </div>
+                <h2 class="fw-bold mb-0" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em; color: #1C1917;">
+                    <i class="bi bi-people-fill text-danger me-2"></i>Talleres Mecánicos &amp; Clientes
+                </h2>
+            </div>
+            
+            <!-- Resumen Mini KPIs -->
+            <div class="d-flex flex-wrap gap-2">
+                <div class="kpi-mini-card">
+                    <span class="label">Total Cuentas:</span>
+                    <span class="value" id="kpiTotalUsuarios">0</span>
+                </div>
+                <div class="kpi-mini-card">
+                    <span class="label">Talleres / Clientes:</span>
+                    <span class="value text-warning" id="kpiTotalTalleres">0</span>
+                </div>
+                <div class="kpi-mini-card">
+                    <span class="label">Cuentas Sociales:</span>
+                    <span class="value text-primary" id="kpiTotalSocial">0</span>
+                </div>
+                <button class="btn btn-stitch-primary d-flex align-items-center gap-2 px-3 py-2" onclick="abrirModalNuevoUsuario()">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Nuevo Usuario / Taller</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ALERTA DINÁMICA -->
+        <div id="usuariosAlert" class="alert d-none py-2 px-3 small rounded-3 fw-semibold mb-4"></div>
+
+        <!-- BARRA DE FILTROS Y BÚSQUEDA -->
+        <div class="glass-panel p-3 mb-4">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-6 col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" id="buscadorUsuarios" class="form-control border-start-0" placeholder="Buscar por nombre, taller, correo, NIT o teléfono..." oninput="filtrarUsuarios()">
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 col-lg-3">
+                    <select id="filtroRol" class="form-select" onchange="filtrarUsuarios()">
+                        <option value="TODOS">Todos los roles</option>
+                        <option value="CLIENTE" selected>Solo Clientes / Talleres</option>
+                        <option value="ADMIN">Administradores</option>
+                        <option value="TRABAJADOR">Trabajadores</option>
+                        <option value="EMPAQUE">Almacén / Empaque</option>
+                        <option value="DESPACHO">Despacho / Entrega</option>
+                    </select>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3 col-lg-2">
+                    <select id="filtroAuth" class="form-select" onchange="filtrarUsuarios()">
+                        <option value="TODOS">Todos los accesos</option>
+                        <option value="local">Registro Local</option>
+                        <option value="google">Google OAuth</option>
+                        <option value="facebook">Facebook OAuth</option>
+                    </select>
+                </div>
+                <div class="col-12 col-lg-2 text-lg-end">
+                    <button class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2" onclick="cargarUsuarios()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span>Actualizar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA RESPONSIVA DE USUARIOS Y TALLERES -->
+        <div class="glass-panel p-0 overflow-hidden">
+            <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <table class="table table-hover align-middle mb-0" style="min-width: 980px;">
+                    <thead style="background-color: #1C1917; color: #FAF8F5; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <tr>
+                            <th class="ps-4 py-3" style="width: 70px;">ID</th>
+                            <th class="py-3">Taller / Usuario</th>
+                            <th class="py-3">Correo Electrónico</th>
+                            <th class="py-3">Rol</th>
+                            <th class="py-3">NIT / CI</th>
+                            <th class="py-3">Contacto</th>
+                            <th class="py-3">Método Auth</th>
+                            <th class="py-3">Fecha Registro</th>
+                            <th class="pe-4 py-3 text-end" style="width: 140px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuariosCuerpo" class="divide-y">
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">
+                                <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+                                Cargando directorio de talleres y clientes...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL REGISTRO / EDICIÓN DE USUARIO -->
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header text-white" style="background-color: #1C1917; border-bottom: 2px solid #B91C1C;">
+                    <h5 class="modal-title fw-bold" id="modalUsuarioLabel" style="font-family: 'Archivo', sans-serif;">
+                        <i class="bi bi-person-fill-gear text-warning me-2"></i><span id="modalUsuarioTitulo">Registrar Nuevo Usuario / Taller</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formUsuario" onsubmit="guardarUsuario(event)">
+                    <div class="modal-body p-4" style="background-color: #FAF8F5;">
+                        <input type="hidden" id="usuarioId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">Nombre Completo o Razón Social del Taller *</label>
+                            <input type="text" class="form-control" id="usuarioNombre" required placeholder="Ej: Taller Mecánico San Martín" style="border-radius: 8px;">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">Correo Electrónico *</label>
+                                <input type="email" class="form-control" id="usuarioEmail" required placeholder="contacto@taller.bo" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">Rol en el Sistema *</label>
+                                <select class="form-select" id="usuarioRol" required style="border-radius: 8px;">
+                                    <option value="CLIENTE">CLIENTE (Taller Mecánico)</option>
+                                    <option value="ADMIN">ADMIN (Gerencia General)</option>
+                                    <option value="TRABAJADOR">TRABAJADOR (Almacén & Ventas)</option>
+                                    <option value="EMPAQUE">EMPAQUE (Preparación de pedidos)</option>
+                                    <option value="DESPACHO">DESPACHO (Chofer / Logística)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">NIT / CI Facturación</label>
+                                <input type="text" class="form-control" id="usuarioNit" placeholder="Ej: 10234567018" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">Teléfono / WhatsApp</label>
+                                <input type="tel" class="form-control" id="usuarioTelefono" placeholder="+591 71234567" style="border-radius: 8px;">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">Dirección del Taller / Entrega</label>
+                            <input type="text" class="form-control" id="usuarioDireccion" placeholder="Av. Jaime Mendoza #120, Sucre" style="border-radius: 8px;">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1" id="labelPassword">Contraseña *</label>
+                                <input type="password" class="form-control" id="usuarioPassword" placeholder="Mínimo 6 caracteres" style="border-radius: 8px;">
+                                <div class="form-text" style="font-size: 0.72rem;" id="helpPassword">Mínimo 6 caracteres alfanuméricos.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark mb-1">Estado de la Cuenta</label>
+                                <select class="form-select" id="usuarioEstado" style="border-radius: 8px;">
+                                    <option value="ACTIVO">ACTIVO</option>
+                                    <option value="INACTIVO">INACTIVO / SUSPENDIDO</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="background-color: #FAF8F5; border-top: 1px solid #E7E5E4;">
+                        <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-stitch-primary px-4 fw-bold" id="btnGuardarUsuario">Guardar Cuenta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts Esenciales -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="menu.js?v=13"></script>
+    <script>
+        let usuariosGlobales = [];
+        let modalUsuarioInstancia = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderizarMenu('usuarios');
+            modalUsuarioInstancia = new bootstrap.Modal(document.getElementById('modalUsuario'));
+            cargarUsuarios();
+        });
+
+        async function cargarUsuarios() {
+            const tbody = document.getElementById('tablaUsuariosCuerpo');
+            try {
+                const res = await fetch('/api/usuarios');
+                if (!res.ok) throw new Error('Error al consultar usuarios');
+                usuariosGlobales = await res.json();
+                actualizarKPIs(usuariosGlobales);
+                filtrarUsuarios();
+            } catch (err) {
+                console.error('Error al cargar usuarios:', err);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> No se pudo cargar el directorio de usuarios. (${err.message})
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function actualizarKPIs(lista) {
+            document.getElementById('kpiTotalUsuarios').textContent = lista.length;
+            const talleres = lista.filter(u => u.rol === 'CLIENTE' || u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C');
+            document.getElementById('kpiTotalTalleres').textContent = talleres.length;
+            const sociales = lista.filter(u => u.metodo_auth === 'google' || u.metodo_auth === 'facebook');
+            document.getElementById('kpiTotalSocial').textContent = sociales.length;
+        }
+
+        function filtrarUsuarios() {
+            const busqueda = (document.getElementById('buscadorUsuarios').value || '').trim().toLowerCase();
+            const rolFiltro = document.getElementById('filtroRol').value;
+            const authFiltro = document.getElementById('filtroAuth').value;
+
+            const filtrados = usuariosGlobales.filter(u => {
+                const nombre = (u.nombre || '').toLowerCase();
+                const correo = (u.correo || u.email || '').toLowerCase();
+                const nit = (u.nit || '').toLowerCase();
+                const tel = (u.telefono || '').toLowerCase();
+                const dir = (u.direccion || '').toLowerCase();
+
+                const coincideTexto = !busqueda || 
+                    nombre.includes(busqueda) || 
+                    correo.includes(busqueda) || 
+                    nit.includes(busqueda) || 
+                    tel.includes(busqueda) || 
+                    dir.includes(busqueda);
+
+                let coincideRol = true;
+                if (rolFiltro !== 'TODOS') {
+                    if (rolFiltro === 'CLIENTE') {
+                        coincideRol = u.rol === 'CLIENTE' || u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C';
+                    } else {
+                        coincideRol = u.rol === rolFiltro;
+                    }
+                }
+
+                let coincideAuth = true;
+                if (authFiltro !== 'TODOS') {
+                    const metodo = (u.metodo_auth || 'local').toLowerCase();
+                    coincideAuth = metodo.includes(authFiltro.toLowerCase());
+                }
+
+                return coincideTexto && coincideRol && coincideAuth;
+            });
+
+            renderizarTabla(filtrados);
+        }
+
+        function renderizarTabla(lista) {
+            const tbody = document.getElementById('tablaUsuariosCuerpo');
+            if (lista.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-3 d-block mb-2 text-secondary"></i>
+                            No se encontraron usuarios o talleres con los filtros seleccionados.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = lista.map(u => {
+                const correo = u.correo || u.email || '—';
+                const rolBadge = getBadgeRol(u.rol);
+                const authBadge = getBadgeAuth(u.metodo_auth);
+                const fecha = formatearFecha(u.fecha_registro || u.fecha_creacion);
+                const estadoClass = u.estado === 'ACTIVO' ? 'bg-success' : 'bg-secondary';
+
+                return `
+                    <tr>
+                        <td class="ps-4 fw-bold font-monospace text-muted" style="font-size: 0.8rem;">#${u.id}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" style="width: 34px; height: 34px; background: #1C1917; font-size: 0.85rem;">
+                                    ${(u.nombre || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark" style="font-size: 0.9rem;">${escapeHTML(u.nombre || 'Sin nombre')}</div>
+                                    <span class="badge ${estadoClass} p-1" style="font-size: 0.62rem;">${u.estado || 'ACTIVO'}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="font-monospace text-dark" style="font-size: 0.85rem;">${escapeHTML(correo)}</span>
+                        </td>
+                        <td>${rolBadge}</td>
+                        <td>
+                            <span class="font-monospace text-secondary" style="font-size: 0.82rem;">${escapeHTML(u.nit || 'S/N')}</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.82rem;">
+                                <div><i class="bi bi-telephone text-muted me-1"></i>${escapeHTML(u.telefono || 'Sin teléfono')}</div>
+                                <div class="text-muted text-truncate" style="max-width: 180px;"><i class="bi bi-geo-alt text-muted me-1"></i>${escapeHTML(u.direccion || 'Sucre')}</div>
+                            </div>
+                        </td>
+                        <td>${authBadge}</td>
+                        <td>
+                            <span class="text-muted" style="font-size: 0.78rem;">${fecha}</span>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-secondary" onclick="editarUsuario(${u.id})" title="Editar usuario">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="eliminarUsuario(${u.id}, '${escapeHTML(u.nombre)}')" title="Eliminar cuenta">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getBadgeRol(rol) {
+            switch(rol) {
+                case 'ADMIN':
+                    return '<span class="badge bg-danger text-uppercase px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-shield-shaded me-1"></i>ADMIN</span>';
+                case 'CLIENTE':
+                case 'CLIENTE_B2B':
+                case 'CLIENTE_B2C':
+                    return '<span class="badge bg-success text-uppercase px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-shop me-1"></i>CLIENTE (TALLER)</span>';
+                case 'TRABAJADOR':
+                    return '<span class="badge bg-warning text-dark text-uppercase px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-person-badge-fill me-1"></i>TRABAJADOR</span>';
+                case 'EMPAQUE':
+                    return '<span class="badge bg-info text-dark text-uppercase px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-box-seam me-1"></i>EMPAQUE</span>';
+                case 'DESPACHO':
+                    return '<span class="badge bg-primary text-uppercase px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-truck me-1"></i>DESPACHO</span>';
+                default:
+                    return `<span class="badge bg-secondary px-2 py-1" style="font-size: 0.7rem;">${escapeHTML(rol || 'USUARIO')}</span>`;
+            }
+        }
+
+        function getBadgeAuth(metodo) {
+            const m = (metodo || 'local').toLowerCase();
+            if (m.includes('google')) {
+                return '<span class="badge bg-white text-dark border px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-google text-danger me-1"></i>Google</span>';
+            }
+            if (m.includes('facebook')) {
+                return '<span class="badge bg-white text-primary border px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-facebook text-primary me-1"></i>Facebook</span>';
+            }
+            return '<span class="badge bg-light text-secondary border px-2 py-1" style="font-size: 0.7rem;"><i class="bi bi-key-fill text-muted me-1"></i>Local</span>';
+        }
+
+        function formatearFecha(f) {
+            if (!f) return '—';
+            try {
+                const d = new Date(f);
+                return d.toLocaleDateString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit' });
+            } catch(e) {
+                return f;
+            }
+        }
+
+        function escapeHTML(str) {
+            return String(str || '').replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function abrirModalNuevoUsuario() {
+            document.getElementById('formUsuario').reset();
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('modalUsuarioTitulo').textContent = 'Registrar Nuevo Usuario / Taller';
+            document.getElementById('usuarioPassword').required = true;
+            document.getElementById('labelPassword').textContent = 'Contraseña *';
+            document.getElementById('helpPassword').textContent = 'Mínimo 6 caracteres obligatorios.';
+            modalUsuarioInstancia.show();
+        }
+
+        function editarUsuario(id) {
+            const u = usuariosGlobales.find(x => x.id === id);
+            if (!u) return;
+
+            document.getElementById('usuarioId').value = u.id;
+            document.getElementById('usuarioNombre').value = u.nombre || '';
+            document.getElementById('usuarioEmail').value = u.correo || u.email || '';
+            document.getElementById('usuarioRol').value = u.rol || 'CLIENTE';
+            document.getElementById('usuarioNit').value = u.nit || '';
+            document.getElementById('usuarioTelefono').value = u.telefono || '';
+            document.getElementById('usuarioDireccion').value = u.direccion || '';
+            document.getElementById('usuarioEstado').value = u.estado || 'ACTIVO';
+            
+            document.getElementById('usuarioPassword').value = '';
+            document.getElementById('usuarioPassword').required = false;
+            document.getElementById('labelPassword').textContent = 'Nueva Contraseña (Opcional)';
+            document.getElementById('helpPassword').textContent = 'Dejar vacío para conservar la contraseña actual.';
+
+            document.getElementById('modalUsuarioTitulo').textContent = `Editar Usuario #${u.id} — ${u.nombre}`;
+            modalUsuarioInstancia.show();
+        }
+
+        async function guardarUsuario(e) {
+            e.preventDefault();
+            const id = document.getElementById('usuarioId').value;
+            const nombre = document.getElementById('usuarioNombre').value.trim();
+            const email = document.getElementById('usuarioEmail').value.trim();
+            const rol = document.getElementById('usuarioRol').value;
+            const nit = document.getElementById('usuarioNit').value.trim();
+            const telefono = document.getElementById('usuarioTelefono').value.trim();
+            const direccion = document.getElementById('usuarioDireccion').value.trim();
+            const estado = document.getElementById('usuarioEstado').value;
+            const password = document.getElementById('usuarioPassword').value;
+
+            const btn = document.getElementById('btnGuardarUsuario');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+
+            try {
+                const payload = {
+                    nombre,
+                    email,
+                    correo: email,
+                    rol,
+                    nit,
+                    telefono,
+                    direccion,
+                    estado
+                };
+
+                if (password && password.trim().length > 0) {
+                    payload.password = password.trim();
+                }
+
+                let res;
+                if (id) {
+                    // Actualización
+                    res = await fetch(`/api/usuarios/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // Creación
+                    if (!password || password.length < 6) {
+                        alert('La contraseña debe tener al menos 6 caracteres.');
+                        btn.disabled = false;
+                        btn.textContent = 'Guardar Cuenta';
+                        return;
+                    }
+                    payload.password = password;
+                    res = await fetch('/api/usuarios', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Error al guardar los datos del usuario.');
+                }
+
+                mostrarAlerta('success', data.mensaje || 'Usuario guardado exitosamente.');
+                modalUsuarioInstancia.hide();
+                await cargarUsuarios();
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Guardar Cuenta';
+            }
+        }
+
+        async function eliminarUsuario(id, nombre) {
+            if (!confirm(`¿Está seguro de eliminar al usuario #${id} "${nombre}"? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo eliminar el usuario.');
+                mostrarAlerta('warning', data.mensaje || 'Usuario eliminado correctamente.');
+                await cargarUsuarios();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function mostrarAlerta(tipo, mensaje) {
+            const al = document.getElementById('usuariosAlert');
+            al.className = `alert alert-${tipo} py-2 px-3 small rounded-3 fw-semibold mb-4 d-block`;
+            al.textContent = mensaje;
+            setTimeout(() => {
+                al.className = 'alert d-none';
+            }, 4500);
+        }
+    </script>
 </body>
 </html>
