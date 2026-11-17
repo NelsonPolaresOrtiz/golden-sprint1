@@ -450,11 +450,11 @@ db.serialize(() => {
         {
             sku: 'REF-ORG-022',
             nombre: 'Refrigerante Orgánico Larga Vida OAT 50/50 Rojo (Galón)',
-            categoria: 'Aceites Sintéticos',
+            categoria: 'REFRIGERANTES',
             precio: 65.00,
             stock: 20,
             stock_minimo: 6,
-            imagen_url: 'https://placehold.co/400x300/ffffff/1e293b?text=Refrigerante',
+            imagen_url: './img/Refrigerante_Galon_Rojo.svg',
             especificaciones: {
                 tipo: 'Coolant / Anticongelante Orgánico 50% Monoetilenglicol Premoldeado',
                 filtracion: 'Punto de Ebullición: +129 °C (con tapa 15 PSI) | Congelación: -37 °C',
@@ -478,11 +478,11 @@ db.serialize(() => {
         {
             sku: 'LIQ-FRE-024',
             nombre: 'Líquido de Frenos Sintético Premium DOT-4 (500ml)',
-            categoria: 'Filtros de Aceite',
+            categoria: 'LÍQUIDOS Y FLUIDOS',
             precio: 35.00,
             stock: 40,
             stock_minimo: 10,
-            imagen_url: 'https://placehold.co/400x300/ffffff/1e293b?text=Liquido+de+Frenos',
+            imagen_url: './img/Liquido_Frenos_DOT4.svg',
             especificaciones: {
                 tipo: 'Fluido Hidráulico de Frenos a Base de Éteres de Polietilenglicol',
                 filtracion: 'Punto de Ebullición Seco: > 260 °C | Húmedo: > 165 °C',

@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema - GOLDEN ERP</title>
+
+    <!-- Si un cliente ya está logueado, redirigir directo a la Tienda Oficial -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden');
+                if (raw) {
+                    var u = JSON.parse(raw);
+                    if (u.rol === 'CLIENTE' || u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                        window.location.href = 'tienda.html';
+                    }
+                }
+            } catch(e) {}
+        })();
+    </script>
+
+    <!-- Bootstrap 5.3.3 & Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Identity Services SDK Oficial -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Tipografía Editorial: Archivo, Bricolage Grotesque, Work Sans, Chivo Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <!-- Estilos Comerciales Automotrices Cálidos -->
+    <link rel="stylesheet" href="styles.css?v=25">
+
+    <style>
+        /* ==========================================================================
+           ESTRUCTURA DIVIDIDA & ESCENA 3D INTERACTIVA 360° (PALETA CÁLIDA AUTOMOTRIZ)
+           ========================================================================== */
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #FAF8F5 !important;
+            overflow-x: hidden;
+        }
+
+        .split-login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* COLUMNA IZQUIERDA: SHOWCASE INTERACTIVO 3D CAD TÉCNICO (CARBÓN GRAFITO #1C1917) */
+        .showcase-3d-col {
+            background-color: #1C1917;
+            background-image: 
+                linear-gradient(rgba(200, 30, 30, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200, 30, 30, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(120, 113, 108, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(120, 113, 108, 0.04) 1px, transparent 1px);
+            background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem;
+            min-height: 100vh;
+            border-right: 3px solid #C81E1E;
+        }
+
+        @media (max-width: 991.98px) {
+            .showcase-3d-col {
+                min-height: 480px;
+                padding: 1.5rem;
+                border-right: none;
+                border-bottom: 3px solid #C81E1E;
+            }
+        }
+
+        /* COLUMNA DERECHA: FORMULARIO DE ACCESO CÁLIDO (#FAF8F5) */
+        .form-access-col {
+            background-color: #FAF8F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        /* Tarjeta de Formulario Limpia */
+        .login-card-stitch {
+            width: 100%;
+            max-width: 450px;
+            background-color: #FFFFFF !important;
+            border: 1px solid #E6E1DA !important;
+            border-radius: 6px !important;
+            box-shadow: 0 4px 20px rgba(28, 25, 23, 0.06) !important;
+            padding: 2.5rem 2rem;
+            position: relative;
+        }
+
+        /* ==========================================================================
+           MOTOR 3D CON CSS 3D TRANSFORMS & SEGUIMIENTO DE CURSOR
+           ========================================================================== */
+
+        .cad-viewport {
+            perspective: 1000px;
+            perspective-origin: center center;
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: auto 0;
+            min-height: 400px;
+        }
+
+        .cad-pivot {
+            transform-style: preserve-3d;
+            position: relative;
+            width: 340px;
+            height: 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform;
+        }
+
+        /* Rotación Continua 360° de los Anillos Técnicos */
+        .cad-rotator-360 {
+            transform-style: preserve-3d;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: rotate360 26s linear infinite;
+        }
+
+        .cad-rotator-reverse {
+            transform-style: preserve-3d;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: rotate360Reverse 18s linear infinite;
+        }
+
+        @keyframes rotate360 {
+            0% { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+        }
+
+        @keyframes rotate360Reverse {
+            0% { transform: rotateZ(360deg); }
+            100% { transform: rotateZ(0deg); }
+        }
+
+        /* Anillos Concéntricos Técnicos */
+        .cad-ring-outer {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border: 1px dashed rgba(200, 30, 30, 0.45);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .cad-ring-inner {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border: 1px solid rgba(120, 113, 108, 0.35);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .cad-ring-axis {
+            position: absolute;
+            width: 360px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(200, 30, 30, 0.35), transparent);
+            pointer-events: none;
+        }
+
+        .cad-ring-axis.vertical {
+            transform: rotate(90deg);
+        }
+
+        /* Núcleo Central: Emblema Técnico Automotriz 3D */
+        .cad-core-card {
+            width: 220px;
+            height: 220px;
+            background: linear-gradient(145deg, #292524 0%, #1C1917 100%);
+            border: 2px solid #C81E1E;
+            border-radius: 6px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(200, 30, 30, 0.2);
+            transform-style: preserve-3d;
+            transform: translateZ(35px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            user-select: none;
+        }
+
+        .cad-core-card::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 1px dashed rgba(120, 113, 108, 0.25);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+
+        /* 3 Indicadores Flotantes Técnicos */
+        .cad-floating-indicator {
+            position: absolute;
+            background: rgba(28, 25, 23, 0.95);
+            border: 1px solid rgba(200, 30, 30, 0.6);
+            border-radius: 4px;
+            padding: 7px 11px;
+            font-family: 'Chivo Mono', monospace;
+            font-size: 0.72rem;
+            color: #FFFFFF;
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+            line-height: 1.3;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .cad-floating-indicator strong {
+            color: #F87171;
+            display: block;
+            font-size: 0.74rem;
+            letter-spacing: 0.3px;
+        }
+
+        .cad-floating-indicator small {
+            color: #A8A29E;
+            font-size: 0.65rem;
+        }
+
+        /* Posiciones en el espacio 3D */
+        .indicator-stock {
+            top: 10px;
+            left: -35px;
+            transform: translateZ(70px);
+        }
+
+        .indicator-billing {
+            right: -45px;
+            top: 50%;
+            transform: translateY(-50%) translateZ(80px);
+        }
+
+        .indicator-dispatch {
+            bottom: 15px;
+            left: -20px;
+            transform: translateZ(65px);
+        }
+
+        @media (max-width: 575.98px) {
+            .cad-pivot {
+                width: 280px;
+                height: 280px;
+            }
+            .cad-ring-outer { width: 270px; height: 270px; }
+            .cad-ring-inner { width: 210px; height: 210px; }
+            .cad-core-card { width: 180px; height: 180px; }
+            .cad-floating-indicator { font-size: 0.65rem; padding: 5px 8px; }
+            .indicator-stock { left: -15px; top: 0; }
+            .indicator-billing { right: -25px; }
+            .indicator-dispatch { left: -10px; bottom: 0; }
+        }
+
+        /* Botones de Acceso Rápido Demo */
+        .btn-demo-access {
+            background-color: #F3EFEA !important;
+            border: 1px solid #E6E1DA !important;
+            color: #1C1917 !important;
+            border-radius: 4px !important;
+            font-family: 'Chivo Mono', monospace !important;
+            font-size: 0.74rem !important;
+            font-weight: 600 !important;
+            padding: 0.35rem 0.65rem !important;
+            transition: all 0.15s ease !important;
+        }
+
+        .btn-demo-access:hover {
+            background-color: #E6E1DA !important;
+            border-color: #D6D0C7 !important;
+            color: #1C1917 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================================= -->
+    <!-- CAPA SUPERPUESTA TEMPORAL: INTRO ANIMADA (SPLASH SCREEN OVERLAY)          -->
+    <!-- ========================================================================= -->
+    <div id="splashOverlay" class="splash-overlay">
+        <div class="splash-center-wrap">
+            <!-- Isotipo SVG Técnico con Animación de Trazado Progresivo -->
+            <svg class="splash-svg-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Engranaje Industrial (Trazado dorado #D97706 / relleno Rojo #B91C1C) -->
+                <path class="splash-draw-gear" d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" />
+                <!-- Círculo Central Técnico (Dorado Industrial #D97706) -->
+                <circle class="splash-draw-circle" cx="50" cy="55" r="28" />
+                <!-- Gota de Aceite de Alta Precisión (Blanco Puro) -->
+                <path class="splash-draw-drop" d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" />
+                <!-- Líneas de Brillo y Flujo Hidráulico -->
+                <path class="splash-draw-sparkle" d="M47 48c0-3 3-7 3-7" />
+                <path class="splash-draw-flow" d="M30 65l-12 12" />
+                <path class="splash-draw-flow" d="M26 55l-14 5" />
+                <path class="splash-draw-flow" d="M35 44l-10-10" />
+            </svg>
+
+            <!-- Fase 2: Aparición de la Marca -->
+            <div class="splash-brand-wrap">
+                <div class="splash-brand-title">GOLDEN<span>.</span></div>
+                <div class="splash-brand-sub">LUBRICANTES &amp; FILTROS</div>
+            </div>
+        </div>
+
+        <!-- Botón Saltar Intro -->
+        <button type="button" class="btn-skip-intro" onclick="saltarSplashIntro()">
+            <i class="bi bi-fast-forward-fill"></i> Saltar intro
+        </button>
+    </div>
+
+
+    <!-- MENÚ COMPARTIDO (Se muestra cuando el usuario está logueado en vista CRUD) -->
+    <div id="menu-contenedor" class="d-none"></div>
+
+    <!-- ========================================================================= -->
+    <!-- VISTA 1: LOGIN SPLIT-SCREEN CON ESCENA INTERACTIVA 360°                  -->
+    <!-- ========================================================================= -->
+    <div id="loginView" class="split-login-wrapper">
+
+        <!-- 1. COLUMNA IZQUIERDA: SHOWCASE INTERACTIVO 3D CAD TÉCNICO (50%) -->
+        <div class="col-12 col-lg-6 showcase-3d-col" id="showcaseCol">
+            
+            <!-- Cabecera Técnica Superior: Identidad Oficial GOLDEN -->
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                        <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
+                        <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                        <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                        <!-- Gota de Aceite de Alta Precisión -->
+                        <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                        <!-- Detalle de brillo en la gota -->
+                        <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                    </svg>
+                    <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                        <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
+                        <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="badge font-mono" style="background: rgba(21, 128, 61, 0.2); color: #4ADE80; border: 1px solid rgba(21, 128, 61, 0.4); font-size: 0.68rem; border-radius: 4px;">
+                        <span class="pulse-dot pulse-dot-emerald me-1"></span>SISTEMA EN LÍNEA
+                    </span>
+                </div>
+            </div>
+
+            <!-- Centro: Visor 3D Interactivo con Rotación 360° y Seguimiento de Cursor -->
+            <div class="cad-viewport">
+                <div class="cad-pivot" id="cadPivot">
+                    
+                    <!-- Ejes de Referencia CAD -->
+                    <div class="cad-ring-axis"></div>
+                    <div class="cad-ring-axis vertical"></div>
+
+                    <!-- Anillo Exterior Rotatorio 360° -->
+                    <div class="cad-rotator-360">
+                        <div class="cad-ring-outer"></div>
+                    </div>
+
+                    <!-- Anillo Interior en Contragiro -->
+                    <div class="cad-rotator-reverse">
+                        <div class="cad-ring-inner"></div>
+                    </div>
+
+                    <!-- Núcleo Central 3D / Emblema Automotriz Oficial -->
+                    <div class="cad-core-card">
+                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-2" style="filter: drop-shadow(0 4px 10px rgba(185, 28, 28, 0.35)); flex-shrink: 0;">
+                            <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
+                            <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                            <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                            <!-- Gota de Aceite de Alta Precisión -->
+                            <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                            <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        </svg>
+                        <span class="font-mono fw-bold text-uppercase" id="cadCoreBadge" style="color: #F87171; font-size: 0.78rem; letter-spacing: 1px;">
+                            GOLDEN ERP
+                        </span>
+                        <h6 class="text-white fw-bold mb-1" id="cadCoreTitle" style="font-size: 0.85rem; line-height: 1.25;">
+                            Lubricantes &amp; Filtros
+                        </h6>
+                        <span class="font-mono" id="cadCoreSub" style="font-size: 0.65rem; color: #A8A29E;">
+                            DISTRIBUCIÓN MAYORISTA
+                        </span>
+                    </div>
+
+                    <!-- [01] Indicador Flotante 1: Control de Stock -->
+                    <div class="cad-floating-indicator indicator-stock" id="cadIndStock">
+                        <strong id="cadIndStockTitle"><i class="bi bi-database-check me-1"></i>STOCK EN TIEMPO REAL</strong>
+                        <small id="cadIndStockSub">Catálogo Actualizado</small>
+                    </div>
+
+                    <!-- [02] Indicador Flotante 2: Facturación con NIT -->
+                    <div class="cad-floating-indicator indicator-billing" id="cadIndBilling">
+                        <strong id="cadIndBillingTitle"><i class="bi bi-file-earmark-text-fill me-1"></i>FACTURACIÓN CON NIT</strong>
+                        <small id="cadIndBillingSub">Norma SIN / IVA 13% • Talleres</small>
+                    </div>
+
+                    <!-- [03] Indicador Flotante 3: Despacho a Talleres -->
+                    <div class="cad-floating-indicator indicator-dispatch" id="cadIndDispatch">
+                        <strong id="cadIndDispatchTitle"><i class="bi bi-truck me-1"></i>DESPACHO A TALLERES</strong>
+                        <small id="cadIndDispatchSub">Envíos en el día a todo el país</small>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Pie Técnico de Telemetría -->
+            <div class="d-flex justify-content-between align-items-end font-mono pt-3" style="font-size: 0.72rem; border-top: 1px solid rgba(120, 113, 108, 0.2);">
+                <div>
+                    <span class="d-block" id="cadFootLeftTitle" style="color: #F87171; font-weight: 600;">PEDIDOS MAYORISTAS</span>
+                    <span id="cadFootLeftSub" style="color: #A8A29E;">SUCRE, BOLIVIA</span>
+                </div>
+                <div class="text-end" style="color: #A8A29E;">
+                    <span id="cadFootRightTitle">RED DE DISTRIBUCIÓN</span>
+                    <span class="d-block text-white" id="cadFootRightSub">SUCRE • POTOSÍ • COCHABAMBA</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 2. COLUMNA DERECHA: FORMULARIO DE ACCESO CÁLIDO (50%) -->
+        <div class="col-12 col-lg-6 form-access-col">
+            
+            <!-- PANEL A: ACCESO PERSONAL INTERNO (ADMIN, ALMACÉN, DESPACHO) -->
+            <div class="login-card-stitch" id="panelLoginInterno">
+                
+                <!-- Encabezado del Formulario: Identidad Oficial GOLDEN -->
+                <div class="mb-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                            <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
+                            <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                            <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                            <!-- Gota de Aceite de Alta Precisión -->
+                            <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                            <!-- Detalle de brillo en la gota -->
+                            <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        </svg>
+                        <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                            <span style="font-family: 'Archivo', sans-serif; font-size: 1.6rem; font-weight: 900; color: #18181B; letter-spacing: -0.01em;">GOLDEN</span>
+                            <span style="font-family: 'Work Sans', sans-serif; font-size: 0.62rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
+                        </div>
+                    </div>
+                    <span class="badge mb-2 font-mono" style="background: #F3EFEA; color: #57534E; border: 1px solid #E6E1DA;">
+                        Portal Oficial de Distribución Automotriz
+                    </span>
+                    <h3 class="fw-bold mb-1 text-dark" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.3px;">
+                        Bienvenido al portal de pedidos
+                    </h3>
+                    <p class="text-muted small mb-0" style="font-size: 0.88rem;">
+                        Ingreso para personal de almacén, choferes y administración interna.
+                    </p>
+                </div>
+
+                <!-- Alerta Dinámica de Error de Inicio de Sesión -->
+                <div id="loginAlert" class="alert d-none py-2 px-3 small rounded-2 fw-semibold text-center mb-3" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;"></div>
+
+                <!-- Formulario de Acceso -->
+                <form id="loginForm">
+                    
+                    <!-- Campo: Correo Institucional -->
+                    <div class="mb-3">
+                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; color: #57534E;">
+                            Correo Institucional / Usuario
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border border-end-0 text-muted ps-3 pe-2" style="border-color: #D6D0C7;">
+                                <i class="bi bi-envelope-fill"></i>
+                            </span>
+                            <input type="email" 
+                                   id="loginEmail" 
+                                   class="form-control font-mono border-start-0 ps-1" 
+                                   placeholder="admin@golden.bo" 
+                                   required 
+                                   style="border-color: #D6D0C7; font-size: 0.9rem;">
+                        </div>
+                    </div>
+
+                    <!-- Campo: Contraseña con Toggle Mostrar/Ocultar -->
+                    <div class="mb-4">
+                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; color: #57534E;">
+                            Contraseña de Acceso
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border border-end-0 text-muted ps-3 pe-2" style="border-color: #D6D0C7;">
+                                <i class="bi bi-key-fill"></i>
+                            </span>
+                            <input type="password" 
+                                   id="loginPassword" 
+                                   class="form-control font-mono border-start-0 border-end-0 ps-1" 
+                                   placeholder="••••••••" 
+                                   required 
+                                   style="border-color: #D6D0C7; font-size: 0.9rem;">
+                            <button class="btn btn-outline-secondary border border-start-0 bg-white pe-3" 
+                                    type="button" 
+                                    id="btnTogglePassword" 
+                                    onclick="toggleMostrarPassword()" 
+                                    style="border-color: #D6D0C7; color: #78716C;" 
+                                    title="Mostrar u ocultar contraseña">
+                                <i class="bi bi-eye-fill" id="iconoPassword"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botón de Ingreso en Rojo Automotriz #C81E1E -->
+                    <button type="submit" 
+                            id="btnLogin" 
+                            class="btn btn-primary w-100 py-3 fw-bold fs-6 shadow-sm d-flex align-items-center justify-content-center gap-2 mb-4" 
+                            style="background-color: #C81E1E; border-color: #C81E1E; border-radius: 6px;">
+                        <i class="bi bi-box-arrow-in-right fs-5"></i>
+                        <span>Ingresar al Sistema</span>
+                    </button>
+                </form>
+
+                <!-- Acceso Rápido de Demostración (1 Clic) -->
+                <div class="mt-3 pt-3 border-top text-center" style="border-color: #E6E1DA !important;">
+                    <span class="text-muted small fw-bold text-uppercase d-block mb-2 font-mono" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                        Accesos de Demostración y Evaluación SIS324 (1 Clic):
+                    </span>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <button type="button" 
+                                class="btn btn-demo-access d-flex align-items-center gap-1" 
+                                onclick="llenarLogin('admin@golden.bo', 'admin123')">
+                            <i class="bi bi-shield-lock-fill text-danger"></i> ADMIN (Gerente)
+                        </button>
+                        <button type="button" 
+                                class="btn btn-demo-access d-flex align-items-center gap-1" 
+                                onclick="llenarLogin('empaque@golden.bo', 'empaque123')">
+                            <i class="bi bi-box-seam-fill text-warning"></i> EMPAQUE (Almacén)
+                        </button>
+                        <button type="button" 
+                                class="btn btn-demo-access d-flex align-items-center gap-1" 
+                                onclick="llenarLogin('despacho@golden.bo', 'despacho123')">
+                            <i class="bi bi-truck text-primary"></i> DESPACHO (Chofer)
+                        </button>
+                        <button type="button" 
+                                class="btn btn-demo-access d-flex align-items-center gap-1 text-success fw-bold" 
+                                onclick="activarModoComercialCliente()">
+                            <i class="bi bi-tools text-success"></i> CLIENTE (Taller)
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VISTA COMERCIAL: PORTAL LUMINOSO PARA CLIENTES Y TALLERES MECÁNICOS       -->
+    <!-- ========================================================================= -->
+    <div id="portalClientesView" class="portal-comercial-wrapper d-none">
+        
+        <!-- Barra Superior con Botón Discreto para Volver al Login de Personal -->
+        <div class="portal-topbar">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge font-mono" style="background: rgba(217, 119, 6, 0.12); color: #B45309; border: 1px solid rgba(217, 119, 6, 0.25); font-size: 0.72rem; padding: 5px 10px; border-radius: 6px;">
+                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i>DISTRIBUCIÓN OFICIAL • SUCRE, BOLIVIA
+                </span>
+            </div>
+            <div>
+                <button type="button" class="btn-portal-back" onclick="activarModoPersonalInterno()" title="Volver al acceso de empleados y administradores">
+                    <span>Acceso Personal GOLDEN</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="portal-container">
+            <div class="row g-4 g-xl-5 align-items-center">
+                
+                <!-- COLUMNA IZQUIERDA (60%): VITRINA COMERCIAL PARA TALLERES -->
+                <div class="col-12 col-lg-7">
+                    
+                    <!-- Cabecera de Marca -->
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                            <!-- Engranaje Industrial Rojo #B91C1C y Oro #D97706 -->
+                            <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                            <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                            <!-- Gota de Aceite de Alta Precisión -->
+                            <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                            <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        </svg>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="font-family: 'Archivo', sans-serif; font-size: 1.6rem; font-weight: 900; color: #1C1917; letter-spacing: -0.01em;">GOLDEN</span>
+                                <span class="badge font-mono" style="background: #F3EFEA; color: #78716C; border: 1px solid #E6E1DA; font-size: 0.68rem;">
+                                    TIENDA MAYORISTA &amp; TALLERES — SUCRE
+                                </span>
+                            </div>
+                            <span style="font-family: 'Work Sans', sans-serif; font-size: 0.65rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; display: block;">
+                                LUBRICANTES &amp; FILTROS
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Titular Grande y Humano -->
+                    <h1 class="display-6 fw-bold mb-3" style="font-family: 'Archivo', sans-serif; color: #1C1917; line-height: 1.15; letter-spacing: -0.02em;">
+                        Abastece tu taller con precios directos de distribuidora.
+                    </h1>
+
+                    <p class="text-secondary fs-6 mb-4" style="line-height: 1.5; max-width: 580px;">
+                        Accede a nuestro catálogo mayorista en tiempo real. Precios especiales por caja cerrada y balde para mecánicos, lubricentros y flotas en Sucre y Chuquisaca.
+                    </p>
+
+                    <!-- 3 Tarjetas Horizontales Limpias -->
+                    <div class="d-flex flex-column gap-3 mb-4" style="max-width: 580px;">
+                        
+                        <!-- Tarjeta 1: Stock Real Garantizado -->
+                        <div class="commercial-feature-card">
+                            <div class="commercial-feature-icon" style="background: #FEF3C7; color: #D97706;">
+                                <i class="bi bi-box-seam-fill"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">Stock Real Garantizado</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.84rem; line-height: 1.35;">
+                                    Consulta litros, baldes de 20L y filtros disponibles al instante.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta 2: Pago Flexible con QR o PayPal -->
+                        <div class="commercial-feature-card">
+                            <div class="commercial-feature-icon" style="background: #DCFCE7; color: #16A34A;">
+                                <i class="bi bi-qr-code-scan"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">Pago Flexible con QR o PayPal</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.84rem; line-height: 1.35;">
+                                    Paga desde tu celular con QR Simple boliviano o tarjeta internacional.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta 3: Despacho en el Día en Sucre -->
+                        <div class="commercial-feature-card">
+                            <div class="commercial-feature-icon" style="background: #FEE2E2; color: #B91C1C;">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">Despacho en el Día en Sucre</h6>
+                                <p class="text-muted small mb-0" style="font-size: 0.84rem; line-height: 1.35;">
+                                    Seguimiento paso a paso desde el empaque hasta la puerta de tu taller.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Datos de atención local -->
+                    <div class="d-flex align-items-center gap-3 pt-2 text-muted small font-mono" style="font-size: 0.76rem;">
+                        <span><i class="bi bi-telephone-fill text-danger me-1"></i>(4) 64-52890</span>
+                        <span>•</span>
+                        <span><i class="bi bi-whatsapp text-success me-1"></i>WhatsApp: 71234567</span>
+                        <span>•</span>
+                        <span><i class="bi bi-shield-check text-primary me-1"></i>Factura Fiscal IVA 13%</span>
+                    </div>
+
+                </div>
+
+                <!-- COLUMNA DERECHA (40%): TARJETA COMERCIAL FLOTANTE -->
+                <div class="col-12 col-lg-5">
+                    <div class="commercial-floating-card">
+                        
+                        <!-- Selector de Pestañas Superior Tipo Píldora (Pill Tabs) -->
+                        <div class="commercial-pill-tabs mb-4">
+                            <button type="button" class="commercial-pill-tab active" id="tabPillIngresar" onclick="alternarPillComercial('ingresar')">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar
+                            </button>
+                            <button type="button" class="commercial-pill-tab" id="tabPillRegistrar" onclick="alternarPillComercial('registrar')">
+                                <i class="bi bi-person-plus-fill me-1"></i> Registrar Taller
+                            </button>
+                        </div>
+
+                        <!-- Alerta Dinámica de Clientes -->
+                        <div id="portalClienteAlert" class="alert d-none py-2 px-3 small rounded-3 fw-semibold text-center mb-3" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;"></div>
+
+                        <!-- SECCIÓN 1: INGRESAR -->
+                        <div id="seccionPillIngresar">
+                            
+                            <!-- Botón Grande: Continuar con Google -->
+                            <button type="button" class="btn btn-social-auth btn-google w-100 mb-2" onclick="abrirModalOAuthSocial('google')">
+                                <svg width="20" height="20" viewBox="0 0 48 48">
+                                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                                </svg>
+                                <span class="fw-semibold">Continuar con Google</span>
+                            </button>
+
+                            <!-- Botón Grande: Continuar con Facebook -->
+                            <button type="button" class="btn btn-social-auth btn-facebook w-100 mb-3" onclick="abrirModalOAuthSocial('facebook')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                </svg>
+                                <span class="fw-semibold text-white">Continuar con Facebook</span>
+                            </button>
+
+                            <!-- Divisor Limpio -->
+                            <div class="d-flex align-items-center my-3">
+                                <hr class="flex-grow-1 my-0 text-muted opacity-25">
+                                <span class="px-3 text-muted small font-mono" style="font-size: 0.76rem;">o ingresa con tu cuenta registrada</span>
+                                <hr class="flex-grow-1 my-0 text-muted opacity-25">
+                            </div>
+
+                            <!-- Formulario de Acceso Directo -->
+                            <form id="portalLoginForm">
+                                <div class="mb-3">
+                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                        Correo Electrónico
+                                    </label>
+                                    <input type="email" id="portalClienteEmail" class="form-control portal-form-control font-mono" placeholder="taller@golden.bo" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                        Contraseña
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="password" id="portalClientePassword" class="form-control portal-form-control font-mono border-end-0" placeholder="••••••••" required>
+                                        <button class="btn btn-outline-secondary border border-start-0 bg-white pe-3" type="button" onclick="togglePasswordVisibility('portalClientePassword', this)" style="border-radius: 0 10px 10px 0; border-color: #D6D0C7;">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="btnPortalClienteLogin" class="btn btn-portal-submit w-100 mb-3">
+                                    <i class="bi bi-cart-check-fill fs-5"></i>
+                                    <span>Entrar al Catálogo</span>
+                                </button>
+                            </form>
+
+                            <!-- Acceso rápido 1 clic para Taller Los Primos -->
+                            <div class="text-center pt-2">
+                                <button type="button" class="btn btn-sm btn-light border text-muted font-mono" style="font-size: 0.75rem; border-radius: 8px;" onclick="llenarPortalCliente('cliente@golden.bo', 'cliente123')">
+                                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Acceso Demo: cliente@golden.bo
+                                </button>
+                            </div>
+
+                        </div>
+
+                        <!-- SECCIÓN 2: REGISTRAR TALLER -->
+                        <div id="seccionPillRegistrar" class="d-none">
+                            <form id="portalRegistroForm">
+                                <div class="mb-2">
+                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                        Nombre del Taller o Cliente
+                                    </label>
+                                    <input type="text" id="regPortalNombre" class="form-control portal-form-control" placeholder="Ej. Taller Mecánico Los Primos" required>
+                                </div>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                            NIT / CI (para factura)
+                                        </label>
+                                        <input type="text" id="regPortalNit" class="form-control portal-form-control font-mono" placeholder="1029384756" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                            Celular / WhatsApp
+                                        </label>
+                                        <input type="tel" id="regPortalTelefono" class="form-control portal-form-control font-mono" placeholder="71234567" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                        Dirección de entrega en Sucre
+                                    </label>
+                                    <input type="text" id="regPortalDireccion" class="form-control portal-form-control" placeholder="Av. Las Américas #340, Zona Central">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                        Correo Electrónico
+                                    </label>
+                                    <input type="email" id="regPortalEmail" class="form-control portal-form-control font-mono" placeholder="contacto@mitaller.bo" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
+                                        Contraseña
+                                    </label>
+                                    <input type="password" id="regPortalPassword" class="form-control portal-form-control font-mono" placeholder="Mínimo 6 caracteres" required>
+                                </div>
+
+                                <button type="submit" id="btnPortalClienteRegistro" class="btn btn-portal-submit w-100 mb-2">
+                                    <i class="bi bi-check-circle-fill fs-5"></i>
+                                    <span>Crear Cuenta y Empezar a Comprar</span>
+                                </button>
+
+                                <small class="text-muted d-block text-center mt-2" style="font-size: 0.74rem;">
+                                    <i class="bi bi-shield-check text-success me-1"></i>Facturación oficial con crédito fiscal y registro inmediato.
+                                </small>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VISTA 2: PANEL CRUD DE USUARIOS (SOLO ADMINISTRADOR LOGUEADO)             -->
+    <!-- ========================================================================= -->
+    <div id="crudView" class="container-fluid px-4 py-4 d-none">
+        
+        <!-- Título de Sección -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-2">
+            <div>
+                <h2 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-people-fill text-warning me-2"></i>Gestión de Usuarios & Talleres
+                </h2>
+                <p class="text-muted mb-0 mt-1 small">Administración de cuentas con control de acceso basado en roles (RBAC) y trazabilidad.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-gold">
+                    <span class="pulse-dot pulse-dot-gold me-1"></span> Módulo Seguro RBAC
+                </span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Columna Izquierda: Formulario Crear / Editar -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="glass-header text-dark fw-bold d-flex align-items-center" id="formTitle">
+                        <i class="bi bi-person-plus-fill text-warning me-2 fs-5"></i> Registrar Nuevo Usuario
+                    </div>
+                    <div class="p-4">
+                        <div id="crudAlert" class="alert d-none py-2 px-3 small rounded-2 fw-semibold mb-3"></div>
+
+                        <form id="userForm">
+                            <input type="hidden" id="userId">
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">Nombre Completo / Razón Social</label>
+                                <input type="text" id="nombre" class="form-control" placeholder="Ej. Lubricentro Central" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">Correo Institucional (Login)</label>
+                                <input type="email" id="email" class="form-control font-mono" placeholder="usuario@golden.bo" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-muted">
+                                    Contraseña <span id="passHint" class="text-warning fw-normal small"></span>
+                                </label>
+                                <input type="password" id="password" class="form-control font-mono" placeholder="Mínimo 6 caracteres">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-4">
+                                    <label class="form-label small fw-bold text-muted">Rol en Sistema</label>
+                                    <select id="rol" class="form-select font-mono" required>
+                                        <option value="ADMIN">ADMIN</option>
+                                        <option value="ALMACENERO">ALMACENERO</option>
+                                        <option value="REPARTIDOR">REPARTIDOR</option>
+                                        <option value="CLIENTE_B2B">CLIENTE B2B</option>
+                                        <option value="CLIENTE_B2C">CLIENTE B2C</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-4">
+                                    <label class="form-label small fw-bold text-muted">Estado</label>
+                                    <select id="estado" class="form-select font-mono" required>
+                                        <option value="ACTIVO">ACTIVO</option>
+                                        <option value="INACTIVO">INACTIVO</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-stitch-primary w-100 py-2 fs-6 shadow-sm" id="btnGuardar">
+                                    <i class="bi bi-save me-1"></i> Guardar usuario
+                                </button>
+                                <button type="button" class="btn btn-secondary w-100 d-none py-2" id="btnCancelar" onclick="resetFormulario()">
+                                    <i class="bi bi-x-circle me-1"></i> Cancelar edición
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Directorio de Usuarios -->
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <h5 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                            <i class="bi bi-list-columns-reverse text-warning me-2"></i>Directorio de usuarios y talleres
+                        </h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="input-group" style="max-width: 320px;">
+                                <span class="input-group-text bg-white border border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                <input type="text" id="buscadorUsuarios" class="form-control border-start-0 ps-0" placeholder="Buscar cliente, taller, teléfono, NIT o rol...">
+                            </div>
+                            <button class="btn btn-secondary btn-sm px-3" onclick="cargarUsuarios()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refrescar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Usuario / Contacto</th>
+                                    <th>Correo</th>
+                                    <th>Rol en el sistema</th>
+                                    <th>Estado</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaUsuarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal OAuth Social (Google / Facebook / Microsoft) -->
+    <div class="modal fade" id="modalOAuthSocial" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden; font-family: 'Work Sans', sans-serif;">
+                
+                <!-- Cabecera OAuth con Fondo Carbón y Botón ✕ Blanco Destacado -->
+                <div class="modal-header border-0 pb-3 pt-3 px-4 align-items-center" style="background: #1C1917; border-radius: 14px 14px 0 0;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div id="oauthModalIconWrapper" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 1px solid #E2E8F0; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.12);">
+                            <!-- Icono SVG inyectado dinámicamente -->
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-white mb-0 fs-6" id="oauthModalTitle">Iniciar sesión con Google</h5>
+                            <span class="small" style="font-size: 0.8rem; color: #D6D3D1;">Para continuar en <strong class="text-white">GOLDEN Lubricantes &amp; Filtros</strong></span>
+                        </div>
+                    </div>
+                    <button type="button" id="closeSocialModal" class="btn-social-close ms-auto" data-bs-dismiss="modal" aria-label="Cerrar" title="Cerrar ventana">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body px-4 pt-3 pb-4">
+                    <p class="small text-secondary mb-3" style="font-size: 0.82rem; line-height: 1.4;">
+                        Selecciona una cuenta comercial o taller registrado para ingresar al catálogo mayorista inmediatamente:
+                    </p>
+
+                    <!-- Lista de Cuentas Sugeridas (Tipografía Limpia Work Sans) -->
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        <!-- Cuenta 1: Taller Los Primos -->
+                        <div class="oauth-account-item" onclick="ejecutarOAuthLogin('taller.losprimos@gmail.com', 'Taller Mecánico Los Primos')">
+                            <div class="oauth-avatar" style="background: #FEF3C7; color: #B45309;">
+                                <i class="bi bi-wrench-adjustable"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0 text-start">
+                                <div class="fw-bold text-dark text-truncate" style="font-size: 0.88rem;">Taller Mecánico Los Primos</div>
+                                <div class="text-secondary text-truncate" style="font-size: 0.78rem;">taller.losprimos@gmail.com</div>
+                            </div>
+                            <span class="badge bg-light text-secondary border fw-medium" style="font-size: 0.7rem;">Sucre (Activo)</span>
+                        </div>
+
+                        <!-- Cuenta 2: Lubricentro Sucre -->
+                        <div class="oauth-account-item" onclick="ejecutarOAuthLogin('lubricentro.sucre@gmail.com', 'Lubricentro Central Sucre')">
+                            <div class="oauth-avatar" style="background: #FEE2E2; color: #B91C1C;">
+                                <i class="bi bi-droplet-half"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0 text-start">
+                                <div class="fw-bold text-dark text-truncate" style="font-size: 0.88rem;">Lubricentro Central Sucre</div>
+                                <div class="text-secondary text-truncate" style="font-size: 0.78rem;">lubricentro.sucre@gmail.com</div>
+                            </div>
+                            <span class="badge bg-light text-secondary border fw-medium" style="font-size: 0.7rem;">Mayorista</span>
+                        </div>
+
+                        <!-- Cuenta 3: Taller Mecánico Central -->
+                        <div class="oauth-account-item" onclick="ejecutarOAuthLogin('cliente@golden.bo', 'Taller Mecánico Central')">
+                            <div class="oauth-avatar" style="background: #DBEAFE; color: #1D4ED8;">
+                                <i class="bi bi-gear-wide-connected"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0 text-start">
+                                <div class="fw-bold text-dark text-truncate" style="font-size: 0.88rem;">Taller Mecánico Central</div>
+                                <div class="text-secondary text-truncate" style="font-size: 0.78rem;">cliente@golden.bo</div>
+                            </div>
+                            <span class="badge bg-light text-secondary border fw-medium" style="font-size: 0.7rem;">Demo Oficial</span>
+                        </div>
+                    </div>
+
+                    <!-- Botón para usar propia cuenta Gmail -->
+                    <div class="pt-2 border-top" style="border-color: #E2E8F0 !important;">
+                        <button type="button" id="btnCustomOAuthTrigger" class="btn btn-outline-secondary btn-sm w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-medium" onclick="toggleCustomOAuthForm()" style="font-size: 0.82rem; border-style: dashed; border-radius: 8px;">
+                            <i class="bi bi-person-plus"></i> Usar mi propio correo Gmail...
+                        </button>
+
+                        <!-- Formulario desplegable para cuenta personalizada -->
+                        <div id="oauthCustomForm" class="d-none mt-3 p-3 bg-light rounded-3 border">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold text-uppercase mb-1" id="lblCustomOAuthNombre" style="font-size: 0.72rem; color: #57534E;">Nombre de tu Taller / Comprador</label>
+                                <input type="text" id="oauthCustomNombre" class="form-control form-control-sm" placeholder="Ej: Taller Mecánico San Roque" style="border-radius: 6px;">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-uppercase mb-1" id="lblCustomOAuthEmail" style="font-size: 0.72rem; color: #57534E;">Correo Electrónico Gmail</label>
+                                <input type="email" id="oauthCustomEmail" class="form-control form-control-sm" placeholder="tu.correo@gmail.com" style="border-radius: 6px;">
+                            </div>
+                            <button type="button" id="btnCustomOAuthSubmit" class="btn btn-primary btn-sm w-100 py-2 fw-bold" onclick="ejecutarOAuthPersonalizado()" style="background-color: #B91C1C; border-color: #B91C1C; border-radius: 6px;">
+                                Entrar con esta cuenta de Google
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="oauthLoadingSpinner" class="d-none text-center py-3">
+                        <div class="spinner-border spinner-border-sm text-danger me-2" role="status"></div>
+                        <span class="small text-muted">Autenticando credenciales seguras...</span>
+                    </div>
+
+                    <!-- Mensaje de seguridad al pie (Comercial y Humano) -->
+                    <div class="text-center mt-3">
+                        <small class="text-muted" style="font-size: 0.74rem; line-height: 1.35;">
+                            <i class="bi bi-shield-check text-success me-1"></i>
+                            Inicia sesión de forma rápida y segura con tu cuenta asociada — GOLDEN Sucre
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Interactividad 3D y Control de UI -->
+    <script>
+        // Control de visibilidad de contraseña
+        function toggleMostrarPassword() {
+            var input = document.getElementById('loginPassword');
+            var icono = document.getElementById('iconoPassword');
+            if (!input || !icono) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                icono.className = 'bi bi-eye-slash-fill text-warning';
+            } else {
+                input.type = 'password';
+                icono.className = 'bi bi-eye-fill';
+            }
+        }
+
+        // Sistema 3D con Seguimiento de Cursor en Tiempo Real
+        (function() {
+            var showcase = document.getElementById('showcaseCol');
+            var pivot = document.getElementById('cadPivot');
+            if (!showcase || !pivot) return;
+
+            function aplicarInclinacion(clientX, clientY) {
+                var rect = showcase.getBoundingClientRect();
+                var centroX = rect.left + rect.width / 2;
+                var centroY = rect.top + rect.height / 2;
+
+                // Desviación normalizada [-1, 1]
+                var deltaX = (clientX - centroX) / (rect.width / 2);
+                var deltaY = (clientY - centroY) / (rect.height / 2);
+
+                // Limitar ángulo máximo a 26 grados para elegancia industrial
+                var clampX = Math.max(-1.2, Math.min(1.2, deltaX));
+                var clampY = Math.max(-1.2, Math.min(1.2, deltaY));
+
+                var rotY = clampX * 24;
+                var rotX = -clampY * 24;
+
+                pivot.style.transform = 'rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+            }
+
+            // Seguimiento de cursor en toda la ventana
+            window.addEventListener('mousemove', function(e) {
+                aplicarInclinacion(e.clientX, e.clientY);
+            });
+
+            // Soporte para pantallas táctiles / móviles
+            window.addEventListener('touchmove', function(e) {
+                if (e.touches && e.touches[0]) {
+                    aplicarInclinacion(e.touches[0].clientX, e.touches[0].clientY);
+                }
+            }, { passive: true });
+
+            // Reajuste al salir del viewport
+            showcase.addEventListener('mouseleave', function() {
+                pivot.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            });
+        })();
+    </script>
+
+    <!-- Scripts de Bootstrap, SweetAlert2 y Aplicación -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="menu.js?v=21"></script>
+    <script src="app.js?v=21"></script>
+</body>
+</html>

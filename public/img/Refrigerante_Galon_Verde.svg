@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <defs>
+    <!-- Gradientes Galón Refrigerante Verde -->
+    <linearGradient id="refBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF8F5"/>
+      <stop offset="100%" stop-color="#F3EFEA"/>
+    </linearGradient>
+    <radialGradient id="galonShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(28,25,23,0.32)"/>
+      <stop offset="100%" stop-color="rgba(28,25,23,0)"/>
+    </radialGradient>
+    <!-- Bidón / Galonera Plástica HDPE -->
+    <linearGradient id="jugBodyGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14532D"/>
+      <stop offset="15%" stop-color="#16A34A"/>
+      <stop offset="35%" stop-color="#22C55E"/>
+      <stop offset="65%" stop-color="#15803D"/>
+      <stop offset="85%" stop-color="#166534"/>
+      <stop offset="100%" stop-color="#14532D"/>
+    </linearGradient>
+    <!-- Tapa Amarilla de Seguridad -->
+    <linearGradient id="yellowCap" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#B45309"/>
+      <stop offset="45%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <!-- Etiqueta Editorial -->
+    <linearGradient id="refLabel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F0FDF4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo Limpio Cálido -->
+  <rect width="400" height="300" fill="url(#refBg)" rx="8"/>
+
+  <!-- Sombra en el Piso -->
+  <ellipse cx="200" cy="265" rx="88" ry="14" fill="url(#galonShadow)"/>
+
+  <!-- Tapa Galón -->
+  <rect x="150" y="24" width="34" height="20" rx="3" fill="url(#yellowCap)"/>
+  <rect x="153" y="44" width="28" height="14" fill="#B45309"/>
+
+  <!-- Contorno Principal de Galón con Asa Ergonómica Integrada -->
+  <!-- Silueta de Galonera de 1 Galón / 4 Litros -->
+  <path d="M150 58 
+           L125 78 
+           L125 248 C125 256 132 260 142 260 
+           L258 260 C268 260 275 256 275 248 
+           L275 100 C275 92 268 85 260 82 
+           L220 70 
+           L182 58 Z" 
+        fill="url(#jugBodyGreen)"/>
+
+  <!-- Hueco / Empuñadura del Asa -->
+  <path d="M210 92 C210 86 215 82 222 84 L244 90 C250 92 254 98 254 105 L254 145 C254 152 248 156 242 154 L220 148 C214 146 210 140 210 133 Z" fill="#F3EFEA"/>
+
+  <!-- Textura / Nervaduras Refuerzo del Galón -->
+  <path d="M132 95 L132 245" stroke="#4ADE80" stroke-width="2.5" opacity="0.4"/>
+  <path d="M140 90 L140 250" stroke="#14532D" stroke-width="2" opacity="0.5"/>
+
+  <!-- Etiqueta Frontal Grande -->
+  <rect x="135" y="105" width="70" height="140" rx="4" fill="url(#refLabel)" stroke="#DCFCE7" stroke-width="1.5"/>
+
+  <!-- Cabecera de Etiqueta Carbón -->
+  <rect x="135" y="105" width="70" height="24" rx="4" fill="#18181B"/>
+  <rect x="135" y="125" width="70" height="4" fill="#16A34A"/>
+  <text x="170" y="121" font-family="'Archivo', Arial, sans-serif" font-weight="900" font-size="9" fill="#FAFAFA" text-anchor="middle" letter-spacing="0.8">GOLDEN</text>
+
+  <!-- Insignia REFRIGERANTE -->
+  <rect x="141" y="134" width="58" height="22" rx="3" fill="#15803D"/>
+  <text x="170" y="149" font-family="'Archivo', Arial, sans-serif" font-weight="800" font-size="9.5" fill="#FFFFFF" text-anchor="middle">COOLANT</text>
+
+  <!-- Especificación 50/50 -->
+  <text x="170" y="167" font-family="'Archivo', Arial, sans-serif" font-weight="900" font-size="13" fill="#14532D" text-anchor="middle">50 / 50</text>
+  <text x="170" y="176" font-family="'Work Sans', Arial, sans-serif" font-weight="700" font-size="6" fill="#15803D" text-anchor="middle">PRE-DILUIDO VERDE</text>
+
+  <line x1="140" y1="181" x2="200" y2="181" stroke="#BBF7D0" stroke-width="1"/>
+
+  <text x="170" y="191" font-family="'Chivo Mono', monospace" font-size="5" fill="#374151" text-anchor="middle">PROTECCIÓN -37°C / +129°C</text>
+  <text x="170" y="198" font-family="'Chivo Mono', monospace" font-size="5" fill="#374151" text-anchor="middle">ALUMINIO &amp; COBRE</text>
+  <text x="170" y="205" font-family="'Chivo Mono', monospace" font-size="5" fill="#374151" text-anchor="middle">ASTM D3306 / JIS K2234</text>
+
+  <!-- Presentación Galón -->
+  <rect x="142" y="214" width="56" height="20" rx="3" fill="#18181B"/>
+  <text x="170" y="224" font-family="'Archivo', Arial, sans-serif" font-weight="800" font-size="7.5" fill="#FACC15" text-anchor="middle">1 GALÓN</text>
+  <text x="170" y="231" font-family="'Work Sans', Arial, sans-serif" font-weight="600" font-size="5" fill="#A1A1AA" text-anchor="middle">3.785 LITROS</text>
+
+  <!-- Brillo Translúcido en el Envase -->
+  <path d="M136 78 L142 82 L142 245 L136 240 Z" fill="#FFFFFF" opacity="0.2"/>
+</svg>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadena de Suministro (SCM) & Compras - ERP GOLDEN</title>
+    <title>Proveedores y Compras - GOLDEN ERP</title>
 
     <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
     <script>
@@ -24,12 +24,16 @@
     <!-- Bootstrap 5.3.3 & Iconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <!-- Tipografía Editorial Automotriz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO GLASSMORPHIC -->
+    <!-- MENÚ COMPARTIDO (STICKY HEADER CARBÓN GRAFITO) -->
     <div id="menu-contenedor"></div>
 
     <!-- PANTALLA COMPLETA 100% -->
@@ -38,144 +42,188 @@
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
             <div>
-                <h2 class="fw-bolder text-white mb-0 d-flex align-items-center">
-                    <i class="bi bi-truck-flatbed text-warning me-2"></i>Cadena de Suministro (SCM) & Compras
+                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                    <i class="bi bi-truck-flatbed" style="color: #57534E;"></i>
+                    <span>Proveedores y compras</span>
                 </h2>
                 <p class="text-secondary mb-0 mt-1 small">
-                    Monitoreo predictivo de inventario, detección de stock crítico y aprovisionamiento inteligente con proveedores OEM.
+                    Control de reposición de almacén, existencias mínimas y pedidos de compra a distribuidores mayoristas.
                 </p>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
-                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarSugerenciasCompras()">
+                <button class="btn btn-secondary btn-sm px-3" onclick="cargarSugerenciasCompras()">
                     <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
                 </button>
-                <button class="btn btn-gold btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="abrirModalGenerarOrden()">
-                    <i class="bi bi-file-earmark-plus-fill me-1"></i> Generar Orden de Compra
+                <button class="btn btn-stitch-primary btn-sm px-3 fw-bold" onclick="abrirModalGenerarOrden()">
+                    <i class="bi bi-file-earmark-plus-fill me-1"></i> Generar orden de compra
                 </button>
             </div>
         </div>
 
         <!-- TARJETAS DE KPIs SUPERIORES -->
         <div class="row g-3 mb-4">
+            
+            <!-- KPI 1: Repuestos Críticos -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Repuestos Críticos</span>
-                            <h3 class="fw-extrabold text-danger mb-0" id="kpiRepuestosCriticos">0</h3>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);">
-                            <i class="bi bi-exclamation-octagon-fill text-danger fs-4"></i>
+                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            Repuestos Críticos
+                        </span>
+                        <div class="kpi-icon-wrap" style="color: #B91C1C; background: #FEE2E2; border: 1px solid #FECACA; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-shield-exclamation fs-6"></i>
                         </div>
                     </div>
-                    <div class="small text-secondary mt-2">
-                        <i class="bi bi-graph-down me-1 text-danger"></i>Existencias &le; Stock mínimo
+                    <div class="mt-2">
+                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.65rem; color: #B91C1C;" id="kpiRepuestosCriticos">
+                            0
+                        </h3>
+                        <div class="small text-secondary mt-1">
+                            <span class="badge" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; font-size: 0.72rem; font-weight: 600;">
+                                Existencias &le; Stock mínimo
+                            </span>
+                        </div>
+                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
+                            Requiere reposición prioritaria
+                        </small>
                     </div>
                 </div>
             </div>
 
+            <!-- KPI 2: Unidades a Reponer -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Unidades a Reponer</span>
-                            <h3 class="fw-extrabold text-warning mb-0" id="kpiUnidadesSugeridas">0</h3>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
-                            <i class="bi bi-boxes text-warning fs-4"></i>
+                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            Unidades a Reponer
+                        </span>
+                        <div class="kpi-icon-wrap" style="color: #D97706; background: #FEF3C7; border: 1px solid #FDE68A; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-boxes fs-6"></i>
                         </div>
                     </div>
-                    <div class="small text-secondary mt-2">
-                        <i class="bi bi-arrow-up-circle me-1 text-warning"></i>Para alcanzar nivel óptimo
+                    <div class="mt-2">
+                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.65rem; color: #18181B;" id="kpiUnidadesSugeridas">
+                            0
+                        </h3>
+                        <div class="small text-secondary mt-1">
+                            <span class="badge" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; font-size: 0.72rem; font-weight: 600;">
+                                Nivel óptimo objetivo
+                            </span>
+                        </div>
+                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
+                            Volumen consolidado SCM
+                        </small>
                     </div>
                 </div>
             </div>
 
+            <!-- KPI 3: Inversión Estimada SCM -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Inversión Estimada SCM</span>
-                            <h3 class="fw-extrabold text-white mb-0" id="kpiInversionTotal">$0.00</h3>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
-                            <i class="bi bi-cash-stack text-emerald fs-4"></i>
+                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            Inversión Estimada SCM
+                        </span>
+                        <div class="kpi-icon-wrap" style="color: #15803D; background: #DCFCE7; border: 1px solid #BBF7D0; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-cash-stack fs-6"></i>
                         </div>
                     </div>
-                    <div class="small text-secondary mt-2">
-                        <i class="bi bi-tag-fill me-1 text-emerald"></i>Costo mayorista estimado (70% PVP)
+                    <div class="mt-2">
+                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.55rem; color: #18181B;" id="kpiInversionTotal">
+                            Bs. 0,00
+                        </h3>
+                        <div class="small text-secondary mt-1">
+                            <span class="badge" style="background: #ECFDF5; color: #15803D; border: 1px solid #A7F3D0; font-size: 0.72rem; font-weight: 600;">
+                                Costo mayorista (70% PVP)
+                            </span>
+                        </div>
+                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
+                            Presupuesto de compra estimado
+                        </small>
                     </div>
                 </div>
             </div>
 
+            <!-- KPI 4: Proveedores Homologados -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Proveedores Homologados</span>
-                            <h3 class="fw-extrabold text-info mb-0" id="kpiTotalProveedores">0</h3>
-                        </div>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3);">
-                            <i class="bi bi-building text-info fs-4"></i>
+                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            Proveedores Homologados
+                        </span>
+                        <div class="kpi-icon-wrap" style="color: #57534E; background: #F3EFEA; border: 1px solid #DFDBD2; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-building fs-6"></i>
                         </div>
                     </div>
-                    <div class="small text-secondary mt-2">
-                        <i class="bi bi-shield-check me-1 text-info"></i>Convenios OEM directos
+                    <div class="mt-2">
+                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.65rem; color: #18181B;" id="kpiTotalProveedores">
+                            0
+                        </h3>
+                        <div class="small text-secondary mt-1">
+                            <span class="badge" style="background: #F3EFEA; color: #57534E; border: 1px solid #DFDBD2; font-size: 0.72rem; font-weight: 600;">
+                                Convenios OEM directos
+                            </span>
+                        </div>
+                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
+                            Santa Cruz, Cochabamba y La Paz
+                        </small>
                     </div>
                 </div>
             </div>
+
         </div>
 
-        <!-- TARJETA 1 (PRINCIPAL): SUGERENCIAS INTELIGENTES DE REABASTECIMIENTO -->
-        <div class="card-vip p-4 mb-4">
+        <!-- TARJETA 1 (PRINCIPAL): SUGERENCIAS DE REABASTECIMIENTO -->
+        <div class="card p-4 mb-4" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
             
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <div>
-                    <h5 class="fw-bold text-white mb-1">
-                        <i class="bi bi-cpu-fill text-warning me-2"></i>Sugerencias Inteligentes de Reabastecimiento
+                    <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-boxes" style="color: #57534E;"></i>
+                        <span>Sugerencias de reposición de inventario</span>
                     </h5>
                     <p class="text-secondary small mb-0">
-                        Cálculo algorítmico continuo para evitar quiebres de stock. Fórmula: <code class="text-warning">Nivel Óptimo = 3 &times; Stock Mínimo</code>.
+                        Repuestos con stock por debajo del mínimo configurado en almacén (Reposición sugerida: 3 veces el stock mínimo).
                     </p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalSugerencias">0 Repuestos Críticos</span>
+                    <span class="badge" style="background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; font-size: 0.74rem; font-weight: 700;" id="badgeTotalSugerencias">
+                        0 Repuestos Críticos
+                    </span>
                 </div>
             </div>
 
             <!-- Buscador en Tiempo Real de Sugerencias -->
             <div class="row g-2 align-items-center mb-3">
                 <div class="col-12 col-md-6 col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.6) !important;">
-                            <i class="bi bi-search text-warning"></i>
-                        </span>
-                        <input type="text" id="inputBuscarSugerencias" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar repuesto crítico por SKU, nombre o categoría...">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-secondary border-end-0" style="border-color: #DFDBD2;"><i class="bi bi-search"></i></span>
+                        <input type="text" id="inputBuscarSugerencias" class="form-control border-start-0 ps-0" style="border-color: #DFDBD2; font-size: 0.85rem;" placeholder="Buscar repuesto crítico por SKU, nombre o categoría...">
                     </div>
                 </div>
             </div>
 
             <!-- Tabla de Sugerencias SCM -->
             <div class="table-responsive">
-                <table class="table table-vip align-middle mb-0">
+                <table class="table table-stitch align-middle mb-0">
                     <thead>
                         <tr>
                             <th class="ps-3" style="width: 130px;">SKU</th>
                             <th>Repuesto / Categoría</th>
                             <th class="text-center" style="width: 110px;">Stock Actual</th>
-                            <th class="text-center" style="width: 110px;">Stock Mín.</th>
+                            <th class="text-center" style="width: 100px;">Stock Mín.</th>
                             <th class="text-center" style="width: 110px;">Nivel Óptimo</th>
-                            <th class="text-center" style="width: 130px;">Cant. Sugerida</th>
-                            <th class="text-end" style="width: 120px;">Costo Unit. Est.</th>
-                            <th class="text-end" style="width: 120px;">Subtotal Est.</th>
-                            <th class="text-center" style="width: 120px;">Urgencia</th>
+                            <th class="text-center" style="width: 125px;">Cant. Sugerida</th>
+                            <th class="text-end text-nowrap" style="width: 125px;">Costo Unit. Est.</th>
+                            <th class="text-end text-nowrap" style="width: 140px;">Subtotal Est.</th>
+                            <th class="text-center" style="width: 115px;">Urgencia</th>
                             <th class="text-end pe-3" style="width: 110px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody id="tablaSugerenciasCompras">
                         <tr>
                             <td colspan="10" class="text-center py-5 text-secondary">
-                                <span class="spinner-border spinner-border-sm text-warning me-2"></span>Analizando niveles de inventario...
+                                <span class="spinner-border spinner-border-sm text-danger me-2"></span>Analizando niveles de inventario...
                             </td>
                         </tr>
                     </tbody>
@@ -184,21 +232,27 @@
 
             <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10 small text-secondary">
                 <div id="infoSugerenciasCount">Calculando métricas...</div>
-                <div><i class="bi bi-lightning-charge-fill text-warning me-1"></i>SCM Algorithmic Restocking Engine</div>
+                <div class="d-flex align-items-center gap-1 text-secondary">
+                    <i class="bi bi-shield-check" style="color: #15803D;"></i>
+                    <span>Control de reposición de almacén</span>
+                </div>
             </div>
 
         </div>
 
         <!-- TARJETA 2: PROVEEDORES HOMOLOGADOS & CONDICIONES COMERCIALES -->
-        <div class="card-vip p-4 mb-4">
+        <div class="card p-4 mb-4" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h5 class="fw-bold text-white mb-1">
-                        <i class="bi bi-building-check text-warning me-2"></i>Directorio de Proveedores Homologados & SCM
+                    <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                        <i class="bi bi-building" style="color: #57534E;"></i>
+                        <span>Directorio de proveedores mayoristas</span>
                     </h5>
-                    <p class="text-secondary small mb-0">Canales de abastecimiento directo para repuestos de alta rotación.</p>
+                    <p class="text-secondary small mb-0">Canales de abastecimiento directo para repuestos y lubricantes de alta rotación.</p>
                 </div>
-                <span class="badge-pill-vip badge-pill-emerald" id="badgeProveedoresCount">3 Proveedores Activos</span>
+                <span class="badge" style="background: #ECFDF5; color: #15803D; border: 1px solid #A7F3D0; font-size: 0.72rem; font-weight: 600;" id="badgeProveedoresCount">
+                    3 Proveedores Activos
+                </span>
             </div>
 
             <div class="row g-3" id="contenedorProveedores">

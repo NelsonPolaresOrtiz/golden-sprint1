@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario & Catálogo VIP - ERP GOLDEN</title>
+    <title>Almacén e Inventario - GOLDEN ERP</title>
     
     <!-- Redirección RBAC Cero-Parpadeo: Si es cliente, redirigir a tienda -->
     <script>
@@ -12,29 +12,29 @@
                 const s = localStorage.getItem('usuario_golden');
                 if (!s) { window.location.href = 'index.html'; return; }
                 const u = JSON.parse(s);
-                if (u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                if (u.rol === 'CLIENTE' || u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
                     window.location.href = 'tienda.html';
                 }
             } catch(e) {}
         })();
     </script>
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Tipografía Editorial Automotriz -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
     
     <!-- Bootstrap 5.3 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
-    <!-- Estilos Globales High-End VIP -->
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css?v=12">
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO (Navbar Glassmorphism STICKY HEADER) -->
-    <div id="menu-contenedor" style="position: sticky; top: 0; z-index: 1000; width: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(245, 158, 11, 0.2);"></div>
+    <!-- MENÚ COMPARTIDO (STICKY HEADER CARBÓN GRAFITO) -->
+    <div id="menu-contenedor"></div>
 
     <!-- CONTENEDOR PRINCIPAL FLUIDO (100% PANTALLA) -->
     <div class="container-fluid px-4 py-4">
@@ -42,10 +42,10 @@
         <!-- CABECERA DE SECCIÓN CON KPIS DE INVENTARIO -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
             <div>
-                <h2 class="fw-bolder text-white mb-0">
-                    <i class="bi bi-box-seam-fill text-warning me-2"></i>Control Físico de Inventario
+                <h2 class="fw-bold text-dark mb-0" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                    <i class="bi bi-box-seam-fill text-warning me-2"></i>Almacén e inventario de repuestos
                 </h2>
-                <p class="text-muted mb-0 mt-1 small">Gestión en tiempo real de repuestos automotrices, niveles de stock y valorización contable.</p>
+                <p class="text-muted mb-0 mt-1 small">Control de almacén, kardex físico, niveles de reposición y catálogo de repuestos.</p>
             </div>
             
             <!-- Resumen Mini KPIs -->
@@ -73,7 +73,7 @@
             <div class="col-lg-4 col-xl-3">
                 <div class="glass-panel h-100">
                     <div class="glass-header text-warning fw-bold d-flex align-items-center" id="formTitle">
-                        <i class="bi bi-plus-circle-fill me-2 fs-5"></i> Registrar Repuesto
+                        <i class="bi bi-plus-circle-fill me-2 fs-5"></i> Registrar repuesto
                     </div>
                     <div class="p-4">
                         <form id="productoForm">
@@ -81,17 +81,17 @@
 
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-secondary">Código SKU Único</label>
-                                <input type="text" id="sku" class="form-control form-control-vip text-uppercase font-monospace" placeholder="Ej. FIL-ACE-010" required>
+                                <input type="text" id="sku" class="form-control form-control text-uppercase font-monospace" placeholder="Ej. FIL-ACE-010" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-secondary">Descripción del Repuesto</label>
-                                <input type="text" id="nombre" class="form-control form-control-vip" placeholder="Ej. Filtro de Aceite Nissan" required>
+                                <input type="text" id="nombre" class="form-control form-control" placeholder="Ej. Filtro de Aceite Nissan" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label small fw-bold text-secondary">Categoría Técnica</label>
-                                <select id="categoria" class="form-select form-select-vip" required>
+                                <select id="categoria" class="form-select form-select" required>
                                     <option value="" disabled selected>Seleccione categoría...</option>
                                     <option value="Aceites de Motor">Aceites de Motor</option>
                                     <option value="Filtros de Aceite">Filtros de Aceite</option>
@@ -104,25 +104,25 @@
                             <div class="row">
                                 <div class="col-6 mb-3">
                                     <label class="form-label small fw-bold text-secondary">Precio (Bs.)</label>
-                                    <input type="number" id="precio" class="form-control form-control-vip" step="0.50" min="0" placeholder="0.00" required>
+                                    <input type="number" id="precio" class="form-control form-control" step="0.50" min="0" placeholder="0.00" required>
                                 </div>
                                 <div class="col-6 mb-3">
                                     <label class="form-label small fw-bold text-secondary">Stock Físico</label>
-                                    <input type="number" id="stock" class="form-control form-control-vip" min="0" placeholder="0" required>
+                                    <input type="number" id="stock" class="form-control form-control" min="0" placeholder="0" required>
                                 </div>
                             </div>
 
                             <div class="mb-4">
                                 <label class="form-label small fw-bold text-secondary">Stock Mínimo (Alerta)</label>
-                                <input type="number" id="stockMinimo" class="form-control form-control-vip" min="1" value="5" required>
+                                <input type="number" id="stockMinimo" class="form-control form-control" min="1" value="5" required>
                             </div>
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-vip-gold w-100 py-2 fs-6 shadow" id="btnGuardarProd">
-                                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar Producto
+                                <button type="submit" class="btn btn-stitch-primary w-100 py-2 fs-6 shadow" id="btnGuardarProd">
+                                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar repuesto
                                 </button>
-                                <button type="button" class="btn btn-vip-outline w-100 d-none py-2" id="btnCancelarProd" onclick="resetFormularioProducto()">
-                                    <i class="bi bi-x-circle me-1"></i> Cancelar Edición
+                                <button type="button" class="btn btn-secondary w-100 d-none py-2" id="btnCancelarProd" onclick="resetFormularioProducto()">
+                                    <i class="bi bi-x-circle me-1"></i> Cancelar edición
                                 </button>
                             </div>
                         </form>
@@ -136,20 +136,20 @@
                     <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-boxes text-warning fs-5"></i>
-                            <h5 class="mb-0 fw-bold text-white">Catálogo de Almacén & Repuestos</h5>
+                            <h5 class="mb-0 fw-bold text-dark">Catálogo de almacén y repuestos</h5>
                         </div>
                         
                         <div class="d-flex flex-wrap align-items-center gap-2">
                             <!-- Buscador en tiempo real con evento 'input' -->
                             <div class="input-group" style="max-width: 290px;">
-                                <span class="input-group-text input-group-text-vip"><i class="bi bi-search"></i></span>
-                                <input type="text" id="buscadorInventario" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar por código SKU, nombre o categoría...">
+                                <span class="input-group-text input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="buscadorInventario" class="form-control form-control border-start-0 ps-0" placeholder="Buscar por código SKU, nombre o categoría...">
                             </div>
 
                             <!-- Botón de Exportación Gerencial a Excel / CSV -->
                             <button class="btn btn-outline-success btn-sm fw-bold px-3 py-2 d-flex align-items-center gap-2 rounded-3 shadow-sm" onclick="exportarTablaCSV('tablaInventarioCompleta', 'Inventario_GOLDEN')">
                                 <i class="bi bi-file-earmark-excel fs-6"></i>
-                                <span>Exportar Datos</span>
+                                <span>Exportar Excel</span>
                             </button>
 
                             <!-- Botón de Exportación a PDF -->
@@ -161,7 +161,7 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table id="tablaInventarioCompleta" class="table table-vip align-middle mb-0">
+                        <table id="tablaInventarioCompleta" class="table table-stitch align-middle mb-0">
                             <thead>
                                 <tr>
                                     <th class="ps-4">SKU</th>
@@ -182,20 +182,20 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- MODAL VIP: KARDEX & HISTORIAL DE MOVIMIENTOS             -->
+    <!-- MODAL: KARDEX FÍSICO Y SALIDAS DE DEPÓSITO -->
     <!-- ======================================================== -->
     <div class="modal fade" id="modalKardex" tabindex="-1" aria-labelledby="modalKardexLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
             <div class="modal-content modal-glass-content">
                 <!-- Header -->
-                <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(13, 18, 31, 0.95);">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: #1C1917; border-bottom: 2px solid #C81E1E;">
                     <div class="d-flex align-items-center gap-2">
                         <div class="d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.35);">
                             <i class="bi bi-journal-medical text-info fs-5"></i>
                         </div>
                         <div>
                             <h5 class="modal-title fw-bold text-white mb-0 d-flex align-items-center gap-2" id="modalKardexLabel">
-                                Kardex Físico & Trazabilidad de Salidas
+                                Kardex físico y salidas de almacén
                                 <span class="badge bg-dark font-monospace text-warning px-2 py-1 border border-secondary border-opacity-50" id="kardexSkuBadge">SKU</span>
                             </h5>
                             <small class="text-secondary" id="kardexNombreProducto">Cargando...</small>
@@ -205,33 +205,33 @@
                 </div>
 
                 <!-- Body -->
-                <div class="modal-body p-4" style="background: #090d16;">
+                <div class="modal-body p-4" style="background: #FAF8F5;">
                     <!-- Mini KPIs del Kardex -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-3 col-6">
-                            <div class="p-3 rounded-3" style="background: rgba(20, 28, 46, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <div class="p-3 rounded-3" style="background: #FFFFFF; border: 1px solid #E6E1DA; border-radius: 6px;">
                                 <span class="text-secondary small fw-bold text-uppercase d-block" style="font-size: 0.7rem;">Stock Físico Actual</span>
-                                <h4 class="text-white fw-bold mb-0 mt-1" id="kardexStockActual">0 unid.</h4>
+                                <h4 class="text-dark fw-bold mb-0 mt-1" id="kardexStockActual">0 unid.</h4>
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
-                            <div class="p-3 rounded-3" style="background: rgba(20, 28, 46, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <div class="p-3 rounded-3" style="background: #FFFFFF; border: 1px solid #E6E1DA; border-radius: 6px;">
                                 <span class="text-secondary small fw-bold text-uppercase d-block" style="font-size: 0.7rem;">Total Salidas (Ventas)</span>
                                 <h4 class="text-warning fw-bold mb-0 mt-1" id="kardexTotalVendido">0 unid.</h4>
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
-                            <div class="p-3 rounded-3" style="background: rgba(20, 28, 46, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <div class="p-3 rounded-3" style="background: #FFFFFF; border: 1px solid #E6E1DA; border-radius: 6px;">
                                 <span class="text-secondary small fw-bold text-uppercase d-block" style="font-size: 0.7rem;">Recaudación Generada</span>
                                 <h4 class="text-gradient-emerald fw-extrabold mb-0 mt-1" id="kardexTotalRecaudado">Bs. 0.00</h4>
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
-                            <div class="p-3 rounded-3" style="background: rgba(20, 28, 46, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <div class="p-3 rounded-3" style="background: #FFFFFF; border: 1px solid #E6E1DA; border-radius: 6px;">
                                 <span class="text-secondary small fw-bold text-uppercase d-block" style="font-size: 0.7rem;">Precio de Venta Ref.</span>
                                 <div class="d-flex align-items-center gap-2 mt-1">
                                     <span class="fw-bold text-info fs-5 mb-0" id="kardexPrecioRef">Bs. 0.00</span>
-                                    <span class="badge-pill-vip badge-pill-slate small" style="font-size: 0.68rem;" id="kardexCategoriaBadge">-</span>
+                                    <span class="badge-pill-stitch badge-pill-slate small" style="font-size: 0.68rem;" id="kardexCategoriaBadge">-</span>
                                 </div>
                             </div>
                         </div>
@@ -240,13 +240,13 @@
                     <!-- Tabla de Movimientos / Timeline -->
                     <div class="glass-panel overflow-hidden">
                         <div class="glass-header d-flex justify-content-between align-items-center py-2 px-3">
-                            <span class="fw-bold text-white small d-flex align-items-center">
-                                <i class="bi bi-clock-history text-warning me-2"></i>Línea de Tiempo de Salidas y Despachos
+                            <span class="fw-bold text-dark small d-flex align-items-center">
+                                <i class="bi bi-clock-history text-warning me-2"></i>Línea de tiempo de salidas y despachos
                             </span>
-                            <span class="badge-pill-vip badge-pill-gold small" style="font-size: 0.7rem;">Método PEPS / FIFO</span>
+                            <span class="badge-pill-stitch badge-pill-gold small" style="font-size: 0.7rem;">Método PEPS / FIFO</span>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-vip align-middle mb-0">
+                            <table class="table table-stitch align-middle mb-0">
                                 <thead>
                                     <tr>
                                         <th class="ps-4">Fecha & Hora</th>
@@ -265,11 +265,11 @@
                 </div>
 
                 <!-- Footer -->
-                <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(13, 18, 31, 0.95);">
+                <div class="modal-footer border-top px-4 py-3" style="background: #F3EFEA; border-color: #E6E1DA !important;">
                     <small class="text-secondary me-auto">
                         <i class="bi bi-shield-lock-fill text-warning me-1"></i> Auditoría conforme a principios contables y consistencia relacional.
                     </small>
-                    <button type="button" class="btn btn-vip-outline px-4 py-2" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal">
                         <i class="bi bi-x-lg me-1"></i> Cerrar
                     </button>
                 </div>

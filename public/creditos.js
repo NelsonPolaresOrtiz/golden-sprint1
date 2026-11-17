@@ -5,7 +5,7 @@ const API_URL = '/api';
 let creditosGlobal = [];
 let resumenCarteraGlobal = null;
 
-// Helper Toast con SweetAlert2 Dark VIP
+// Helper Toast con SweetAlert2
 const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
     toast: true,
     position: 'top-end',
@@ -153,13 +153,13 @@ function renderizarTablaCreditos(creditos) {
                             <i class="bi bi-wrench-adjustable"></i>
                         </div>
                         <div>
-                            <span class="fw-bold text-white d-block" style="font-size: 0.95rem;">${escaparHTML(c.cliente_nombre)}</span>
+                            <span class="fw-bold text-dark d-block" style="font-size: 0.95rem;">${escaparHTML(c.cliente_nombre)}</span>
                             <span class="text-secondary small font-monospace">ID #${c.cliente_id}</span>
                         </div>
                     </div>
                 </td>
                 <td class="small text-secondary font-monospace">${escaparHTML(c.cliente_email)}</td>
-                <td class="text-end font-monospace text-white fw-semibold">$${limiteCredito.toFixed(2)}</td>
+                <td class="text-end font-monospace text-dark fw-semibold" style="font-family: 'Chivo Mono', monospace;">Bs. {limiteCredito.toFixed(2)}</td>
                 <td class="text-end font-monospace ${saldoDeudor > 0 ? 'text-danger fw-bold' : 'text-secondary'}">
                     $${saldoDeudor.toFixed(2)}
                 </td>
@@ -179,7 +179,7 @@ function renderizarTablaCreditos(creditos) {
                             ${saldoDeudor <= 0 ? 'disabled title="Cliente sin deuda"' : ''}>
                         <i class="bi bi-cash-stack me-1"></i>Amortizar
                     </button>
-                    <button class="btn btn-vip-outline btn-sm rounded-pill px-2 py-1 text-white" 
+                    <button class="btn btn-secondary btn-sm px-2 py-1" 
                             onclick="verEstadoCuenta(${c.cliente_id})" title="Ver extracto y movimientos">
                         <i class="bi bi-receipt"></i>
                     </button>
@@ -231,7 +231,7 @@ async function abrirModalAmortizacion(clienteId, clienteNombre, saldoDeudor) {
                 Cliente: <strong class="text-white">${clienteNombre}</strong> (ID #${clienteId})<br>
                 Saldo Deudor Actual: <strong class="text-danger font-monospace fs-6">$${saldoDeudor.toFixed(2)}</strong>
             </div>
-            <label class="form-label text-white small fw-bold">Monto del Abono / Pago ($):</label>
+            <label class="form-label text-white small fw-bold">Monto del abono o pago (Bs.):</label>
         `,
         input: 'number',
         inputValue: saldoDeudor > 0 ? Math.min(saldoDeudor, 500) : 100,
@@ -335,7 +335,7 @@ async function verEstadoCuenta(clienteId) {
             pagosHTML = '<div class="text-secondary small py-2">Sin historial de pagos registrados aún.</div>';
         } else {
             pagosHTML = `
-                <table class="table table-sm table-vip font-monospace small mb-0">
+                <table class="table table-sm table-stitch font-monospace small mb-0">
                     <thead>
                         <tr>
                             <th>ID Recibo</th>
@@ -361,7 +361,7 @@ async function verEstadoCuenta(clienteId) {
             pedidosHTML = '<div class="text-secondary small py-2">Sin pedidos recientes en cuenta corriente.</div>';
         } else {
             pedidosHTML = `
-                <table class="table table-sm table-vip font-monospace small mb-0">
+                <table class="table table-sm table-stitch font-monospace small mb-0">
                     <thead>
                         <tr>
                             <th>Orden</th>
@@ -388,7 +388,7 @@ async function verEstadoCuenta(clienteId) {
             <div class="p-3 rounded-3 mb-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(245, 158, 11, 0.25);">
                 <div class="row g-2 align-items-center">
                     <div class="col-12 col-md-6">
-                        <h6 class="fw-bold text-white mb-0">${escaparHTML(cli.nombre)}</h6>
+                        <h6 class="fw-bold text-dark mb-0">${escaparHTML(cli.nombre)}</h6>
                         <span class="small text-secondary font-monospace">${escaparHTML(cli.email)} | Rol: ${cli.rol}</span>
                     </div>
                     <div class="col-12 col-md-6 text-md-end font-monospace">
@@ -400,7 +400,7 @@ async function verEstadoCuenta(clienteId) {
             </div>
 
             <div class="mb-4">
-                <h6 class="fw-bold text-white mb-2 d-flex align-items-center">
+                <h6 class="fw-bold text-dark mb-2 d-flex align-items-center">
                     <i class="bi bi-clock-history text-warning me-2"></i>Últimos Pagos y Amortizaciones Realizadas
                 </h6>
                 <div class="p-2 rounded-3" style="background: rgba(13, 18, 31, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
@@ -409,7 +409,7 @@ async function verEstadoCuenta(clienteId) {
             </div>
 
             <div>
-                <h6 class="fw-bold text-white mb-2 d-flex align-items-center">
+                <h6 class="fw-bold text-dark mb-2 d-flex align-items-center">
                     <i class="bi bi-bag-check text-warning me-2"></i>Últimos Pedidos Facturados a Crédito
                 </h6>
                 <div class="p-2 rounded-3" style="background: rgba(13, 18, 31, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
@@ -436,7 +436,7 @@ function abrirReporteCartera() {
             <div class="text-start p-3 rounded-3 font-monospace small" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(245, 158, 11, 0.3);">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-secondary">Talleres Mayoristas:</span>
-                    <span class="text-white fw-bold">${r.total_clientes_b2b} clientes</span>
+                    <span class="text-dark fw-bold">${r.total_clientes_b2b} clientes</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-secondary">Línea de Crédito Global:</span>

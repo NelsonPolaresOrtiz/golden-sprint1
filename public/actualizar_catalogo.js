@@ -4,7 +4,7 @@ const path = require('path');
 const dbPath = path.resolve(__dirname, '../backend/golden_seguridad.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-        console.error('❌ Error conectando a BD:', err.message);
+        console.error('[Error] Error conectando a BD:', err.message);
         process.exit(1);
     }
 });
@@ -67,6 +67,6 @@ db.serialize(() => {
     // 6. Respaldo general para cualquier producto restante con URLs de amazon o vacías
     db.run(`UPDATE productos SET imagen_url = ? WHERE imagen_url LIKE '%amazon%' OR imagen_url IS NULL OR imagen_url = ''`, [imgDefault]);
 
-    console.log("✅ ¡Catálogo actualizado! Se inyectaron imágenes seguras para localhost y especificaciones técnicas completas.");
+    console.log("[OK] ¡Catálogo actualizado! Se inyectaron imágenes seguras para localhost y especificaciones técnicas completas.");
     db.close();
 });

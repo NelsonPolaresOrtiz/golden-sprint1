@@ -2,11 +2,277 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=facturacion.html">
-    <title>Cobranza & Facturación - ERP GOLDEN</title>
-    <script>window.location.href = 'facturacion.html';</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobranzas y Facturación - GOLDEN ERP</title>
+
+    <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                if (u.rol === 'CLIENTE_B2B' || u.rol === 'CLIENTE_B2C') {
+                    window.location.href = 'tienda.html';
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <!-- Bootstrap 5.3.3 & Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Tipografía Editorial Automotriz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body style="background:#0f172a; color:#ffffff; font-family:sans-serif; text-align:center; padding-top:20vh;">
-    <p>Cargando Módulo de Cobranza & Facturación...</p>
+<body>
+
+    <!-- MENÚ COMPARTIDO (STICKY HEADER CARBÓN GRAFITO) -->
+    <div id="menu-contenedor"></div>
+
+    <!-- CONTENEDOR PRINCIPAL FLUIDO -->
+    <div class="container-fluid px-4 py-4">
+
+        <!-- TÍTULO DE SECCIÓN Y ACCIONES -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
+            <div>
+                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                    <i class="bi bi-credit-card-2-front-fill text-warning me-2"></i>
+                    Cobranzas y facturación fiscal
+                </h2>
+                <p class="text-secondary mb-0 mt-1 small">Control de comprobantes de pago QR / depósitos bancarios, verificación y emisión de facturas oficiales.</p>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-outline-success btn-sm px-3 d-flex align-items-center gap-2 fw-semibold" onclick="exportarFacturasCSV()" title="Exportar Reporte a Formato Excel / CSV">
+                    <i class="bi bi-file-earmark-spreadsheet-fill text-success"></i>
+                    <span>Exportar Excel / CSV</span>
+                </button>
+                <button class="btn btn-secondary btn-sm px-3" onclick="cargarFacturacion()" title="Recargar y sincronizar con la base de datos">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Sincronizar
+                </button>
+            </div>
+        </div>
+
+        <!-- TARJETAS DE RESUMEN EJECUTIVO (KPIS EN TIEMPO REAL) -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="kpi-card-stitch kpi-card-emerald h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
+                                <span class="pulse-dot pulse-dot-emerald me-2"></span> Ingresos Totales Facturados
+                            </span>
+                            <h2 class="fw-bold text-dark mb-0 mt-2" id="kpiIngresosTotales">
+                                Bs. <span class="text-success">0.00</span>
+                            </h2>
+                            <small class="text-muted mt-1 d-block">Monto consolidado pagado y entregado</small>
+                        </div>
+                        <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="kpi-card-stitch kpi-card-amber h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
+                                <span class="pulse-dot pulse-dot-amber me-2"></span> Saldo Pendiente de Cobro
+                            </span>
+                            <h2 class="fw-bold text-dark mb-0 mt-2" id="kpiPendientesCobro">
+                                Bs. <span class="text-warning">0.00</span>
+                            </h2>
+                            <small class="text-muted mt-1 d-block">
+                                <span class="badge bg-warning text-dark fw-bold me-1" id="badgeCountPendientes">0 Órdenes</span>
+                                en revisión o pendientes de validación
+                            </small>
+                        </div>
+                        <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="kpi-card-stitch kpi-card-sapphire h-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
+                                <span class="pulse-dot me-2" style="background: #38bdf8;"></span> Facturas Emitidas
+                            </span>
+                            <h2 class="fw-bold text-dark mb-0 mt-2" id="kpiTotalFacturas">
+                                <span class="text-info">0</span> <small class="fs-6 text-secondary fw-normal">Emitidas</small>
+                            </h2>
+                            <small class="text-muted mt-1 d-block">Comprobantes fiscales generados</small>
+                        </div>
+                        <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                            <i class="bi bi-receipt-cutoff"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA GERENCIAL DE COBRANZAS Y FACTURACIÓN -->
+        <div class="card overflow-hidden mb-5">
+            <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 p-3">
+                <div class="row g-3 align-items-center justify-content-between">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" id="buscadorFacturas" class="form-control bg-white text-dark border" placeholder="Buscar por cliente, taller, ref de comprobante o N° factura..." oninput="filtrarTablaFacturacion()">
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-md-end align-items-center gap-2">
+                        <label for="filtroEstadoFactura" class="small text-secondary fw-bold text-nowrap d-none d-sm-inline">Estado:</label>
+                        <select id="filtroEstadoFactura" class="form-select" style="width: auto;" onchange="filtrarTablaFacturacion()">
+                            <option value="TODOS" selected>Todos los Estados</option>
+                            <option value="PAGADO">Solo Verificados / Pagados</option>
+                            <option value="PENDIENTE">Solo Pendientes</option>
+                        </select>
+                        <span class="badge bg-secondary bg-opacity-25 text-light px-3 py-2 rounded-pill" id="badgeTotalFacturasTabla">
+                            0 Facturas
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Datos -->
+            <div class="table-responsive">
+                <table class="table table-stitch table-hover mb-0 align-middle" id="tablaFacturacionEl">
+                    <thead style="background: #1C1917; color: #FFFFFF;">
+                        <tr class="text-secondary text-uppercase border-bottom border-secondary border-opacity-50">
+                            <th class="py-3 ps-4" style="width: 11%;">N° Factura</th>
+                            <th class="py-3" style="width: 21%;">Cliente / Taller</th>
+                            <th class="py-3" style="width: 22%;">Método & Comprobante</th>
+                            <th class="py-3" style="width: 14%;">Fecha</th>
+                            <th class="py-3 text-end" style="width: 12%;">Total (Bs.)</th>
+                            <th class="py-3 text-center" style="width: 9%;">Estado Pago</th>
+                            <th class="py-3 pe-4 text-end" style="width: 11%;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaFacturasBody" class="border-top-0" style="font-size: 0.92rem;">
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-secondary">
+                                <span class="spinner-border spinner-border-sm text-warning me-2"></span>Cargando facturas y cobranzas...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PLANTILLA HTML DE FACTURA CARTA / A4 -->
+    <div id="plantilla-factura" style="display: none; padding: 30px; background: #ffffff !important; color: #000000 !important; width: 100%; max-width: 790px; margin: 0 auto; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.4;">
+        <!-- CABECERA -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 25px;">
+            <div>
+                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px;">
+                    GOLDEN ERP <span style="color: #d4af37;">- ENTERPRISE SUITE</span>
+                </h1>
+                <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; color: #475569;">
+                    Importaciones & Distribuciones Automotrices S.R.L.
+                </p>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
+                    NIT: 1029384756 | Santa Cruz de la Sierra - Bolivia
+                </p>
+            </div>
+            <div style="text-align: right;">
+                <div id="factura-numero" style="font-size: 20px; font-weight: 800; color: #0f172a;">
+                    Factura Comercial N° 008
+                </div>
+                <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">
+                    Documento Fiscal Oficial
+                </div>
+            </div>
+        </div>
+
+        <!-- DATOS DEL CLIENTE -->
+        <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px 20px; margin-bottom: 25px; font-size: 13px;">
+            <div>
+                <div style="margin-bottom: 4px; color: #334155;">
+                    <strong style="color: #0f172a;">Cliente:</strong> <span id="factura-cliente">Taller Mecánico Central</span>
+                </div>
+                <div style="color: #334155;">
+                    <strong style="color: #0f172a;">Email:</strong> <span id="factura-email">contacto@tallermecanico.bo</span>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="margin-bottom: 4px; color: #334155;">
+                    <strong style="color: #0f172a;">Fecha:</strong> <span id="factura-fecha">10/11/2026, 01:08</span>
+                </div>
+                <div style="color: #334155;">
+                    <strong style="color: #0f172a;">Estado:</strong> <span id="factura-estado" style="display: inline-block; padding: 2px 8px; border-radius: 4px; background: #dcfce7; color: #15803d; font-weight: 700; font-size: 11px;">PAGADO</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE DETALLES -->
+        <table style="border-collapse: collapse; width: 100%; table-layout: fixed; margin-bottom: 25px; font-size: 13px; color: #000000;">
+            <thead>
+                <tr style="background: #1e293b; color: #ffffff;">
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: center; width: 12%;">CANTIDAD</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: left; width: 50%;">DESCRIPCIÓN</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 19%;">P. UNITARIO</th>
+                    <th style="border: 1px solid #1e293b; padding: 10px 12px; text-align: right; width: 19%;">SUBTOTAL</th>
+                </tr>
+            </thead>
+            <tbody id="factura-items">
+                <tr style="border-bottom: 1px solid #cbd5e1;">
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #000000;">1</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000;">Aceite 15W-40 CI-4 Heavy Duty (4L)</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #000000;">Bs. 120.00</td>
+                    <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #000000;">Bs. 120.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- TOTALES -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+            <div style="width: 270px; font-size: 13px; color: #000000;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #475569;">
+                    <span>Subtotal:</span>
+                    <span id="factura-subtotal" style="font-weight: 600; color: #0f172a;">Bs. 104.40</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; color: #475569;">
+                    <span>IVA (13%):</span>
+                    <span id="factura-iva" style="font-weight: 600; color: #0f172a;">Bs. 15.60</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 2px solid #0f172a; margin-top: 4px; font-size: 16px;">
+                    <strong style="color: #0f172a;">TOTAL GENERAL:</strong>
+                    <strong id="factura-total" style="color: #0f172a;">Bs. 120.00</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIE DE PÁGINA -->
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 11px; color: #64748b; max-width: 550px; line-height: 1.5;">
+                <p style="margin: 0 0 4px 0;">Este documento es una representación impresa de un comprobante electrónico con valor legal.</p>
+                <p style="margin: 0;">Autorizado por el Servicio de Impuestos Nacionales - ERP GOLDEN ENTERPRISE SUITE.</p>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; border: 1px solid #cbd5e1; background: #ffffff; padding: 4px; box-sizing: border-box;">
+                <img id="factura-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=GOLDEN-ERP-FACTURA-008" alt="QR" style="width: 60px; height: 60px; display: block;" onerror="this.style.display='none'">
+            </div>
+        </div>
+    </div>
+
+    <!-- Motores JS: html2pdf, Bootstrap 5, SweetAlert2 y scripts del ERP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="menu.js?v=28"></script>
+    <script src="facturacion.js?v=28"></script>
 </body>
 </html>

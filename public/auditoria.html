@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoría & Trazabilidad Transaccional - ERP GOLDEN</title>
+    <title>Auditoría del Sistema - GOLDEN ERP</title>
 
     <!-- Control de Acceso RBAC Inmediato (Sin Parpadeo) -->
     <script>
@@ -24,13 +24,17 @@
     <!-- Bootstrap 5.3.3 & Iconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <!-- Tipografía Editorial Automotriz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO GLASSMORPHIC (STICKY HEADER) -->
-    <div id="menu-contenedor" style="position: sticky; top: 0; z-index: 1000; width: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(245, 158, 11, 0.2);"></div>
+    <!-- MENÚ COMPARTIDO (STICKY HEADER CARBÓN GRAFITO) -->
+    <div id="menu-contenedor"></div>
 
     <!-- PANTALLA COMPLETA 100% -->
     <div class="container-fluid px-4 py-4">
@@ -38,18 +42,18 @@
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
             <div>
-                <h2 class="fw-bolder text-white mb-0 d-flex align-items-center">
-                    <i class="bi bi-shield-check text-warning me-2"></i>Auditoría & Trazabilidad del Sistema
+                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                    <i class="bi bi-shield-check text-warning me-2"></i>Auditoría y registro de actividad
                 </h2>
                 <p class="text-secondary mb-0 mt-1 small">
-                    Pista inmutable de operaciones críticas, modificaciones de roles, transacciones comerciales y control de accesos.
+                    Registro de operaciones de almacén, facturación fiscal, gestión de usuarios y accesos al sistema.
                 </p>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
-                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarAuditoria()">
+                <button class="btn btn-secondary btn-sm px-3" onclick="cargarAuditoria()">
                     <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
                 </button>
-                <button class="btn btn-gold btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="exportarAuditoriaCSV()">
+                <button class="btn btn-stitch-primary btn-sm px-3 fw-bold" onclick="exportarAuditoriaCSV()">
                     <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar CSV
                 </button>
             </div>
@@ -58,11 +62,11 @@
         <!-- TARJETAS DE KPIs SUPERIORES -->
         <div class="row g-3 mb-4">
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
+                <div class="card p-3 h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Registros de Auditoría</span>
-                            <h3 class="fw-extrabold text-white mb-0" id="kpiTotalLogs">0</h3>
+                            <h3 class="fw-bold text-dark mb-0" id="kpiTotalLogs">0</h3>
                         </div>
                         <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3);">
                             <i class="bi bi-journal-text text-warning fs-4"></i>
@@ -75,7 +79,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
+                <div class="card p-3 h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Operaciones de Hoy</span>
@@ -92,7 +96,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
+                <div class="card p-3 h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Módulos Auditados</span>
@@ -109,11 +113,11 @@
             </div>
 
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card-vip p-3 h-100">
+                <div class="card p-3 h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Seguridad & Integridad</span>
-                            <h4 class="fw-extrabold text-white mb-0" style="font-size: 1.15rem;">ACID / 100%</h4>
+                            <h4 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">ACID / 100%</h4>
                         </div>
                         <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);">
                             <i class="bi bi-check-circle-fill text-success fs-4"></i>
@@ -127,7 +131,7 @@
         </div>
 
         <!-- TARJETA PRINCIPAL: TABLA DE AUDITORÍA CON BUSCADOR EN TIEMPO REAL -->
-        <div class="card-vip p-4 mb-4">
+        <div class="card p-4 mb-4">
             
             <!-- Barra de Herramientas y Filtro en Tiempo Real -->
             <div class="row g-3 align-items-center mb-3">
@@ -136,11 +140,11 @@
                         <span class="input-group-text bg-transparent border-end-0 text-secondary" style="border-color: rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.6) !important;">
                             <i class="bi bi-search text-warning"></i>
                         </span>
-                        <input type="text" id="inputBuscarLogs" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar por usuario, acción, módulo o fecha en tiempo real...">
+                        <input type="text" id="inputBuscarLogs" class="form-control form-control border-start-0 ps-0" placeholder="Buscar por usuario, acción, módulo o fecha en tiempo real...">
                     </div>
                 </div>
                 <div class="col-12 col-sm-6 col-md-3 col-lg-3">
-                    <select id="filtroModulo" class="form-select form-select-vip">
+                    <select id="filtroModulo" class="form-select form-select">
                         <option value="TODOS">Todos los Módulos</option>
                         <option value="SCM_COMPRAS">SCM / Compras</option>
                         <option value="CREDITOS">Créditos B2B</option>
@@ -157,13 +161,13 @@
                         <i class="bi bi-file-earmark-excel fs-6"></i>
                         <span>Exportar Datos</span>
                     </button>
-                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalLogs">0 Eventos</span>
+                    <span class="badge-pill-stitch badge-pill-gold" id="badgeTotalLogs">0 Eventos</span>
                 </div>
             </div>
 
-            <!-- Tabla de Datos (Estilo DataTables Dark VIP) -->
+            <!-- Tabla de Auditoría -->
             <div class="table-responsive">
-                <table id="tablaAuditoriaCompleta" class="table table-vip align-middle mb-0">
+                <table id="tablaAuditoriaCompleta" class="table table-stitch align-middle mb-0">
                     <thead>
                         <tr>
                             <th class="ps-3" style="width: 170px;">Fecha y Hora</th>
@@ -186,7 +190,7 @@
             <!-- Pie de Tabla -->
             <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary border-opacity-10 small text-secondary">
                 <div id="infoPaginacion">Mostrando 0 registros</div>
-                <div><i class="bi bi-shield-shaded text-warning me-1"></i>ERP GOLDEN Security Audit Trail</div>
+                <div><i class="bi bi-shield-shaded text-warning me-1"></i>Registro de auditoría y seguridad</div>
             </div>
 
         </div>

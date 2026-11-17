@@ -1,10 +1,10 @@
 /**
- * ERP GOLDEN - Módulo de Auditoría y Trazabilidad Transaccional VIP
+ * ERP GOLDEN - Auditoría y Registro de Actividad
  */
 const API_URL = '/api';
 let logsAuditoriaGlobal = [];
 
-// Helper Toast con SweetAlert2 para notificaciones Dark VIP
+// Helper Toast con SweetAlert2
 const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
     toast: true,
     position: 'top-end',
@@ -126,7 +126,7 @@ function renderizarTabla(logs) {
 
         html += `
             <tr class="align-middle">
-                <td class="ps-3 font-monospace small text-nowrap" style="color: #94a3b8;">
+                <td class="ps-3 font-monospace small text-nowrap" style="color: #57534E; font-family: 'Chivo Mono', monospace;">
                     <i class="bi bi-clock me-1 text-warning"></i>${fechaFormateada}
                 </td>
                 <td class="text-nowrap">
@@ -136,7 +136,7 @@ function renderizarTabla(logs) {
                             ${(log.usuario_nombre || 'S').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                            <span class="fw-semibold text-white d-block" style="font-size: 0.9rem;">${log.usuario_nombre || 'Sistema'}</span>
+                            <span class="fw-semibold text-dark d-block" style="font-size: 0.9rem;">${log.usuario_nombre || 'Sistema'}</span>
                         </div>
                     </div>
                 </td>
@@ -144,7 +144,7 @@ function renderizarTabla(logs) {
                     ${badgeModulo}
                 </td>
                 <td>
-                    <span class="text-light" style="font-size: 0.9rem;">${escaparHTML(log.accion)}</span>
+                    <span class="text-dark" style="font-size: 0.9rem;">${escaparHTML(log.accion)}</span>
                 </td>
                 <td class="text-center">
                     ${badgeNivel}
@@ -187,7 +187,7 @@ function filtrarLogs() {
 }
 
 /**
- * Generar badge VIP según el módulo de origen
+ * Generar badge según el módulo de origen
  */
 function obtenerBadgeModulo(modulo) {
     const mod = (modulo || '').toUpperCase();
@@ -209,7 +209,7 @@ function obtenerBadgeModulo(modulo) {
             return '<span class="badge" style="background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4);"><i class="bi bi-key-fill me-1"></i>Autenticación</span>';
         case 'SISTEMA':
         default:
-            return '<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4);"><i class="bi bi-cpu-fill me-1"></i>Sistema</span>';
+            return '<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #57534E; border: 1px solid #D6D0C7;"><i class="bi bi-cpu-fill me-1"></i>Sistema</span>';
     }
 }
 
@@ -223,7 +223,7 @@ function obtenerBadgeNivel(accion, modulo) {
     } else if (act.includes('crea') || act.includes('generaci') || act.includes('alta') || act.includes('amortiza')) {
         return '<span class="badge rounded-pill bg-success bg-opacity-25 text-success border border-success border-opacity-50"><i class="bi bi-check-circle me-1"></i>Éxito</span>';
     } else {
-        return '<span class="badge rounded-pill bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50"><i class="bi bi-info-circle me-1"></i>Info</span>';
+        return '<span class="badge rounded-pill bg-secondary bg-opacity-25 text-dark border border-secondary border-opacity-50"><i class="bi bi-info-circle me-1"></i>Info</span>';
     }
 }
 

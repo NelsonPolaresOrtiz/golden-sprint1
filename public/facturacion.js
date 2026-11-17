@@ -153,47 +153,109 @@ function renderizarTablaFacturas(lista) {
     const html = lista.map(f => {
         const idFactura = String(f.id).padStart(3, '0');
         const estadoUpper = String(f.estado || 'PENDIENTE').toUpperCase();
-        const esPagado = estadoUpper === 'ENTREGADO' || estadoUpper === 'PAGADO';
+        const estPagoUpper = String(f.estado_pago || '').toUpperCase();
+        const esPagado = estPagoUpper.includes('PAGADO') || estPagoUpper === 'VERIFICADO' || estadoUpper === 'ENTREGADO' || estadoUpper === 'PAGADO';
         
         const fechaStr = f.fecha_compra 
             ? new Date(f.fecha_compra).toLocaleString('es-BO', { dateStyle: 'short', timeStyle: 'short' })
             : '10/11/2026, 01:08';
 
         const totalNum = parseFloat(f.total || 0).toFixed(2);
+        const mPago = f.metodo_pago || 'QR_SIMPLE';
+        const banco = f.banco_origen || 'Banco Unión';
+        const refComp = f.comprobante_ref || 'S/R';
 
         return `
             <tr>
                 <td class="ps-4">
-                    <span class="badge px-2 py-1 rounded-2" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-family: monospace; font-size: 0.88rem;">
+                    <span class="badge px-2 py-1 rounded-2" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-family: 'Chivo Mono', monospace; font-size: 0.88rem;">
                         FAC-${idFactura}
                     </span>
                 </td>
                 <td>
-                    <div class="fw-bold text-white">${escaparHTML(f.cliente || 'Consumidor Final')}</div>
+                    <div class="fw-bold text-dark">${escaparHTML(f.cliente || 'Consumidor Final')}</div>
                     <small class="text-secondary">${escaparHTML(f.cliente_email || 'ventas@goldenerp.com')}</small>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                        <span class="badge ${mPago === 'PAYPAL' ? 'bg-primary' : 'bg-dark text-warning'}" style="font-size:0.68rem; font-family:'Chivo Mono', monospace;">
+                            ${mPago}
+                        </span>
+                        <small class="text-muted text-truncate" style="max-width: 140px;">${escaparHTML(banco)}</small>
+                    </div>
+                    <div class="font-mono text-dark fw-bold small" style="font-size: 0.78rem;">
+                        <i class="bi bi-receipt me-1 text-danger"></i>${escaparHTML(refComp)}
+                    </div>
                 </td>
                 <td class="text-secondary small">
                     <i class="bi bi-calendar3 me-1 text-warning opacity-75"></i>${fechaStr}
                 </td>
-                <td class="text-end fw-extrabold text-success" style="font-family: monospace; font-size: 0.95rem;">
+                <td class="text-end fw-extrabold text-success" style="font-family: 'Chivo Mono', monospace; font-size: 0.95rem;">
                     Bs. ${totalNum}
                 </td>
                 <td class="text-center">
                     <span class="badge rounded-pill px-3 py-1 ${esPagado ? 'bg-success-subtle text-success border border-success border-opacity-25' : 'bg-warning-subtle text-warning border border-warning border-opacity-25'}" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                        ${esPagado ? '<i class="bi bi-check-circle me-1"></i>PAGADO' : '<i class="bi bi-clock me-1"></i>PENDIENTE'}
+                        ${esPagado ? '<i class="bi bi-check-circle me-1"></i>VERIFICADO' : '<i class="bi bi-clock me-1"></i>PENDIENTE'}
                     </span>
                 </td>
                 <td class="pe-4 text-end">
-                    <button class="btn btn-outline-warning btn-sm py-1 px-3 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm fw-semibold" onclick="generarRecibo(${f.id})" title="Descargar Factura Oficial en PDF (Carta / A4)">
-                        <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
-                        <span>Recibo PDF</span>
-                    </button>
+                    <div class="d-inline-flex align-items-center gap-1">
+                        ${!esPagado ? `
+                            <button class="btn btn-sm btn-success py-1 px-2 rounded fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="verificarYAprobarCobro(${f.id})" style="font-size: 0.75rem;" title="Verificar y Aprobar Cobro Bancario / QR">
+                                <i class="bi bi-check2-circle"></i>
+                                <span>Aprobar</span>
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-outline-warning btn-sm py-1 px-2 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm fw-semibold" onclick="generarRecibo(${f.id})" style="font-size: 0.75rem;" title="Descargar Factura Oficial en PDF (Carta / A4)">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                            <span>PDF</span>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
 
     tbody.innerHTML = html;
+}
+
+async function verificarYAprobarCobro(id) {
+    const usuario = JSON.parse(localStorage.getItem('usuario_golden') || '{}');
+    const resp = await (typeof Swal !== 'undefined' ? Swal.fire({
+        title: `¿Verificar y Aprobar Cobro de Orden #${id}?`,
+        text: 'Se validará el número de comprobante bancario / QR y se registrará el ingreso como VERIFICADO.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#15803D',
+        cancelButtonColor: '#64748B',
+        confirmButtonText: 'Sí, verificar y aprobar',
+        cancelButtonText: 'Cancelar'
+    }) : { isConfirmed: confirm(`¿Aprobar cobro de Orden #${id}?`) });
+
+    if (!resp.isConfirmed) return;
+
+    try {
+        const res = await fetch(`/api/pedidos/${id}/aprobar-cobro`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_nombre: usuario.nombre || 'Administrador / Cajero' })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al aprobar cobro');
+
+        if (typeof Toast !== 'undefined') {
+            Toast.fire({ icon: 'success', title: `Cobro de Orden #${id} aprobado como VERIFICADO` });
+        } else {
+            alert(`Cobro de Orden #${id} aprobado como VERIFICADO`);
+        }
+        cargarFacturacion();
+    } catch (e) {
+        if (typeof Toast !== 'undefined') {
+            Toast.fire({ icon: 'error', title: e.message });
+        } else {
+            alert(e.message);
+        }
+    }
 }
 
 // =========================================================================

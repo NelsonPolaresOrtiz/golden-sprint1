@@ -1,180 +1,214 @@
 /**
- * ERP GOLDEN - Componente de Navegación Glassmorphic VIP con RBAC Estricto
+ * ERP GOLDEN - Sistema de Navegación Distribuidora de Lubricantes & Filtros
+ * Conforme a .agent/skills/stitch-ui/SKILL.md & .antigravityrules
  */
 
 function renderizarMenu(paginaActiva) {
     const usuarioSesion = obtenerUsuarioSesion();
     const rol = usuarioSesion ? usuarioSesion.rol : null;
 
-    // Identificación de tipo de usuario
-    const esCliente = rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
-    const esAdmin = rol === 'ADMIN';
-    const esAlmacenero = rol === 'ALMACENERO';
-    const esRepartidor = rol === 'REPARTIDOR';
+    // Identificación estricta de tipo de usuario
+    const esCliente = rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
+    const esAdminOTrabajador = rol === 'ADMIN' || rol === 'TRABAJADOR';
+    const esEmpaque = rol === 'EMPAQUE' || rol === 'ALMACENERO';
+    const esAlmacenero = esEmpaque;
+    const esDespacho = rol === 'DESPACHO' || rol === 'REPARTIDOR';
+    const esRepartidor = esDespacho;
 
-    // Logo apunta a la Tienda para clientes y al Dashboard para personal interno
+    // Logo apunta al Catálogo para clientes y al Panel de control para personal interno
     const logoHref = esCliente ? 'tienda.html' : 'dashboard.html';
 
-    // Generar enlaces de navegación según RBAC
+    // Generar enlaces de navegación según RBAC con lenguaje comercial humano
     let linksNavHTML = '';
 
     if (esCliente) {
-        // CLIENTES EXTERNOS: Única y exclusivamente acceso a la Tienda / Catálogo
+        // CLIENTES EXTERNOS (Taller Comprador): Vista simplificada (Catálogo, Mis Pedidos)
         linksNavHTML = `
             <li class="nav-item">
-                <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 active text-warning fw-bold" 
-                   style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);" 
-                   href="tienda.html">
-                    <i class="bi bi-shop text-warning"></i> Catálogo Oficial & Pedidos
+                <a class="nav-link-stitch ${paginaActiva === 'tienda' ? 'active' : ''}" href="tienda.html">
+                    <i class="bi bi-shop me-1 text-danger"></i> Catálogo
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link-stitch" href="javascript:void(0)" onclick="navegarAMisPedidos()">
+                    <i class="bi bi-truck me-1 text-warning"></i> Mis Pedidos
                 </a>
             </li>
         `;
     } else {
-        // PERSONAL INTERNO (ADMIN, ALMACENERO, REPARTIDOR)
-        if (esAdmin) {
+        // PERSONAL INTERNO: ADMIN y TRABAJADOR tienen acceso completo a los 9 módulos
+        if (esAdminOTrabajador) {
             linksNavHTML += `
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'dashboard' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'dashboard' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="dashboard.html">
-                        <i class="bi bi-speedometer2 text-warning"></i> Dashboard
+                    <a class="nav-link-stitch ${paginaActiva === 'dashboard' ? 'active' : ''}" href="dashboard.html">
+                        <i class="bi bi-speedometer2 me-1 text-danger"></i> Panel
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'usuarios' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'usuarios' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="index.html">
-                        <i class="bi bi-people-fill text-warning"></i> Usuarios
+                    <a class="nav-link-stitch ${paginaActiva === 'usuarios' ? 'active' : ''}" href="index.html">
+                        <i class="bi bi-people-fill me-1 text-danger"></i> Gestion de Usuarios
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'compras' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'compras' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="compras.html">
-                        <i class="bi bi-truck-flatbed text-warning"></i> Proveedores/SCM
+                    <a class="nav-link-stitch ${paginaActiva === 'compras' ? 'active' : ''}" href="compras.html">
+                        <i class="bi bi-truck-flatbed me-1 text-danger"></i> Compras
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'facturacion' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'facturacion' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="facturacion.html">
-                        <i class="bi bi-credit-card-2-front-fill text-warning"></i> Cobranza y Facturación
+                    <a class="nav-link-stitch ${paginaActiva === 'facturacion' ? 'active' : ''}" href="facturacion.html">
+                        <i class="bi bi-credit-card-2-front-fill me-1 text-danger"></i> Cobranzas
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'creditos' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'creditos' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="creditos.html">
-                        <i class="bi bi-bank text-warning"></i> Créditos B2B
+                    <a class="nav-link-stitch ${paginaActiva === 'creditos' ? 'active' : ''}" href="creditos.html">
+                        <i class="bi bi-bank me-1 text-danger"></i> Créditos
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'auditoria' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'auditoria' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="auditoria.html">
-                        <i class="bi bi-shield-check text-warning"></i> Auditoría
+                    <a class="nav-link-stitch ${paginaActiva === 'auditoria' ? 'active' : ''}" href="auditoria.html">
+                        <i class="bi bi-shield-check me-1 text-danger"></i> Auditoría
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-stitch ${paginaActiva === 'inventario' ? 'active' : ''}" href="inventario.html">
+                        <i class="bi bi-box-seam-fill me-1 text-danger"></i> Inventario
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-stitch ${paginaActiva === 'tienda' ? 'active' : ''}" href="tienda.html">
+                        <i class="bi bi-shop me-1 text-danger"></i> Catálogo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link-stitch ${paginaActiva === 'logistica' ? 'active' : ''}" href="logistica.html">
+                        <i class="bi bi-truck me-1 text-danger"></i> Logística
                     </a>
                 </li>
             `;
-        }
+        } else {
+            // ROLES OPERATIVOS ESPECÍFICOS (EMPAQUE, DESPACHO)
+            if (esAlmacenero) {
+                linksNavHTML += `
+                    <li class="nav-item">
+                        <a class="nav-link-stitch ${paginaActiva === 'inventario' ? 'active' : ''}" href="inventario.html">
+                            <i class="bi bi-box-seam-fill me-1 text-danger"></i> Inventario
+                        </a>
+                    </li>
+                `;
+            }
 
-        if (esAdmin || esAlmacenero) {
             linksNavHTML += `
                 <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'inventario' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'inventario' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="inventario.html">
-                        <i class="bi bi-box-seam-fill text-warning"></i> Inventario
+                    <a class="nav-link-stitch ${paginaActiva === 'tienda' ? 'active' : ''}" href="tienda.html">
+                        <i class="bi bi-shop me-1 text-danger"></i> Catálogo
                     </a>
                 </li>
             `;
-        }
 
-        linksNavHTML += `
-            <li class="nav-item">
-                <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'tienda' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                   style="${paginaActiva === 'tienda' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                   href="tienda.html">
-                    <i class="bi bi-shop text-warning"></i> Catálogo / Ventas
-                </a>
-            </li>
-        `;
-
-        if (esAdmin || esAlmacenero || esRepartidor) {
-            linksNavHTML += `
-                <li class="nav-item">
-                    <a class="nav-link px-3 py-2 rounded-3 text-nowrap fw-semibold d-flex align-items-center gap-2 ${paginaActiva === 'logistica' ? 'active text-warning fw-bold' : 'text-light text-opacity-75'}" 
-                       style="${paginaActiva === 'logistica' ? 'background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);' : 'transition: all 0.2s;'}" 
-                       href="logistica.html">
-                        <i class="bi bi-truck text-warning"></i> Logística
-                    </a>
-                </li>
-            `;
+            if (esAlmacenero || esRepartidor) {
+                linksNavHTML += `
+                    <li class="nav-item">
+                        <a class="nav-link-stitch ${paginaActiva === 'logistica' ? 'active' : ''}" href="logistica.html">
+                            <i class="bi bi-truck me-1 text-danger"></i> Logística
+                        </a>
+                    </li>
+                `;
+            }
         }
     }
 
+    // Etiqueta legible y humana del rol para el navbar
+    let rolLegible = 'Invitado';
+    if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
+        rolLegible = 'Cuenta Taller';
+    } else if (rol === 'ADMIN') {
+        rolLegible = 'Administración';
+    } else if (rol === 'EMPAQUE') {
+        rolLegible = 'Encargado de Almacén & Empaque';
+    } else if (rol === 'DESPACHO') {
+        rolLegible = 'Chofer / Encargado de Entrega';
+    } else if (rol === 'TRABAJADOR') {
+        rolLegible = 'Encargado de Almacén & Ventas';
+    } else if (rol === 'ALMACENERO') {
+        rolLegible = 'Almacén Central';
+    } else if (rol === 'REPARTIDOR') {
+        rolLegible = 'Logística y Despacho';
+    } else if (usuarioSesion && usuarioSesion.rol) {
+        rolLegible = usuarioSesion.rol;
+    }
+
     const menuHTML = `
-    <nav class="navbar navbar-expand-lg" style="background: transparent; border-bottom: none;">
-        <div class="container-fluid px-4 py-1">
-            <!-- Brand Logo -->
-            <a class="navbar-brand fw-extrabold d-flex align-items-center gap-2 text-decoration-none py-1" href="${logoHref}">
-                <div class="d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.1) 100%); border: 1px solid rgba(245, 158, 11, 0.4); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);">
-                    <i class="bi bi-shield-shaded text-warning fs-5"></i>
-                </div>
-                <div class="d-flex flex-column" style="line-height: 1.1;">
-                    <span class="fw-bolder tracking-wide text-white" style="letter-spacing: 0.5px; font-size: 1.15rem;">
-                        GOLDEN <span class="text-gradient-gold">ERP</span>
-                    </span>
-                    <span class="text-muted" style="font-size: 0.65rem; letter-spacing: 1.5px; font-weight: 700;">ENTERPRISE SUITE</span>
+    <nav class="navbar navbar-expand-lg" style="background: transparent; border: none; padding: 0.4rem 0.75rem;">
+        <div class="container-fluid px-2 px-xl-3 py-1">
+            <!-- Isotipo Oficial: Engranaje + Gota estilizado en SVG Inline para garantizar que nunca se rompa o pixelee -->
+            <a class="brand-logo" href="${logoHref}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0;">
+                <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                    <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
+                    <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                    <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                    <!-- Gota de Aceite de Alta Precisión -->
+                    <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                    <!-- Detalle de brillo en la gota -->
+                    <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+                <!-- Texto de la Marca en Dos Líneas compactas -->
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
+                    <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
                 </div>
             </a>
 
             <!-- Botón Hamburguesa Responsive -->
-            <button class="navbar-toggler border-0 p-2 text-warning" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Menú">
+            <button class="navbar-toggler border-0 p-2 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir navegación">
                 <i class="bi bi-list fs-2"></i>
             </button>
 
-            <!-- Links de Navegación según Rol (RBAC) -->
+            <!-- Enlaces de Navegación según Rol -->
             <div class="collapse navbar-collapse" id="menuPrincipal">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+                <ul class="navbar-nav me-auto mb-0 ms-lg-2 gap-1 flex-nowrap align-items-center" style="white-space: nowrap;">
                     ${linksNavHTML}
                 </ul>
 
-                <!-- Área Derecha: Campanita de Notificaciones, Badge de Perfil, Carrito y Salir -->
-                <div class="d-flex align-items-center flex-wrap gap-2 mt-3 mt-lg-0">
+                <!-- Área Derecha: Campanita de Stock, Identificación de Usuario, Carrito y Salir (1 Sola Fila Horizontal) -->
+                <div class="d-flex align-items-center flex-nowrap gap-2 ms-auto mt-2 mt-lg-0 flex-shrink-0" style="white-space: nowrap;">
                     
-                    <!-- Campanita de Notificaciones (Alertas de Stock en Vivo) -->
-                    <div class="position-relative">
-                        <button id="btnCampanaNotificaciones" class="btn p-0 rounded-circle text-warning d-flex align-items-center justify-content-center position-relative" style="width: 40px; height: 40px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); transition: all 0.25s ease;" onclick="mostrarModalAlertasStock()" title="Alertas de Stock en Tiempo Real">
-                            <i class="bi bi-bell-fill fs-5 text-warning"></i>
-                            <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.68rem; display: none; padding: 0.35em 0.55em; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);">
+                    ${!esCliente ? `
+                    <!-- Campanita de Reposición: Solo visible para Administración y Almacén -->
+                    <div class="position-relative flex-shrink-0">
+                        <button id="btnCampanaNotificaciones" class="btn p-0 text-white d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 30px; height: 30px; background: #27272A; border: 1px solid #3F3F46; border-radius: 6px;" onclick="mostrarModalAlertasStock()" title="Control de reposición y stock crítico">
+                            <i class="bi bi-bell-fill" style="color: #F59E0B; font-size: 0.8rem;"></i>
+                            <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge bg-danger border border-dark" style="font-size: 0.6rem; display: none; padding: 0.2em 0.35em; border-radius: 4px;">
                                 0
                             </span>
                         </button>
                     </div>
+                    ` : ''}
 
-                    <!-- Badge Usuario con Indicador Pulsante -->
-                    <div id="userInfoBadge" class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background: rgba(20, 28, 46, 0.85); border: 1px solid rgba(255, 255, 255, 0.12);">
+                    <!-- Identificación de Usuario Compacta y Humana -->
+                    <div id="userInfoBadge" class="nav-user-badge-stitch flex-shrink-0" style="padding: 4px 8px;">
                         <span class="pulse-dot pulse-dot-emerald"></span>
-                        <div class="d-flex flex-column" style="line-height: 1.1;">
-                            <span class="fw-bold small text-white text-nowrap" id="navUserName">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
-                            <span class="text-warning text-uppercase" style="font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px;" id="navUserRol">${usuarioSesion ? usuarioSesion.rol : 'INVITADO'}</span>
+                        <div class="d-flex flex-column" style="line-height: 1.15;">
+                            <span class="fw-bold text-white text-nowrap" style="font-size: 0.76rem;" id="navUserName">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
+                            <span class="text-nowrap" style="font-family: 'Work Sans', sans-serif; font-size: 0.62rem; font-weight: 600; color: #D97706; letter-spacing: 0.2px;" id="navUserRol">${rolLegible}</span>
                         </div>
                     </div>
 
                     ${paginaActiva === 'tienda' ? `
-                    <!-- Botón Carrito Flotante -->
-                    <button class="btn btn-vip-gold d-flex align-items-center gap-2 px-3 py-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral">
-                        <i class="bi bi-bag-check-fill fs-5"></i>
-                        <span>Carrito</span>
-                        <span id="contadorCarrito" class="badge rounded-pill bg-danger shadow-sm ms-1" style="font-size: 0.75rem;">0</span>
+                    <!-- Botón Pedido / Carrito -->
+                    <button class="btn btn-stitch-primary d-flex align-items-center gap-1 px-2 py-1 flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="border-radius: 6px; background-color: #C81E1E; border: 1px solid #C81E1E; color: #FFFFFF; font-size: 0.76rem;">
+                        <i class="bi bi-cart3 fs-6"></i>
+                        <span>Mi pedido</span>
+                        <span id="contadorCarrito" class="badge bg-white text-dark font-monospace ms-1" style="font-size: 0.68rem; border-radius: 4px;">0</span>
                     </button>
                     ` : ''}
 
-                    <!-- Botón Salir -->
-                    <button class="btn btn-outline-danger btn-sm fw-bold px-3 py-2 rounded-3 d-flex align-items-center gap-1" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);" onclick="cerrarSesion()" title="Cerrar Sesión Segura">
+                    <!-- Botón Salir Compacto Integrado al Header Oscuro -->
+                    <button id="btnHeaderSalir" class="btn btn-sm d-flex align-items-center gap-1 flex-shrink-0 btn-header-logout" onclick="cerrarSesion()" title="Cerrar sesión">
                         <i class="bi bi-power"></i>
-                        <span class="d-none d-sm-inline">Salir</span>
+                        <span>Salir</span>
                     </button>
                 </div>
             </div>
@@ -187,17 +221,17 @@ function renderizarMenu(paginaActiva) {
         contenedor.style.top = '0';
         contenedor.style.zIndex = '1000';
         contenedor.style.width = '100%';
-        contenedor.style.backgroundColor = 'rgba(15, 23, 42, 0.95)';
-        contenedor.style.backdropFilter = 'blur(10px)';
-        contenedor.style.webkitBackdropFilter = 'blur(10px)';
-        contenedor.style.borderBottom = '1px solid rgba(245, 158, 11, 0.2)';
+        contenedor.style.backgroundColor = '#1C1917';
+        contenedor.style.borderBottom = '3px solid #C81E1E';
         contenedor.innerHTML = menuHTML;
-        setTimeout(iniciarMonitorAlertasStock, 300);
+        if (!esCliente) {
+            setTimeout(iniciarMonitorAlertasStock, 300);
+        }
     }
 }
 
 /**
- * Renderizador del Sidebar Maestro (6 Módulos Alineados y Ordenados)
+ * Renderizador del Sidebar Maestro para vistas auxiliares
  */
 function renderizarSidebar(moduloActivo) {
     const usuario = obtenerUsuarioSesion();
@@ -206,89 +240,97 @@ function renderizarSidebar(moduloActivo) {
 
     const nombre = usuario ? usuario.nombre : 'Administrador';
     const rol = usuario ? (usuario.rol || 'ADMIN') : 'ADMIN';
+    const esCliente = rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
 
     contenedor.innerHTML = `
-        <aside class="sidebar-master d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; background-color: #0f172a; border-right: 1px solid rgba(255, 255, 255, 0.08); z-index: 1020;">
-            <!-- Brand / Logo Header -->
-            <a href="dashboard.html" class="d-flex align-items-center gap-3 text-white text-decoration-none pb-3 border-bottom border-secondary border-opacity-25 px-2">
-                <div class="d-flex align-items-center justify-content-center rounded-3 shadow-sm flex-shrink-0" style="width: 42px; height: 42px; background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: #0f172a; font-weight: 900; font-size: 1.35rem; border: 1px solid rgba(251, 191, 36, 0.5);">
-                    G
-                </div>
-                <div class="d-flex flex-column" style="line-height: 1.15;">
-                    <span class="fs-5 fw-bold tracking-tight text-white">
-                        GOLDEN <span style="color: #f59e0b;">ERP</span>
-                    </span>
-                    <span class="text-secondary small fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 1.5px;">Enterprise Suite</span>
+        <aside class="sidebar-master d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; background-color: #1C1917; border-right: 1px solid #292524; z-index: 1020;">
+            <!-- Cabecera de Marca Oficial -->
+            <a href="dashboard.html" class="brand-logo pb-3 border-bottom border-secondary border-opacity-25 px-2" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                    <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
+                    <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
+                    <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
+                    <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; line-height: 1.1;">
+                    <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
+                    <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
                 </div>
             </a>
 
-            <!-- 2. SIDEBAR ORDENADO (Los 6 Módulos en Orden Estricto) -->
+            <!-- Módulos en Orden Comercial -->
             <ul class="nav flex-column gap-2 mt-4 flex-grow-1">
                 <li class="nav-item">
                     <a href="dashboard.html" class="nav-sidebar-link d-flex align-items-center ${moduloActivo === 'dashboard' ? 'active' : ''}">
-                        <span class="nav-icon">📊</span>
-                        <span>Analítica y Monetización</span>
+                        <span class="nav-icon"><i class="bi bi-speedometer2 text-danger"></i></span>
+                        <span>Panel de control</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="tienda.html" class="nav-sidebar-link d-flex align-items-center ${moduloActivo === 'tienda' ? 'active' : ''}">
-                        <span class="nav-icon">🛒</span>
-                        <span>E-commerce y Ventas</span>
+                        <span class="nav-icon"><i class="bi bi-shop text-danger"></i></span>
+                        <span>Catálogo y ventas</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="inventario.html" class="nav-sidebar-link d-flex align-items-center ${moduloActivo === 'inventario' ? 'active' : ''}">
-                        <span class="nav-icon">📦</span>
-                        <span>Gestión de Inventario</span>
+                        <span class="nav-icon"><i class="bi bi-box-seam-fill text-danger"></i></span>
+                        <span>Almacén e inventario</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="logistica.html" class="nav-sidebar-link d-flex align-items-center ${moduloActivo === 'logistica' ? 'active' : ''}">
-                        <span class="nav-icon">🚚</span>
-                        <span>Distribución y Logística</span>
+                        <span class="nav-icon"><i class="bi bi-truck text-danger"></i></span>
+                        <span>Despacho y logística</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="facturacion.html" class="nav-sidebar-link d-flex align-items-center ${moduloActivo === 'facturacion' ? 'active' : ''}">
-                        <span class="nav-icon">💳</span>
-                        <span>Cobranza y Facturación</span>
+                        <span class="nav-icon"><i class="bi bi-credit-card-2-front-fill text-danger"></i></span>
+                        <span>Cobranzas y facturación</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="auditoria.html" class="nav-sidebar-link d-flex align-items-center ${moduloActivo === 'auditoria' ? 'active' : ''}">
-                        <span class="nav-icon">🔐</span>
-                        <span>Seguridad y Usuario</span>
+                        <span class="nav-icon"><i class="bi bi-shield-check text-danger"></i></span>
+                        <span>Auditoría del sistema</span>
                     </a>
                 </li>
             </ul>
 
-            <!-- Pie del Sidebar: Usuario, Alertas en Vivo y Logout -->
+            <!-- Pie del Sidebar: Usuario, Alertas y Salir -->
             <div class="pt-3 border-top border-secondary border-opacity-25 px-2">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div class="d-flex align-items-center gap-2 overflow-hidden">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24;">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px; background: #292524; border: 1px solid #44403C; color: #D97706; border-radius: 6px;">
                             <i class="bi bi-person-fill"></i>
                         </div>
                         <div class="d-flex flex-column text-truncate" style="line-height: 1.1;">
                             <span class="small fw-bold text-white text-truncate" id="sidebarUserName">${nombre}</span>
-                            <span class="text-warning text-uppercase" style="font-size: 0.65rem; font-weight: 700;" id="sidebarUserRol">${rol}</span>
+                            <span class="font-monospace text-uppercase" style="font-size: 0.65rem; font-weight: 700; color: #D97706;" id="sidebarUserRol">${rol}</span>
                         </div>
                     </div>
-                    <!-- Campanita de Notificaciones de Stock -->
-                    <button id="btnCampanaSidebar" class="btn p-0 text-warning d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 34px; height: 34px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px;" onclick="mostrarModalAlertasStock()" title="Alertas de Stock Crítico">
-                        <i class="bi bi-bell-fill fs-6 text-warning"></i>
-                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-dark" style="font-size: 0.65rem; display: none; padding: 0.3em 0.5em;">0</span>
+                    ${!esCliente ? `
+                    <button id="btnCampanaSidebar" class="btn p-0 text-warning d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 34px; height: 34px; background: #292524; border: 1px solid #44403C; border-radius: 6px;" onclick="mostrarModalAlertasStock()" title="Control de reposición">
+                        <i class="bi bi-bell-fill fs-6" style="color: #F59E0B;"></i>
+                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge bg-danger border border-dark" style="font-size: 0.65rem; display: none; padding: 0.25em 0.45em; border-radius: 4px;">0</span>
                     </button>
+                    ` : ''}
                 </div>
-                <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3" onclick="cerrarSesion()" title="Finalizar Sesión Segura">
+                <button class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2 py-2" style="border-radius: 6px;" onclick="cerrarSesion()" title="Finalizar sesión">
                     <i class="bi bi-power"></i>
-                    <span>Cerrar Sesión</span>
+                    <span>Cerrar sesión</span>
                 </button>
             </div>
         </aside>
     `;
 
-    setTimeout(iniciarMonitorAlertasStock, 300);
+    if (!esCliente) {
+        setTimeout(iniciarMonitorAlertasStock, 300);
+    }
 }
 
 window.renderizarSidebar = renderizarSidebar;
@@ -310,7 +352,6 @@ function obtenerUsuarioSesion() {
 function protegerRuta(paginaActual, rolesPermitidos) {
     const usuario = obtenerUsuarioSesion();
 
-    // 1. Si no hay sesión iniciada
     if (!usuario) {
         if (paginaActual !== 'login' && paginaActual !== 'usuarios') {
             window.location.href = 'index.html';
@@ -319,25 +360,39 @@ function protegerRuta(paginaActual, rolesPermitidos) {
         return null;
     }
 
-    const esCliente = usuario.rol === 'CLIENTE_B2B' || usuario.rol === 'CLIENTE_B2C';
+    const esCliente = usuario.rol === 'CLIENTE' || usuario.rol === 'CLIENTE_B2B' || usuario.rol === 'CLIENTE_B2C';
 
-    // Soporte flexible para invocación: protegerRuta("ADMIN") o protegerRuta('auditoria', ['ADMIN'])
-    if (!rolesPermitidos && (typeof paginaActual === 'string' && ['ADMIN', 'ALMACENERO', 'REPARTIDOR', 'CLIENTE_B2B', 'CLIENTE_B2C'].includes(paginaActual) || Array.isArray(paginaActual))) {
+    if (!rolesPermitidos && (typeof paginaActual === 'string' && ['ADMIN', 'TRABAJADOR', 'ALMACENERO', 'REPARTIDOR', 'CLIENTE', 'CLIENTE_B2B', 'CLIENTE_B2C'].includes(paginaActual) || Array.isArray(paginaActual))) {
         rolesPermitidos = Array.isArray(paginaActual) ? paginaActual : [paginaActual];
         paginaActual = window.location.pathname.split('/').pop().replace('.html', '') || 'modulo';
     } else if (typeof rolesPermitidos === 'string') {
         rolesPermitidos = [rolesPermitidos];
     }
 
-    // 2. Si es cliente externo y la página solicitada NO es la tienda
     if (esCliente && paginaActual !== 'tienda') {
         window.location.href = 'tienda.html';
         return null;
     }
 
-    // 3. Si se definieron roles específicos permitidos
     if (rolesPermitidos && Array.isArray(rolesPermitidos)) {
-        if (!rolesPermitidos.includes(usuario.rol)) {
+        // Mapear compatibilidad de roles equivalentes
+        let rolesNormalizados = [...rolesPermitidos];
+        if (rolesNormalizados.includes('ALMACENERO') || rolesNormalizados.includes('TRABAJADOR')) {
+            rolesNormalizados.push('ALMACENERO', 'TRABAJADOR', 'EMPAQUE');
+        }
+        if (rolesNormalizados.includes('REPARTIDOR')) {
+            rolesNormalizados.push('DESPACHO');
+        }
+        if (rolesNormalizados.includes('DESPACHO')) {
+            rolesNormalizados.push('REPARTIDOR');
+        }
+        if (rolesNormalizados.includes('EMPAQUE')) {
+            rolesNormalizados.push('ALMACENERO', 'TRABAJADOR');
+        }
+        if (rolesNormalizados.includes('CLIENTE') && !rolesNormalizados.includes('CLIENTE_B2B')) {
+            rolesNormalizados.push('CLIENTE_B2B', 'CLIENTE_B2C');
+        }
+        if (!rolesNormalizados.includes(usuario.rol)) {
             if (esCliente) {
                 window.location.href = 'tienda.html';
             } else {
@@ -351,17 +406,20 @@ function protegerRuta(paginaActual, rolesPermitidos) {
 }
 
 // ==========================================
-// CONFIGURACIÓN GLOBAL SWEETALERT2 VIP
+// CONFIGURACIÓN GLOBAL SWEETALERT2 STITCH UI
 // ==========================================
 if (typeof Swal !== 'undefined') {
     window.Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        background: '#0d121f',
-        color: '#f8fafc',
+        timer: 2500,
+        timerProgressBar: false,
+        background: '#FFFFFF',
+        color: '#1C1917',
+        customClass: {
+            popup: 'stitch-toast'
+        },
         didOpen: (toast) => {
             toast.addEventListener('mouseenter', Swal.stopTimer);
             toast.addEventListener('mouseleave', Swal.resumeTimer);
@@ -374,13 +432,16 @@ if (typeof Swal !== 'undefined') {
             html: textoHtml,
             icon: isDanger ? 'warning' : 'question',
             showCancelButton: true,
-            confirmButtonColor: isDanger ? '#ef4444' : '#f59e0b',
-            cancelButtonColor: '#334155',
+            confirmButtonColor: isDanger ? '#DC2626' : '#D97706',
+            cancelButtonColor: '#64748B',
             confirmButtonText: confirmBtnText,
             cancelButtonText: 'Cancelar',
-            background: '#0d121f',
-            color: '#f8fafc',
-            reverseButtons: true
+            background: '#FFFFFF',
+            color: '#1C1917',
+            reverseButtons: true,
+            customClass: {
+                popup: 'border border-secondary shadow'
+            }
         });
     };
 }
@@ -388,16 +449,16 @@ if (typeof Swal !== 'undefined') {
 window.cerrarSesion = async function () {
     if (typeof Swal !== 'undefined') {
         const confirmacion = await Swal.fire({
-            title: '¿Cerrar Sesión?',
-            text: '¿Estás seguro de que deseas salir del sistema ERP GOLDEN?',
+            title: '¿Cerrar sesión?',
+            text: '¿Deseas salir del sistema GOLDEN ERP?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#f59e0b',
-            cancelButtonColor: '#334155',
-            confirmButtonText: '<i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión',
+            confirmButtonColor: '#C81E1E',
+            cancelButtonColor: '#64748B',
+            confirmButtonText: '<i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión',
             cancelButtonText: 'Permanecer',
-            background: '#0d121f',
-            color: '#f8fafc',
+            background: '#FFFFFF',
+            color: '#1C1917',
             reverseButtons: true
         });
         if (!confirmacion.isConfirmed) return;
@@ -407,12 +468,17 @@ window.cerrarSesion = async function () {
 };
 
 // =========================================================================
-// PAQUETE ENTERPRISE 1: ALERTA DE STOCK EN TIEMPO REAL (CAMPANITA NAVBAR)
+// MONITOREO DE STOCK EN TIEMPO REAL (SOLO PARA PERSONAL INTERNO)
 // =========================================================================
 let cacheProductosCriticos = [];
 
 async function iniciarMonitorAlertasStock() {
     try {
+        const usuario = obtenerUsuarioSesion();
+        if (usuario && (usuario.rol === 'CLIENTE_B2B' || usuario.rol === 'CLIENTE_B2C')) {
+            return; // No ejecutar para clientes
+        }
+
         const res = await fetch('/api/productos?t=' + Date.now());
         if (!res.ok) return;
         const productos = await res.json();
@@ -420,7 +486,6 @@ async function iniciarMonitorAlertasStock() {
 
         cacheProductosCriticos = productos.filter(p => p.stock <= p.stock_minimo);
         const badge = document.getElementById('badgeNotificacionesStock');
-        const btn = document.getElementById('btnCampanaNotificaciones');
 
         if (badge) {
             if (cacheProductosCriticos.length > 0) {
@@ -440,12 +505,12 @@ function mostrarModalAlertasStock() {
     if (!cacheProductosCriticos || cacheProductosCriticos.length === 0) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: '<span class="text-emerald fw-bold"><i class="bi bi-shield-check me-2"></i>Almacén Óptimo</span>',
-                html: '<p class="text-secondary small mb-0">No se detectaron repuestos en nivel crítico. Todas las referencias cuentan con stock por encima del nivel de reposición mínimo.</p>',
+                title: '<span class="text-success fw-bold"><i class="bi bi-shield-check me-2"></i>Almacén en orden</span>',
+                html: '<p class="text-muted small mb-0">No se registran repuestos en nivel crítico. Todas las referencias cuentan con stock por encima del nivel de reposición mínimo.</p>',
                 icon: 'success',
-                background: '#0d121f',
-                color: '#f8fafc',
-                confirmButtonColor: '#f59e0b',
+                background: '#FFFFFF',
+                color: '#1C1917',
+                confirmButtonColor: '#C81E1E',
                 confirmButtonText: 'Entendido'
             });
         } else {
@@ -457,13 +522,13 @@ function mostrarModalAlertasStock() {
     const filasHTML = cacheProductosCriticos.map(p => {
         const esAgotado = p.stock <= 0;
         const badgeEstado = esAgotado 
-            ? '<span class="badge bg-danger text-white px-2 py-1 small">AGOTADO</span>'
-            : `<span class="badge bg-warning text-dark px-2 py-1 small fw-bold">CRÍTICO (${p.stock})</span>`;
+            ? '<span class="badge bg-danger text-white px-2 py-1 small">Agotado</span>'
+            : `<span class="badge bg-warning text-dark px-2 py-1 small fw-bold">Crítico (${p.stock})</span>`;
         return `
-            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-                <td class="text-start py-2 font-monospace text-warning small">${p.sku}</td>
-                <td class="text-start py-2 text-white small">${p.nombre}</td>
-                <td class="text-center py-2 font-monospace text-secondary small">${p.stock_minimo}</td>
+            <tr>
+                <td class="text-start py-2 font-monospace text-dark small">${p.sku}</td>
+                <td class="text-start py-2 text-dark small">${p.nombre}</td>
+                <td class="text-center py-2 font-monospace text-muted small">${p.stock_minimo}</td>
                 <td class="text-center py-2">${badgeEstado}</td>
             </tr>
         `;
@@ -471,16 +536,16 @@ function mostrarModalAlertasStock() {
 
     const tablaHTML = `
         <div class="text-start mb-3">
-            <span class="text-secondary small">Se detectaron <strong class="text-warning">${cacheProductosCriticos.length} repuestos</strong> con existencias iguales o inferiores al stock mínimo de seguridad:</span>
+            <span class="text-muted small">Se registran <strong class="text-dark">${cacheProductosCriticos.length} repuestos</strong> con existencias iguales o inferiores al stock mínimo de reposición:</span>
         </div>
-        <div class="table-responsive rounded-3 mb-2" style="max-height: 260px; overflow-y: auto; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);">
-            <table class="table table-sm align-middle mb-0" style="color: #cbd5e1;">
+        <div class="table-responsive rounded-1 mb-2 border" style="max-height: 260px; overflow-y: auto; background: #FFFFFF;">
+            <table class="table table-sm align-middle mb-0" style="color: #1C1917;">
                 <thead>
-                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.15); background: rgba(9, 13, 24, 0.8);">
-                        <th class="py-2 text-start small text-secondary">SKU</th>
-                        <th class="py-2 text-start small text-secondary">Repuesto</th>
-                        <th class="py-2 text-center small text-secondary">Mín.</th>
-                        <th class="py-2 text-center small text-secondary">Estado</th>
+                    <tr style="background: #1C1917; color: #FFFFFF;">
+                        <th class="py-2 text-start small">SKU</th>
+                        <th class="py-2 text-start small">Repuesto</th>
+                        <th class="py-2 text-center small">Mínimo</th>
+                        <th class="py-2 text-center small">Estado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -492,18 +557,18 @@ function mostrarModalAlertasStock() {
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: '<div class="d-flex align-items-center justify-content-center gap-2 text-warning"><i class="bi bi-bell-fill"></i><span>Alertas de Stock en Tiempo Real</span></div>',
+            title: '<div class="d-flex align-items-center justify-content-center gap-2" style="color: #C81E1E;"><i class="bi bi-bell-fill"></i><span>Control de reposición y stock</span></div>',
             html: tablaHTML,
             icon: 'warning',
-            background: '#0d121f',
-            color: '#f8fafc',
+            background: '#FFFFFF',
+            color: '#1C1917',
             showCancelButton: true,
-            confirmButtonColor: '#f59e0b',
-            cancelButtonColor: '#334155',
-            confirmButtonText: '<i class="bi bi-truck-flatbed me-1"></i> Ir a SCM / Compras',
+            confirmButtonColor: '#C81E1E',
+            cancelButtonColor: '#64748B',
+            confirmButtonText: '<i class="bi bi-truck-flatbed me-1"></i> Ir a reposición / compras',
             cancelButtonText: 'Cerrar',
             customClass: {
-                popup: 'rounded-4 border border-secondary border-opacity-25 shadow-lg'
+                popup: 'rounded-2 border shadow'
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -511,12 +576,12 @@ function mostrarModalAlertasStock() {
             }
         });
     } else {
-        alert(`Alerta de Stock: ${cacheProductosCriticos.length} repuestos críticos.`);
+        alert(`Alerta de stock: ${cacheProductosCriticos.length} repuestos críticos.`);
     }
 }
 
 // =========================================================================
-// PAQUETE ENTERPRISE 2: EXPORTACIÓN GERENCIAL A CSV / EXCEL
+// EXPORTACIÓN A CSV / EXCEL
 // =========================================================================
 function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
     let tabla = document.getElementById(tablaId);
@@ -529,7 +594,7 @@ function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
 
     if (!tabla) {
         if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'warning', title: 'Tabla no encontrada', text: 'No se pudo ubicar el elemento de datos para exportar.', background: '#0d121f', color: '#f8fafc' });
+            Swal.fire({ icon: 'warning', title: 'Tabla no encontrada', text: 'No se pudo ubicar el elemento de datos para exportar.', background: '#FFFFFF', color: '#1C1917' });
         } else {
             alert('Tabla no encontrada.');
         }
@@ -539,7 +604,7 @@ function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
     const filas = Array.from(tabla.querySelectorAll('tr'));
     if (filas.length === 0) {
         if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'info', title: 'Sin registros', text: 'La tabla está vacía en este momento.', background: '#0d121f', color: '#f8fafc' });
+            Swal.fire({ icon: 'info', title: 'Sin registros', text: 'La tabla está vacía en este momento.', background: '#FFFFFF', color: '#1C1917' });
         }
         return;
     }
@@ -547,7 +612,6 @@ function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
     const lineasCSV = [];
 
     filas.forEach(fila => {
-        // Omitir filas de carga o mensaje "No se encontraron datos"
         const colspanTd = fila.querySelector('td[colspan]');
         if (colspanTd && parseInt(colspanTd.getAttribute('colspan')) >= 3) {
             return;
@@ -558,7 +622,6 @@ function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
 
         celdas.forEach(celda => {
             const textoCabecera = celda.innerText.trim().toLowerCase();
-            // Omitir columna de acciones o botones
             if (textoCabecera === 'acciones' || celda.classList.contains('col-acciones')) {
                 return;
             }
@@ -576,18 +639,17 @@ function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
         });
 
         if (datosFila.length > 0) {
-            lineasCSV.push(datosFila.join(';')); // Punto y coma para compatibilidad estándar con Excel
+            lineasCSV.push(datosFila.join(';'));
         }
     });
 
     if (lineasCSV.length === 0) {
         if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'info', title: 'Sin datos exportables', text: 'No se encontraron filas válidas para exportar.', background: '#0d121f', color: '#f8fafc' });
+            Swal.fire({ icon: 'info', title: 'Sin datos exportables', text: 'No se encontraron filas válidas para exportar.', background: '#FFFFFF', color: '#1C1917' });
         }
         return;
     }
 
-    // UTF-8 BOM (\uFEFF) para que Excel reconozca tildes, ñ y moneda sin problemas
     const contenidoCSV = '\uFEFF' + lineasCSV.join('\r\n');
     const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
 
@@ -612,7 +674,7 @@ window.iniciarMonitorAlertasStock = iniciarMonitorAlertasStock;
 window.mostrarModalAlertasStock = mostrarModalAlertasStock;
 
 // =========================================================================
-// PAQUETE ENTERPRISE 3: MOTOR DE FACTURACIÓN PDF (html2pdf.js) - CARTA / A4
+// MOTOR DE FACTURACIÓN PDF (html2pdf.js) - CARTA / A4
 // =========================================================================
 async function generarRecibo(pedidoId) {
     const elemento = document.getElementById('plantilla-factura');
@@ -629,7 +691,6 @@ async function generarRecibo(pedidoId) {
         return;
     }
 
-    // Cargar dinámicamente html2pdf si aún no estuviera en memoria
     if (typeof html2pdf === 'undefined') {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
@@ -638,7 +699,6 @@ async function generarRecibo(pedidoId) {
         return;
     }
 
-    // 0. Si viene pedidoId, poblar la plantilla antes de capturar
     if (pedidoId) {
         try {
             const res = await fetch(`/api/pedidos/${pedidoId}`);
@@ -685,10 +745,10 @@ async function generarRecibo(pedidoId) {
                 if (itemsTbody && Array.isArray(pedido.detalles) && pedido.detalles.length > 0) {
                     itemsTbody.innerHTML = pedido.detalles.map((d, idx) => `
                         <tr style="border-bottom: 1px solid #cbd5e1; ${idx % 2 === 1 ? 'background: #f8fafc;' : ''}">
-                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #000000;">${d.cantidad}</td>
-                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #000000;">${d.producto_nombre || 'Repuesto Automotriz'}</td>
-                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #000000;">Bs. ${parseFloat(d.precio_unitario || 0).toFixed(2)}</td>
-                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #000000;">Bs. ${parseFloat(d.subtotal || 0).toFixed(2)}</td>
+                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #1C1917;">${d.cantidad}</td>
+                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #1C1917;">${d.producto_nombre || 'Repuesto Automotriz'}</td>
+                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #1C1917; font-family: 'Chivo Mono', monospace;">Bs. ${parseFloat(d.precio_unitario || 0).toFixed(2)}</td>
+                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #1C1917; font-family: 'Chivo Mono', monospace;">Bs. ${parseFloat(d.subtotal || 0).toFixed(2)}</td>
                         </tr>
                     `).join('');
                 }
@@ -698,10 +758,8 @@ async function generarRecibo(pedidoId) {
         }
     }
 
-    // 1. Mostrar temporalmente para que html2pdf lo capture correctamente
     elemento.style.display = 'block';
 
-    // 2. Configuración estricta de html2pdf
     const opt = {
         margin:       0.5,
         filename:     pedidoId ? `Factura_GOLDEN_#00${pedidoId}.pdf` : 'Factura_GOLDEN.pdf',
@@ -710,7 +768,6 @@ async function generarRecibo(pedidoId) {
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    // 3. Generación y ocultamiento seguro tras completar la descarga
     html2pdf().set(opt).from(elemento).save().then(() => {
         elemento.style.display = 'none';
         if (typeof Toast !== 'undefined') {
@@ -725,6 +782,14 @@ async function generarRecibo(pedidoId) {
     });
 }
 
-// Compatibilidad
 window.generarRecibo = generarRecibo;
 window.generarFacturaPDF = generarRecibo;
+
+function navegarAMisPedidos() {
+    if (typeof abrirModalSeguimiento === 'function') {
+        abrirModalSeguimiento();
+    } else {
+        window.location.href = 'tienda.html?verPedidos=1';
+    }
+}
+window.navegarAMisPedidos = navegarAMisPedidos;

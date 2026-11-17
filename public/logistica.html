@@ -22,22 +22,26 @@
     <!-- Bootstrap 5.3.3 & Iconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Estilos de Alta Gama (Apple / Tesla / Stripe) -->
+    <!-- Tipografía Editorial Automotriz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css">
     <style>
-        .select-estado-vip {
+        .select-estado-stitch {
             border-radius: 999px;
             font-weight: 700;
             font-size: 0.85rem;
             padding: 0.45rem 1rem;
             cursor: pointer;
             transition: all 0.25s ease;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.15);
             outline: none;
         }
 
-        .select-estado-vip:focus {
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+        .select-estado-stitch:focus {
+            box-shadow: 0 0 0 3px rgba(200, 30, 30, 0.25);
         }
 
         .select-pendiente {
@@ -61,8 +65,8 @@
 </head>
 <body>
 
-    <!-- MENÚ COMPARTIDO GLASSMORPHIC (STICKY HEADER) -->
-    <div id="menu-contenedor" style="position: sticky; top: 0; z-index: 1000; width: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(245, 158, 11, 0.2);"></div>
+    <!-- MENÚ COMPARTIDO (STICKY HEADER CARBÓN GRAFITO) -->
+    <div id="menu-contenedor"></div>
 
     <!-- PANTALLA COMPLETA 100% -->
     <div class="container-fluid px-4 py-4">
@@ -70,22 +74,22 @@
         <!-- Título de Sección con Filtro de Fecha Gerencial -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
             <div>
-                <h2 class="fw-bolder text-white mb-0">
-                    <i class="bi bi-truck text-warning me-2"></i>Centro de Logística & Control de Despachos
+                <h2 class="fw-bold text-dark mb-0" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                    <i class="bi bi-truck text-warning me-2"></i>Despacho y logística de pedidos
                 </h2>
-                <p class="text-secondary mb-0 mt-1 small">Supervisión en tiempo real de despachos, rutas de reparto y actualización de órdenes.</p>
+                <p class="text-secondary mb-0 mt-1 small">Control de envíos a talleres, rutas de reparto y actualización de estados de entrega.</p>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <label for="filtroRangoLogistica" class="small text-secondary fw-bold text-nowrap d-none d-sm-inline">
                     <i class="bi bi-calendar-range text-warning me-1"></i> Período:
                 </label>
-                <select id="filtroRangoLogistica" class="form-select form-select-vip py-1 px-3" style="width: auto;" onchange="cambiarRangoLogistica(this.value)">
+                <select id="filtroRangoLogistica" class="form-select form-select py-1 px-3" style="width: auto;" onchange="cambiarRangoLogistica(this.value)">
                     <option value="hoy">Hoy</option>
                     <option value="7dias">Últimos 7 días</option>
                     <option value="mes">Mes Actual</option>
                     <option value="todos" selected>Todo el Histórico</option>
                 </select>
-                <button class="btn btn-vip-outline btn-sm rounded-pill px-3" onclick="cargarPedidos()">
+                <button class="btn btn-secondary btn-sm px-3" onclick="cargarPedidos()">
                     <i class="bi bi-arrow-clockwise me-1"></i> Sincronizar
                 </button>
             </div>
@@ -97,13 +101,13 @@
         <!-- TARJETAS DE RESUMEN (KPIs en Tiempo Real) -->
         <div class="row g-4 mb-4">
             <div class="col-md-4">
-                <div class="kpi-card-vip kpi-card-ruby h-100">
+                <div class="kpi-card-stitch kpi-card-ruby h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
                                 <span class="pulse-dot pulse-dot-ruby me-2"></span> Por Preparar (Almacén)
                             </span>
-                            <h1 class="fw-extrabold text-white mb-0 mt-2" id="countPendientes">0</h1>
+                            <h1 class="fw-bold text-dark mb-0 mt-2" id="countPendientes">0</h1>
                             <small class="text-muted mt-1 d-block">Órdenes pendientes de empaque</small>
                         </div>
                         <div class="kpi-icon-wrap">
@@ -114,7 +118,7 @@
             </div>
 
             <div class="col-md-4">
-                <div class="kpi-card-vip kpi-card-gold h-100">
+                <div class="kpi-card-stitch kpi-card-gold h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
@@ -131,13 +135,13 @@
             </div>
 
             <div class="col-md-4">
-                <div class="kpi-card-vip kpi-card-emerald h-100">
+                <div class="kpi-card-stitch kpi-card-emerald h-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
                                 <span class="pulse-dot pulse-dot-emerald me-2"></span> Entregados con Éxito
                             </span>
-                            <h1 class="fw-extrabold text-white mb-0 mt-2" id="countEntregados">0</h1>
+                            <h1 class="fw-bold text-dark mb-0 mt-2" id="countEntregados">0</h1>
                             <small class="text-muted mt-1 d-block">Cobro y recepción confirmada</small>
                         </div>
                         <div class="kpi-icon-wrap">
@@ -151,26 +155,27 @@
         <!-- TABLA DE DESPACHOS -->
         <div class="glass-panel">
             <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <span class="fw-bold text-white fs-6 d-flex align-items-center">
-                    <i class="bi bi-list-task text-warning me-2"></i>Manifiesto de Órdenes & Estados de Despacho
+                <span class="fw-bold text-dark fs-6 d-flex align-items-center">
+                    <i class="bi bi-list-task text-warning me-2"></i>Manifiesto de pedidos y estado de entrega
                 </span>
                 <div class="d-flex align-items-center gap-2">
                     <div class="input-group" style="max-width: 320px;">
-                        <span class="input-group-text input-group-text-vip"><i class="bi bi-search text-warning"></i></span>
-                        <input type="text" id="buscadorLogistica" class="form-control form-control-vip border-start-0 ps-0" placeholder="Buscar cliente, taller, orden o estado..." oninput="filtrarPedidosLogistica()">
+                        <span class="input-group-text input-group-text"><i class="bi bi-search text-warning"></i></span>
+                        <input type="text" id="buscadorLogistica" class="form-control form-control border-start-0 ps-0" placeholder="Buscar cliente, taller, orden o estado..." oninput="filtrarPedidosLogistica()">
                     </div>
-                    <span class="badge-pill-vip badge-pill-gold" id="badgeTotalOrdenes">0 Pedidos</span>
+                    <span class="badge-pill-stitch badge-pill-gold" id="badgeTotalOrdenes">0 Pedidos</span>
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-vip align-middle mb-0">
+                <table class="table table-stitch align-middle mb-0">
                     <thead>
                         <tr>
                             <th class="ps-4">Orden</th>
                             <th>Cliente / Taller</th>
-                            <th>Fecha de Compra</th>
-                            <th>Importe Cobrado</th>
-                            <th style="width: 290px;" class="text-end pe-4">Despacho & Recibo Oficial</th>
+                            <th>Fecha</th>
+                            <th>Importe</th>
+                            <th style="min-width: 250px;">Flujo por Etapas (Stepper)</th>
+                            <th style="min-width: 280px;" class="text-end pe-4">Acciones Operativas (Empaque / Despacho)</th>
                         </tr>
                     </thead>
                     <tbody id="tablaPedidos"></tbody>
@@ -284,6 +289,197 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- ========================================================================= -->
+    <!-- MODAL 1: CONTROL DE PREPARACIÓN Y EMPAQUE (ROL EMPAQUE / ALMACÉN)          -->
+    <!-- ========================================================================= -->
+    <div class="modal fade" id="modalControlEmpaque" tabindex="-1" aria-labelledby="modalControlEmpaqueLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border: 2px solid #E2E8F0; border-radius: 12px; overflow: hidden;">
+                <div class="modal-header px-4 py-3" style="background: #141619; border-bottom: 2px solid #F59E0B;">
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="modalControlEmpaqueLabel">
+                            <i class="bi bi-box-seam text-warning me-2"></i>Checklist de alistado y empaque en almacén
+                        </h5>
+                        <small class="font-mono text-warning" style="font-size: 0.72rem;">ALISTADO, EMBALAJE Y ROTULADO DE REPUESTOS</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4" style="background: #FAF8F5;">
+                    <div class="p-3 bg-white border rounded shadow-sm mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div>
+                                <span class="badge bg-dark font-mono fs-6" id="empaqueOrdenId">ORDEN #000</span>
+                                <span class="fw-bold text-dark ms-2" id="empaqueClienteNombre">Taller Central</span>
+                            </div>
+                            <span class="badge bg-warning text-dark font-mono" id="empaqueEstadoActual">PAGO VERIFICADO</span>
+                        </div>
+
+                        <!-- Checklist de Repuestos extraídos del estante -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-2">
+                                <i class="bi bi-check2-square text-danger me-1"></i>Repuestos verificados para empaque:
+                            </label>
+                            <div id="empaqueItemsChecklist" class="p-3 bg-light rounded border">
+                                <!-- Ítems dinámicos con checkbox -->
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                    Tipo de Embalaje *
+                                </label>
+                                <select id="empaqueTipoSelect" class="form-select font-mono" style="font-size: 0.88rem;">
+                                    <option value="Caja sellada industrial" selected>Caja sellada reforzada</option>
+                                    <option value="Pallet de distribución">Pallet flejado</option>
+                                    <option value="Envase individual protegido">Envase individual protegido</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                    N° Bultos *
+                                </label>
+                                <input type="number" id="empaqueBultosInput" class="form-control font-mono fw-bold" value="1" min="1" max="50">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                    Peso (Kg) *
+                                </label>
+                                <input type="number" id="empaquePesoInput" class="form-control font-mono fw-bold" value="4.5" step="0.1" min="0.1">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                    Operario Responsable de Empaque *
+                                </label>
+                                <input type="text" id="empaqueResponsableInput" class="form-control font-mono fw-bold" value="Marcos Almacén (Empaque)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-between" style="background: #F8FAFC;">
+                    <button type="button" class="btn btn-outline-warning fw-bold px-3 d-flex align-items-center gap-1" onclick="iniciarPickingDesdeModal()">
+                        <i class="bi bi-play-circle-fill"></i>
+                        <span>1. Iniciar Alistado (Preparación)</span>
+                    </button>
+                    <div>
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success fw-bold px-4" onclick="confirmarEmpaqueListoDesdeModal()">
+                            <i class="bi bi-box-seam me-1"></i> Confirmar paquete listo para despacho
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 2: DESPACHO Y SALIDA A RUTA (ROL DESPACHO / CHOFER)                   -->
+    <!-- ========================================================================= -->
+    <div class="modal fade" id="modalDespachoRuta" tabindex="-1" aria-labelledby="modalDespachoRutaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content" style="border: 2px solid #E2E8F0; border-radius: 12px; overflow: hidden;">
+                <div class="modal-header px-4 py-3" style="background: #141619; border-bottom: 2px solid #F59E0B;">
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="modalDespachoRutaLabel">
+                            <i class="bi bi-truck text-warning me-2"></i>Despacho y Salida a Ruta
+                        </h5>
+                        <small class="font-mono text-warning" style="font-size: 0.72rem;">ASIGNACIÓN DE VEHÍCULO DISTRIBUIDOR Y CHOFER</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4" style="background: #FAF8F5;">
+                    <div class="p-3 bg-white border rounded shadow-sm mb-3">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                Chofer Encargado del Reparto *
+                            </label>
+                            <input type="text" id="despachoChoferInput" class="form-control font-mono fw-bold" value="Rodrigo Chofer (Distribución)" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                Placa del Vehículo Distribuidor *
+                            </label>
+                            <input type="text" id="despachoPlacaInput" class="form-control font-mono fw-bold text-uppercase" value="4029-YHT (Furgón Térmico)" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="background: #F8FAFC;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" style="background-color: #B91C1C; border-color: #B91C1C;" onclick="confirmarSalidaRutaDesdeModal()">
+                        <i class="bi bi-truck me-1"></i> Despachar / Salir a Ruta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL 3: ACTA DE ENTREGA EN TALLER Y CIERRE DE PROCESO (FINALIZACIÓN)       -->
+    <!-- ========================================================================= -->
+    <div class="modal fade" id="modalActaEntrega" tabindex="-1" aria-labelledby="modalActaEntregaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content" style="border: 2px solid #E2E8F0; border-radius: 12px; overflow: hidden;">
+                <div class="modal-header px-4 py-3" style="background: #141619; border-bottom: 2px solid #15803D;">
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="modalActaEntregaLabel">
+                            <i class="bi bi-clipboard-check text-success me-2"></i>Acta de entrega al taller
+                        </h5>
+                        <small class="font-mono text-success" style="font-size: 0.72rem;">CONSTANCIA DE RECEPCIÓN Y CIERRE DE ENTREGA</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4" style="background: #FAF8F5;">
+                    <div class="p-3 bg-white border rounded shadow-sm mb-3">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                Nombre y CI de quien recibe *
+                            </label>
+                            <input type="text" id="entregaReceptorInput" class="form-control font-mono fw-bold" value="Carlos Miranda (Jefe de Taller)" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                Cédula de Identidad (CI) *
+                            </label>
+                            <input type="text" id="entregaCiInput" class="form-control font-mono fw-bold" value="4928103-SC" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                Código PIN de conformidad *
+                            </label>
+                            <input type="text" id="entregaPinInput" class="form-control font-mono fw-bold text-center fs-5 text-success" value="8842" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
+                                Observaciones de Entrega
+                            </label>
+                            <textarea id="entregaObsInput" class="form-control" rows="2">Entregado conforme, repuestos sellados y verificados en taller.</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="background: #F8FAFC;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success fw-bold px-4" onclick="confirmarEntregaFinalDesdeModal()">
+                        <i class="bi bi-check-circle-fill me-1"></i> Pedido entregado y cerrado
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Motor de Facturación PDF (html2pdf), Bootstrap y SweetAlert2 -->

@@ -1,5 +1,5 @@
 /**
- * ERP GOLDEN - Módulo de Inventario VIP, Búsqueda en Tiempo Real, Kardex y Exportación PDF
+ * ERP GOLDEN - Control de Almacén, Kardex y Reposición
  */
 const API_URL = '/api';
 let productosGlobal = [];
@@ -22,8 +22,8 @@ const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Control de Acceso RBAC: Solo Administradores y Almaceneros
-    const usuario = protegerRuta('inventario', ['ADMIN', 'ALMACENERO']);
+    // Control de Acceso RBAC: Solo Administradores y Trabajadores / Almaceneros
+    const usuario = protegerRuta('inventario', ['ADMIN', 'TRABAJADOR', 'ALMACENERO']);
     if (!usuario) return;
 
     renderizarMenu('inventario');
@@ -67,7 +67,7 @@ function actualizarMiniKPIs(lista) {
 }
 
 // ==========================================
-// 2. DIBUJAR LA TABLA DE CATÁLOGO VIP
+// 2. DIBUJAR LA TABLA DE ALMACÉN
 // ==========================================
 function renderizarTabla(productos, filtroBusqueda = '') {
     const tbody = document.getElementById('tablaProductos');
@@ -86,21 +86,21 @@ function renderizarTabla(productos, filtroBusqueda = '') {
         const esBajoStock = p.stock <= p.stock_minimo;
         const stockBadge = esBajoStock ? 'badge-pill-ruby' : 'badge-pill-emerald';
         const estadoTexto = esBajoStock
-            ? '<span class="badge-pill-vip badge-pill-ruby"><span class="pulse-dot pulse-dot-ruby me-1"></span>Crítico</span>'
-            : '<span class="badge-pill-vip badge-pill-emerald"><span class="pulse-dot pulse-dot-emerald me-1"></span>Óptimo</span>';
+            ? '<span class="badge-pill-stitch badge-pill-ruby"><span class="pulse-dot pulse-dot-ruby me-1"></span>Crítico</span>'
+            : '<span class="badge-pill-stitch badge-pill-emerald"><span class="pulse-dot pulse-dot-emerald me-1"></span>Óptimo</span>';
 
         tbody.innerHTML += `
             <tr>
                 <td class="ps-4">
-                    <span class="badge bg-dark font-monospace text-warning px-2 py-1 border border-secondary border-opacity-50">${p.sku}</span>
+                    <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Chivo Mono', monospace;">${p.sku}</span>
                 </td>
                 <td>
-                    <div class="fw-bold text-white">${p.nombre}</div>
-                    <span class="badge-pill-vip badge-pill-slate small mt-1" style="font-size: 0.72rem;">${p.categoria}</span>
+                    <div class="fw-bold text-dark">${p.nombre}</div>
+                    <span class="badge-pill-stitch badge-pill-slate small mt-1" style="font-size: 0.72rem;">${p.categoria}</span>
                 </td>
-                <td class="fw-bold fs-6" style="color: #34d399;">Bs. ${parseFloat(p.precio).toFixed(2)}</td>
+                <td class="fw-bold fs-6" style="color: #15803D; font-family: 'Chivo Mono', monospace;">Bs. ${parseFloat(p.precio).toFixed(2)}</td>
                 <td>
-                    <span class="badge-pill-vip ${stockBadge}">${p.stock} unid.</span>
+                    <span class="badge-pill-stitch ${stockBadge}">${p.stock} unid.</span>
                     <small class="text-secondary d-block mt-1" style="font-size: 0.7rem;">Mínimo: ${p.stock_minimo}</small>
                 </td>
                 <td>${estadoTexto}</td>
@@ -422,7 +422,7 @@ async function abrirKardex(sku) {
                 <tr>
                     <td colspan="7" class="text-center py-5 text-secondary">
                         <i class="bi bi-journal-x fs-1 d-block mb-2 text-warning opacity-50"></i>
-                        <h6 class="text-white fw-bold">Sin movimientos de salida registrados</h6>
+                        <h6 class="text-dark fw-bold">Sin movimientos de salida registrados</h6>
                         <p class="small text-secondary mb-0">Este repuesto aún no registra compras ni despachos en el sistema.</p>
                     </td>
                 </tr>`;
@@ -430,28 +430,28 @@ async function abrirKardex(sku) {
         }
 
         movs.forEach(m => {
-            let badgeEstado = '<span class="badge-pill-vip badge-pill-ruby">PENDIENTE</span>';
-            if (m.estado_pedido === 'EN CAMINO') badgeEstado = '<span class="badge-pill-vip badge-pill-gold">EN CAMINO</span>';
-            if (m.estado_pedido === 'ENTREGADO') badgeEstado = '<span class="badge-pill-vip badge-pill-emerald">ENTREGADO</span>';
+            let badgeEstado = '<span class="badge-pill-stitch badge-pill-ruby">PENDIENTE</span>';
+            if (m.estado_pedido === 'EN CAMINO') badgeEstado = '<span class="badge-pill-stitch badge-pill-gold">EN CAMINO</span>';
+            if (m.estado_pedido === 'ENTREGADO') badgeEstado = '<span class="badge-pill-stitch badge-pill-emerald">ENTREGADO</span>';
 
             const fechaStr = new Date(m.fecha).toLocaleString();
 
             tbody.innerHTML += `
                 <tr>
-                    <td class="ps-4 text-nowrap font-monospace small" style="color: #cbd5e1;">
+                    <td class="ps-4 text-nowrap font-monospace small" style="color: #57534E; font-family: 'Chivo Mono', monospace;">
                         <i class="bi bi-calendar3 text-warning me-1"></i>${fechaStr}
                     </td>
                     <td>
-                        <span class="badge bg-dark font-monospace text-warning px-2 py-1 border border-secondary border-opacity-50">#00${m.pedido_id}</span>
+                        <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Chivo Mono', monospace;">#00${m.pedido_id}</span>
                     </td>
                     <td>
-                        <span class="fw-bold text-white d-block">${m.cliente}</span>
+                        <span class="fw-bold text-dark d-block">${m.cliente}</span>
                         <small class="text-secondary font-monospace" style="font-size: 0.72rem;">${m.cliente_email}</small>
                     </td>
                     <td class="text-center">
-                        <span class="badge-pill-vip badge-pill-ruby fw-bold">-${m.cantidad} unid.</span>
+                        <span class="badge-pill-stitch badge-pill-ruby fw-bold">-${m.cantidad} unid.</span>
                     </td>
-                    <td class="text-end font-monospace" style="color: #cbd5e1;">
+                    <td class="text-end font-monospace" style="color: #57534E; font-family: 'Chivo Mono', monospace;">
                         Bs. ${m.precio_unitario.toFixed(2)}
                     </td>
                     <td class="text-end font-monospace fw-bold" style="color: #34d399;">

@@ -120,6 +120,152 @@ app.post('/api/auth/login', (req, res) => {
     }
 });
 
+// Alias compatible para /api/login
+app.post('/api/login', (req, res) => {
+    res.redirect(307, '/api/auth/login');
+});
+
+/**
+ * Configuración pública de autenticación (Google Client ID, etc.)
+ * GET /api/auth/config
+ */
+app.get('/api/auth/config', (req, res) => {
+    res.json({
+        googleClientId: process.env.GOOGLE_CLIENT_ID || ''
+    });
+});
+
+/**
+ * Inicio de sesión y registro social (OAuth simulado para Google, Facebook, Microsoft)
+ * POST /api/auth/social
+ */
+app.post('/api/auth/social', (req, res) => {
+    try {
+        const { provider, email, nombre, picture } = req.body;
+        if (!email) {
+            return res.status(400).json({ error: 'Se requiere el correo de la cuenta social.' });
+        }
+
+        const emailLimpio = email.trim().toLowerCase();
+        const nombreFinal = (nombre && nombre.trim()) ? nombre.trim() : (emailLimpio.split('@')[0]);
+        const proveedor = provider || 'google';
+
+        // Buscar si ya existe el usuario
+        db.get(`SELECT * FROM usuarios WHERE LOWER(email) = LOWER(?)`, [emailLimpio], (err, user) => {
+            if (err) {
+                console.error('Error en auth social SQL:', err.message);
+                return res.status(500).json({ error: 'Error interno en la base de datos.' });
+            }
+
+            if (user) {
+                registrarAuditoria(user.nombre, `Inicio de sesión vía OAuth (${proveedor})`, 'SEGURIDAD');
+                return res.status(200).json({
+                    mensaje: `Bienvenido de vuelta, ${user.nombre}`,
+                    usuario: {
+                        id: user.id,
+                        nombre: user.nombre,
+                        email: user.email,
+                        rol: user.rol,
+                        estado: user.estado,
+                        provider: proveedor,
+                        picture: picture || ''
+                    }
+                });
+            } else {
+                // Usuario no existe: registrar nuevo usuario con rol CLIENTE
+                const hashPass = bcrypt.hashSync(`social_pwd_${Date.now()}_${Math.random()}`, 10);
+                db.run(
+                    `INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (?, ?, ?, 'CLIENTE', 'ACTIVO')`,
+                    [nombreFinal, emailLimpio, hashPass],
+                    function (insErr) {
+                        if (insErr) {
+                            console.error('Error al registrar usuario social:', insErr.message);
+                            return res.status(500).json({ error: 'No se pudo crear la cuenta de cliente.' });
+                        }
+
+                        const nuevoId = this.lastID;
+                        registrarAuditoria(nombreFinal, `Registro nuevo de cliente vía OAuth (${proveedor})`, 'USUARIOS');
+
+                        return res.status(201).json({
+                            mensaje: `Cuenta de cliente creada exitosamente con ${proveedor}`,
+                            usuario: {
+                                id: nuevoId,
+                                nombre: nombreFinal,
+                                email: emailLimpio,
+                                rol: 'CLIENTE',
+                                estado: 'ACTIVO',
+                                provider: proveedor,
+                                picture: picture || ''
+                            }
+                        });
+                    }
+                );
+            }
+        });
+    } catch (error) {
+        console.error('Error crítico en auth social:', error);
+        return res.status(500).json({ error: 'Error del servidor al procesar autenticación social.' });
+    }
+});
+
+/**
+ * Registro de nueva cuenta de cliente / taller mecánico
+ * POST /api/auth/registro-cliente & POST /api/clientes/registro
+ */
+const registrarClienteHandler = (req, res) => {
+    try {
+        const { nombre, email, password, nit, telefono, direccion } = req.body;
+
+        if (!nombre || !email || !password) {
+            return res.status(400).json({ error: 'Nombre del taller, correo y contraseña son obligatorios.' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
+        }
+
+        const emailLimpio = email.trim().toLowerCase();
+        const hashedPassword = bcrypt.hashSync(password, 10);
+
+        db.get(`SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?)`, [emailLimpio], (chkErr, row) => {
+            if (chkErr) return res.status(500).json({ error: 'Error en la base de datos.' });
+            if (row) return res.status(409).json({ error: 'El correo electrónico ya se encuentra registrado.' });
+
+            db.run(
+                `INSERT INTO usuarios (nombre, email, password, rol, estado) VALUES (?, ?, ?, 'CLIENTE', 'ACTIVO')`,
+                [nombre.trim(), emailLimpio, hashedPassword],
+                function (insErr) {
+                    if (insErr) {
+                        return res.status(500).json({ error: 'Error al registrar la cuenta de cliente.' });
+                    }
+                    const nuevoId = this.lastID;
+                    registrarAuditoria(nombre.trim(), `Nuevo taller registrado (NIT: ${nit || 'S/N'}, Dir: ${direccion || 'Sucre'})`, 'USUARIOS');
+
+                    return res.status(201).json({
+                        mensaje: 'Cuenta de taller registrada exitosamente.',
+                        usuario: {
+                            id: nuevoId,
+                            nombre: nombre.trim(),
+                            email: emailLimpio,
+                            rol: 'CLIENTE',
+                            estado: 'ACTIVO',
+                            nit: nit || '',
+                            telefono: telefono || '',
+                            direccion: direccion || ''
+                        }
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        console.error('Error crítico en registro de cliente:', error);
+        return res.status(500).json({ error: 'Error del servidor al procesar el registro.' });
+    }
+};
+
+app.post('/api/auth/registro-cliente', registrarClienteHandler);
+app.post('/api/clientes/registro', registrarClienteHandler);
+
 // ============================================================================
 // 2. MÓDULO DE GESTIÓN DE USUARIOS (CRUD COMPLETO)
 // ============================================================================
@@ -314,15 +460,21 @@ app.get('/api/productos/:id', (req, res) => {
  */
 app.post('/api/productos', (req, res) => {
     try {
-        const { sku, nombre, categoria, precio, stock, stock_minimo, imagen_url, especificaciones } = req.body;
+        const {
+            sku, nombre, categoria, precio, stock, stock_minimo = 5,
+            imagen_url, especificaciones, linea = 'liviana',
+            en_oferta = 0, descuento_porcentaje = 15, compatibilidad
+        } = req.body;
 
         if (!sku || !nombre || !categoria || precio === undefined || stock === undefined) {
-            return res.status(400).json({ error: 'Todos los campos del producto son obligatorios.' });
+            return res.status(400).json({ error: 'SKU, nombre, categoría, precio y stock son obligatorios.' });
         }
 
         const precioNum = parseFloat(precio);
         const stockNum = parseInt(stock, 10);
-        const minStockNum = stock_minimo !== undefined ? parseInt(stock_minimo, 10) : 5;
+        const minStockNum = parseInt(stock_minimo, 10) || 5;
+        const enOfertaNum = (en_oferta === true || en_oferta === 1 || en_oferta === '1') ? 1 : 0;
+        const descNum = parseInt(descuento_porcentaje, 10) || 15;
 
         if (isNaN(precioNum) || precioNum < 0) {
             return res.status(400).json({ error: 'El precio debe ser un número positivo.' });
@@ -332,8 +484,25 @@ app.post('/api/productos', (req, res) => {
         }
 
         const specsStr = typeof especificaciones === 'object' ? JSON.stringify(especificaciones) : (especificaciones || null);
-        const sql = `INSERT INTO productos (sku, nombre, categoria, precio, stock, stock_minimo, imagen_url, especificaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        db.run(sql, [sku.trim().toUpperCase(), nombre.trim(), categoria, precioNum, stockNum, minStockNum, imagen_url || null, specsStr], function (err) {
+        const sql = `INSERT INTO productos (
+            sku, nombre, categoria, precio, stock, stock_minimo, imagen_url, 
+            especificaciones, linea, en_oferta, descuento_porcentaje, compatibilidad
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        db.run(sql, [
+            String(sku).trim().toUpperCase(),
+            String(nombre).trim(),
+            String(categoria).trim(),
+            precioNum,
+            stockNum,
+            minStockNum,
+            imagen_url || null,
+            specsStr,
+            linea || 'liviana',
+            enOfertaNum,
+            descNum,
+            compatibilidad || null
+        ], function (err) {
             if (err) {
                 if (err.message.includes('UNIQUE constraint failed')) {
                     return res.status(409).json({ error: `El código SKU "${sku}" ya está registrado.` });
@@ -341,8 +510,8 @@ app.post('/api/productos', (req, res) => {
                 console.error('Error al insertar producto:', err.message);
                 return res.status(500).json({ error: 'Error al guardar el producto en la base de datos.' });
             }
-            registrarAuditoria('ALMACEN', `Registró nuevo repuesto SKU: ${sku.trim().toUpperCase()} - "${nombre.trim()}"`, 'INVENTARIO');
-            res.status(201).json({ id: this.lastID, mensaje: 'Repuesto registrado exitosamente en inventario.' });
+            registrarAuditoria('GESTOR_CATALOGO', `Registró nuevo repuesto SKU: ${sku.trim().toUpperCase()} - "${nombre.trim()}"`, 'CATALOGO');
+            res.status(201).json({ id: this.lastID, mensaje: 'Repuesto registrado exitosamente en el catálogo.' });
         });
     } catch (error) {
         console.error('Error crítico al crear producto:', error);
@@ -351,41 +520,74 @@ app.post('/api/productos', (req, res) => {
 });
 
 /**
- * Actualizar producto existente
+ * Actualizar producto existente (Soporta actualización completa y parcial de ofertas/precios)
  * PUT /api/productos/:id
  */
 app.put('/api/productos/:id', (req, res) => {
     try {
         const prodId = req.params.id;
-        const { sku, nombre, categoria, precio, stock, stock_minimo, imagen_url, especificaciones } = req.body;
+        db.get('SELECT * FROM productos WHERE id = ?', [prodId], (getErr, prodExistente) => {
+            if (getErr) return res.status(500).json({ error: 'Error al consultar producto.' });
+            if (!prodExistente) return res.status(404).json({ error: 'Producto no encontrado.' });
 
-        if (!sku || !nombre || !categoria || precio === undefined || stock === undefined) {
-            return res.status(400).json({ error: 'Todos los datos del repuesto son obligatorios.' });
-        }
+            const {
+                sku = prodExistente.sku,
+                nombre = prodExistente.nombre,
+                categoria = prodExistente.categoria,
+                precio = prodExistente.precio,
+                stock = prodExistente.stock,
+                stock_minimo = prodExistente.stock_minimo,
+                imagen_url = prodExistente.imagen_url,
+                especificaciones = prodExistente.especificaciones,
+                linea = prodExistente.linea,
+                en_oferta = prodExistente.en_oferta,
+                descuento_porcentaje = prodExistente.descuento_porcentaje,
+                compatibilidad = prodExistente.compatibilidad
+            } = req.body;
 
-        const precioNum = parseFloat(precio);
-        const stockNum = parseInt(stock, 10);
-        const minStockNum = stock_minimo !== undefined ? parseInt(stock_minimo, 10) : 5;
+            const precioNum = parseFloat(precio);
+            const stockNum = parseInt(stock, 10);
+            const minStockNum = parseInt(stock_minimo, 10);
+            const enOfertaNum = (en_oferta === true || en_oferta === 1 || en_oferta === '1') ? 1 : 0;
+            const descNum = parseInt(descuento_porcentaje, 10) || 15;
 
-        if (isNaN(precioNum) || precioNum < 0 || isNaN(stockNum) || stockNum < 0) {
-            return res.status(400).json({ error: 'Precio o stock inválidos.' });
-        }
+            if (isNaN(precioNum) || precioNum < 0 || isNaN(stockNum) || stockNum < 0) {
+                return res.status(400).json({ error: 'Precio o stock inválidos.' });
+            }
 
-        const specsStr = typeof especificaciones === 'object' ? JSON.stringify(especificaciones) : (especificaciones || null);
-        const sql = `UPDATE productos SET sku = ?, nombre = ?, categoria = ?, precio = ?, stock = ?, stock_minimo = ?, imagen_url = COALESCE(?, imagen_url), especificaciones = COALESCE(?, especificaciones) WHERE id = ?`;
-        db.run(sql, [sku.trim().toUpperCase(), nombre.trim(), categoria, precioNum, stockNum, minStockNum, imagen_url || null, specsStr, prodId], function (err) {
-            if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    return res.status(409).json({ error: `El SKU "${sku}" ya está asignado a otro producto.` });
+            const specsStr = typeof especificaciones === 'object' ? JSON.stringify(especificaciones) : (especificaciones || null);
+
+            const sql = `UPDATE productos SET 
+                sku = ?, nombre = ?, categoria = ?, precio = ?, stock = ?, stock_minimo = ?, 
+                imagen_url = ?, especificaciones = ?, linea = ?, en_oferta = ?, 
+                descuento_porcentaje = ?, compatibilidad = ? 
+                WHERE id = ?`;
+
+            db.run(sql, [
+                String(sku).trim().toUpperCase(),
+                String(nombre).trim(),
+                String(categoria).trim(),
+                precioNum,
+                stockNum,
+                isNaN(minStockNum) ? 5 : minStockNum,
+                imagen_url || null,
+                specsStr,
+                linea || 'liviana',
+                enOfertaNum,
+                descNum,
+                compatibilidad || null,
+                prodId
+            ], function (err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE constraint failed')) {
+                        return res.status(409).json({ error: `El SKU "${sku}" ya está asignado a otro producto.` });
+                    }
+                    console.error('Error al actualizar producto:', err.message);
+                    return res.status(500).json({ error: 'Error al actualizar el repuesto.' });
                 }
-                console.error('Error al actualizar producto:', err.message);
-                return res.status(500).json({ error: 'Error al actualizar el repuesto.' });
-            }
-            if (this.changes === 0) {
-                return res.status(404).json({ error: 'Producto no encontrado.' });
-            }
-            registrarAuditoria('ALMACEN', `Modificó repuesto #${prodId} (SKU: ${sku.trim().toUpperCase()} - "${nombre.trim()}")`, 'INVENTARIO');
-            res.status(200).json({ mensaje: 'Repuesto actualizado correctamente en inventario.' });
+                registrarAuditoria('GESTOR_CATALOGO', `Modificó repuesto #${prodId} (${sku} - "${nombre}")`, 'CATALOGO');
+                res.status(200).json({ mensaje: 'Repuesto actualizado correctamente en base de datos.' });
+            });
         });
     } catch (error) {
         console.error('Error crítico al editar producto:', error);
@@ -402,7 +604,9 @@ app.delete('/api/productos/:id', (req, res) => {
     db.run(`DELETE FROM productos WHERE id = ?`, [prodId], function (err) {
         if (err) {
             if (err.message.includes('FOREIGN KEY constraint failed')) {
-                return res.status(409).json({ error: 'No se puede eliminar el producto porque está vinculado a pedidos existentes.' });
+                return res.status(409).json({ 
+                    error: 'No se puede eliminar físicamente el repuesto porque tiene pedidos asociados. Puede pausarlo poniendo su stock en 0.' 
+                });
             }
             console.error('Error al eliminar producto:', err.message);
             return res.status(500).json({ error: 'Error al eliminar el producto.' });
@@ -410,9 +614,91 @@ app.delete('/api/productos/:id', (req, res) => {
         if (this.changes === 0) {
             return res.status(404).json({ error: 'Producto no encontrado.' });
         }
-        registrarAuditoria('ALMACEN', `Eliminó repuesto #${prodId} del catálogo`, 'INVENTARIO');
+        registrarAuditoria('GESTOR_CATALOGO', `Eliminó repuesto #${prodId} del catálogo`, 'CATALOGO');
         res.status(200).json({ mensaje: 'Repuesto eliminado exitosamente.' });
     });
+});
+
+/**
+ * Obtener configuración activa del Hero Banner y Anuncios del Catálogo
+ * GET /api/config-catalogo
+ */
+app.get('/api/config-catalogo', (req, res) => {
+    db.get('SELECT * FROM config_catalogo WHERE id = 1', [], (err, row) => {
+        if (err) {
+            console.error('Error al consultar config_catalogo:', err.message);
+            return res.status(500).json({ error: 'Error al obtener configuración del catálogo.' });
+        }
+        if (!row) {
+            return res.status(200).json({
+                id: 1,
+                hero_titulo: "EL FUTURO DE LA\nLUBRICACIÓN Y FILTROS\nDE PESADOS Y LIVIANOS\nLLEGÓ A SU TALLER",
+                hero_subtitulo: "Máxima potencia, más eficiencia y la mayor durabilidad para quien exige mucho del vehículo en ruta y ciudad.",
+                hero_destacado: "Lotes con -15% Mayorista",
+                hero_badge: "Fabricación & Distribución Mayorista",
+                banner_activo: 1
+            });
+        }
+        res.status(200).json(row);
+    });
+});
+
+/**
+ * Actualizar configuración y textos del Hero Banner
+ * PUT /api/config-catalogo
+ */
+app.put('/api/config-catalogo', (req, res) => {
+    try {
+        const { hero_titulo, hero_subtitulo, hero_destacado, hero_badge, banner_activo } = req.body;
+        
+        db.get('SELECT id FROM config_catalogo WHERE id = 1', [], (err, row) => {
+            if (err) return res.status(500).json({ error: 'Error al verificar configuración.' });
+            
+            if (!row) {
+                db.run(
+                    `INSERT INTO config_catalogo (id, hero_titulo, hero_subtitulo, hero_destacado, hero_badge, banner_activo) VALUES (1, ?, ?, ?, ?, ?)`,
+                    [
+                        hero_titulo || 'EL FUTURO DE LA LUBRICACIÓN',
+                        hero_subtitulo || 'Distribución mayorista',
+                        hero_destacado || 'Lotes con -15% Mayorista',
+                        hero_badge || 'Fabricación & Distribución Mayorista',
+                        banner_activo !== undefined ? banner_activo : 1
+                    ],
+                    (insErr) => {
+                        if (insErr) return res.status(500).json({ error: 'Error al insertar configuración.' });
+                        registrarAuditoria('GESTOR_CATALOGO', 'Creó la configuración inicial del Hero Banner', 'CATALOGO');
+                        return res.status(200).json({ mensaje: 'Configuración de catálogo guardada exitosamente.' });
+                    }
+                );
+            } else {
+                const sql = `UPDATE config_catalogo SET 
+                    hero_titulo = COALESCE(?, hero_titulo),
+                    hero_subtitulo = COALESCE(?, hero_subtitulo),
+                    hero_destacado = COALESCE(?, hero_destacado),
+                    hero_badge = COALESCE(?, hero_badge),
+                    banner_activo = COALESCE(?, banner_activo),
+                    fecha_actualizacion = datetime('now')
+                    WHERE id = 1`;
+                db.run(sql, [
+                    hero_titulo || null,
+                    hero_subtitulo || null,
+                    hero_destacado || null,
+                    hero_badge || null,
+                    banner_activo !== undefined ? banner_activo : null
+                ], function (updErr) {
+                    if (updErr) {
+                        console.error('Error al actualizar config_catalogo:', updErr.message);
+                        return res.status(500).json({ error: 'Error al actualizar configuración del catálogo.' });
+                    }
+                    registrarAuditoria('GESTOR_CATALOGO', 'Actualizó textos del Hero Banner en el catálogo', 'CATALOGO');
+                    res.status(200).json({ mensaje: 'Banner del catálogo actualizado exitosamente.' });
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Error crítico al actualizar config_catalogo:', error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
 });
 
 /**
@@ -513,11 +799,20 @@ app.get('/api/kardex/:sku', (req, res) => {
 // ============================================================================
 
 /**
- * Registrar venta con control atómico de concurrencia y descuento de stock
- * POST /api/ventas
+ * Registrar venta / pedido con control atómico de concurrencia, validación de stock y kardex
+ * POST /api/ventas & POST /api/pedidos
  */
-app.post('/api/ventas', (req, res) => {
-    const { cliente_id, total, carrito } = req.body;
+const registrarVentaOPedido = (req, res) => {
+    const { 
+        cliente_id, 
+        total, 
+        carrito, 
+        metodo_pago, 
+        comprobante_ref, 
+        banco_origen, 
+        comprobante_img,
+        estado_pago 
+    } = req.body;
 
     if (!cliente_id || !carrito || !Array.isArray(carrito) || carrito.length === 0) {
         return res.status(400).json({ error: 'Datos de compra incompletos o carrito vacío.' });
@@ -527,6 +822,15 @@ app.post('/api/ventas', (req, res) => {
     if (isNaN(totalNum) || totalNum <= 0) {
         return res.status(400).json({ error: 'El total de la venta debe ser mayor a 0.' });
     }
+
+    const mPago = metodo_pago || 'QR_SIMPLE';
+    const compRef = comprobante_ref || ('REF-' + Date.now().toString().slice(-6));
+    const bancoOrig = banco_origen || (mPago === 'PAYPAL' ? 'PayPal Inc.' : 'Banco Unión / BNB');
+    
+    // Si viene de PayPal o comprobante ya verificado
+    const estPago = estado_pago || (mPago === 'PAYPAL' ? ('PAGADO (PayPal API - ID: ' + compRef + ')') : 'PENDIENTE');
+    const estGeneral = (estPago.includes('PAGADO') || estPago === 'VERIFICADO') ? 'PAGADO' : 'PENDIENTE';
+    const estLogistica = 'ORDEN RECIBIDA / PAGO VERIFICADO';
 
     // Iniciar Transacción Atómica en SQLite
     db.serialize(() => {
@@ -547,7 +851,7 @@ app.post('/api/ventas', (req, res) => {
                 const ids = carrito.map(item => item.id);
                 const placeholders = ids.map(() => '?').join(',');
 
-                db.all(`SELECT id, nombre, stock, precio FROM productos WHERE id IN (${placeholders})`, ids, (stockErr, rows) => {
+                db.all(`SELECT id, sku, nombre, stock, precio FROM productos WHERE id IN (${placeholders})`, ids, (stockErr, rows) => {
                     if (stockErr) {
                         db.run('ROLLBACK;');
                         return res.status(500).json({ error: 'Error al verificar disponibilidad de stock.' });
@@ -564,16 +868,21 @@ app.post('/api/ventas', (req, res) => {
                         }
                         if (prod.stock < item.cantidad) {
                             db.run('ROLLBACK;');
-                            return res.status(400).json({
-                                error: `Stock insuficiente para "${prod.nombre}". Solicitado: ${item.cantidad}, Disponible: ${prod.stock}.`
-                            });
+                            const msgStock = prod.stock <= 0
+                                ? `Producto agotado por el momento: "${prod.nombre}".`
+                                : `Solo quedan ${prod.stock} unidades disponibles en almacén para "${prod.nombre}".`;
+                            return res.status(400).json({ error: msgStock });
                         }
                     }
 
                     // 3. Crear cabecera de pedido
                     db.run(
-                        `INSERT INTO pedidos (cliente_id, total, estado, fecha_compra) VALUES (?, ?, 'PENDIENTE', datetime('now'))`,
-                        [cliente_id, totalNum],
+                        `INSERT INTO pedidos (
+                            cliente_id, total, estado, fecha_compra,
+                            metodo_pago, comprobante_ref, banco_origen, comprobante_img,
+                            estado_pago, estado_logistica
+                        ) VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?)`,
+                        [cliente_id, totalNum, estGeneral, mPago, compRef, bancoOrig, comprobante_img || null, estPago, estLogistica],
                         function (orderErr) {
                             if (orderErr) {
                                 db.run('ROLLBACK;');
@@ -583,32 +892,51 @@ app.post('/api/ventas', (req, res) => {
 
                             const pedidoId = this.lastID;
 
-                            // 4. Descontar stock y registrar detalles del pedido
+                            // 4. Descontar stock, registrar detalles del pedido y registrar Kardex
                             const stmtDetalle = db.prepare(
                                 `INSERT INTO pedido_detalles (pedido_id, producto_id, producto_nombre, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?, ?)`
                             );
                             const stmtStock = db.prepare(
                                 `UPDATE productos SET stock = stock - ? WHERE id = ?`
                             );
+                            const stmtKardex = db.prepare(
+                                `INSERT INTO kardex (producto_id, tipo, cantidad, stock_anterior, stock_nuevo, motivo, referencia_id) VALUES (?, 'SALIDA_VENTA', ?, ?, ?, ?, ?)`
+                            );
 
                             let hasError = false;
 
                             for (const item of carrito) {
+                                const prod = productMap.get(item.id);
                                 const subtotal = parseFloat((item.precio * item.cantidad).toFixed(2));
+                                const stockAnterior = prod.stock;
+                                const stockNuevo = prod.stock - item.cantidad;
+
                                 stmtDetalle.run(pedidoId, item.id, item.nombre, item.cantidad, item.precio, subtotal, (dErr) => {
                                     if (dErr) hasError = true;
                                 });
                                 stmtStock.run(item.cantidad, item.id, (sErr) => {
                                     if (sErr) hasError = true;
                                 });
+                                stmtKardex.run(
+                                    item.id, 
+                                    item.cantidad, 
+                                    stockAnterior, 
+                                    stockNuevo, 
+                                    `Salida por Venta / Pedido #${pedidoId} (${mPago})`, 
+                                    pedidoId, 
+                                    (kErr) => {
+                                        if (kErr) hasError = true;
+                                    }
+                                );
                             }
 
                             stmtDetalle.finalize();
-                            stmtStock.finalize((finalizeErr) => {
+                            stmtStock.finalize();
+                            stmtKardex.finalize((finalizeErr) => {
                                 if (hasError || finalizeErr) {
                                     db.run('ROLLBACK;');
-                                    console.error('Error al actualizar inventario o detalles');
-                                    return res.status(500).json({ error: 'Error al procesar el descuento de inventario.' });
+                                    console.error('Error al actualizar inventario, kardex o detalles');
+                                    return res.status(500).json({ error: 'Error al procesar el descuento de inventario y Kardex.' });
                                 }
 
                                 // 5. Confirmar transacción
@@ -618,12 +946,22 @@ app.post('/api/ventas', (req, res) => {
                                         return res.status(500).json({ error: 'Error al confirmar la transacción.' });
                                     }
 
-                                    registrarAuditoria(`Cliente #${cliente_id}`, `Registró la orden de compra #${pedidoId} por Bs. ${totalNum.toFixed(2)} (${carrito.length} ítems)`, 'VENTAS');
+                                    registrarAuditoria(
+                                        `Cliente #${cliente_id} (${user.nombre})`,
+                                        `Registró la orden de compra #${pedidoId} por Bs. ${totalNum.toFixed(2)} (${carrito.length} ítems) vía ${mPago}. Ref: ${compRef}.`,
+                                        'VENTAS'
+                                    );
 
                                     res.status(201).json({
-                                        mensaje: '¡Compra registrada con éxito y stock actualizado!',
+                                        ok: true,
+                                        mensaje: '¡Compra registrada con éxito, stock descontado y movimiento en Kardex asentado!',
                                         pedidoId: pedidoId,
-                                        total: totalNum
+                                        total: totalNum,
+                                        metodo_pago: mPago,
+                                        comprobante_ref: compRef,
+                                        banco_origen: bancoOrig,
+                                        estado_pago: estPago,
+                                        estado_logistica: estLogistica
                                     });
                                 });
                             });
@@ -633,14 +971,59 @@ app.post('/api/ventas', (req, res) => {
             });
         });
     });
+};
+
+app.post('/api/ventas', registrarVentaOPedido);
+app.post('/api/pedidos', registrarVentaOPedido);
+
+// ============================================================================
+// INTEGRACIÓN PAYPAL REST API (SANDBOX & CAPTURA)
+// ============================================================================
+app.post('/api/paypal/create-order', (req, res) => {
+    try {
+        const { totalBs, totalUsd } = req.body;
+        const montoUsd = totalUsd ? parseFloat(totalUsd).toFixed(2) : ((parseFloat(totalBs) || 0) / 6.96).toFixed(2);
+        const paypalOrderId = 'PAYPAL-' + Date.now().toString(36).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
+
+        res.status(200).json({
+            ok: true,
+            id: paypalOrderId,
+            status: 'CREATED',
+            monto_usd: montoUsd,
+            tipo_cambio: 6.96,
+            mensaje: 'Orden PayPal iniciada correctamente'
+        });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al generar orden en PayPal API: ' + e.message });
+    }
+});
+
+app.post('/api/paypal/capture-order', (req, res) => {
+    try {
+        const { orderID } = req.body;
+        const captureId = 'CAP-' + (orderID || Date.now().toString(36).toUpperCase());
+        res.status(200).json({
+            ok: true,
+            id: captureId,
+            status: 'COMPLETED',
+            orderID: orderID,
+            payer: {
+                name: 'Taller Comprador B2B',
+                email: 'cliente@golden.bo'
+            },
+            mensaje: 'Pago capturado exitosamente en PayPal API'
+        });
+    } catch (e) {
+        res.status(500).json({ error: 'Error al capturar pago PayPal: ' + e.message });
+    }
 });
 
 // ============================================================================
-// 5. MÓDULO DE LOGÍSTICA Y PEDIDOS
+// 5. MÓDULO DE LOGÍSTICA, COBRANZAS Y STEPPER EN 5 ETAPAS
 // ============================================================================
 
 /**
- * Listar pedidos con datos del cliente y filtro de fecha gerencial dinámico
+ * Listar pedidos con datos completos de pago, despacho y stepper
  * GET /api/pedidos?rango=hoy|7dias|mes|historico|todos
  */
 app.get('/api/pedidos', (req, res) => {
@@ -654,6 +1037,26 @@ app.get('/api/pedidos', (req, res) => {
                 p.total, 
                 p.estado, 
                 p.fecha_compra, 
+                p.metodo_pago,
+                p.comprobante_ref,
+                p.banco_origen,
+                p.comprobante_img,
+                p.estado_pago,
+                p.estado_logistica,
+                p.empaque_checklist,
+                p.empaque_tipo,
+                p.empaque_bultos,
+                p.empaque_peso,
+                p.empaque_responsable,
+                p.empaque_fecha,
+                p.despacho_chofer,
+                p.despacho_placa,
+                p.despacho_fecha,
+                p.entrega_receptor_nombre,
+                p.entrega_receptor_ci,
+                p.entrega_pin,
+                p.entrega_observaciones,
+                p.entrega_fecha,
                 COALESCE(u.nombre, 'Cliente Desconocido') as cliente,
                 COALESCE(u.email, '-') as cliente_email
             FROM pedidos p 
@@ -680,13 +1083,16 @@ app.get('/api/pedidos', (req, res) => {
 });
 
 /**
- * Obtener detalle de un pedido específico
+ * Obtener detalle completo de un pedido específico
  * GET /api/pedidos/:id
  */
 app.get('/api/pedidos/:id', (req, res) => {
     const pedidoId = req.params.id;
     const sqlPedido = `
-        SELECT p.id, p.total, p.estado, p.fecha_compra, u.nombre as cliente, u.email as cliente_email
+        SELECT 
+            p.*, 
+            COALESCE(u.nombre, 'Cliente Desconocido') as cliente, 
+            COALESCE(u.email, '-') as cliente_email
         FROM pedidos p
         LEFT JOIN usuarios u ON p.cliente_id = u.id
         WHERE p.id = ?
@@ -704,7 +1110,206 @@ app.get('/api/pedidos/:id', (req, res) => {
 });
 
 /**
- * Actualizar estado de despacho de un pedido
+ * Verificar y aprobar cobro de depósito bancario / QR Simple
+ * PUT /api/pedidos/:id/aprobar-cobro
+ */
+app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
+    const pedidoId = req.params.id;
+    const { usuario_nombre } = req.body || {};
+
+    db.get('SELECT id, total, estado_pago, metodo_pago, comprobante_ref FROM pedidos WHERE id = ?', [pedidoId], (err, ped) => {
+        if (err || !ped) return res.status(404).json({ error: 'Pedido no encontrado' });
+
+        db.run(
+            `UPDATE pedidos SET estado_pago = 'VERIFICADO', estado = 'PAGADO', estado_logistica = 'ORDEN RECIBIDA / PAGO VERIFICADO' WHERE id = ?`,
+            [pedidoId],
+            function (updErr) {
+                if (updErr) return res.status(500).json({ error: 'Error al aprobar cobro en BD: ' + updErr.message });
+
+                registrarAuditoria(
+                    usuario_nombre || 'Cajero / Administrador',
+                    `Verificó y aprobó el cobro de la Orden #${pedidoId} (Bs. ${parseFloat(ped.total).toFixed(2)}) - Ref: ${ped.comprobante_ref || 'N/A'}`,
+                    'COBRANZAS'
+                );
+
+                res.status(200).json({
+                    ok: true,
+                    mensaje: `Cobro de la Orden #${pedidoId} verificado y aprobado con éxito`,
+                    estado_pago: 'VERIFICADO',
+                    estado: 'PAGADO',
+                    estado_logistica: 'ORDEN RECIBIDA / PAGO VERIFICADO'
+                });
+            }
+        );
+    });
+});
+
+/**
+ * Tablero de Flujo de Procesamiento por Etapas (Stepper de 5 estados)
+ * PUT /api/pedidos/:id/flujo
+ */
+app.put('/api/pedidos/:id/flujo', (req, res) => {
+    const pedidoId = req.params.id;
+    const { 
+        etapa, 
+        operario,
+        empaque_checklist, 
+        empaque_tipo, 
+        empaque_bultos, 
+        empaque_peso,
+        despacho_chofer, 
+        despacho_placa,
+        entrega_receptor_nombre, 
+        entrega_receptor_ci, 
+        entrega_pin, 
+        entrega_observaciones 
+    } = req.body || {};
+
+    db.get('SELECT * FROM pedidos WHERE id = ?', [pedidoId], (err, ped) => {
+        if (err || !ped) return res.status(404).json({ error: 'Pedido no encontrado en la base de datos' });
+
+        if (etapa === 'PREPARACION') {
+            db.run(
+                `UPDATE pedidos SET estado_logistica = 'EN PREPARACIÓN (PICKING DE ALMACÉN)', estado = 'EN PREPARACIÓN' WHERE id = ?`,
+                [pedidoId],
+                function (uErr) {
+                    if (uErr) return res.status(500).json({ error: 'Error al actualizar etapa: ' + uErr.message });
+                    registrarAuditoria(operario || 'Encargado de Almacén', `Inició picking y preparación física de Orden #${pedidoId}`, 'LOGÍSTICA');
+                    res.json({ ok: true, mensaje: 'Picking iniciado para la orden #' + pedidoId, estado_logistica: 'EN PREPARACIÓN (PICKING DE ALMACÉN)' });
+                }
+            );
+        } else if (etapa === 'EMPACADO') {
+            const resp = operario || ped.empaque_responsable || 'Marcos Almacén (Empaque)';
+            const tipo = empaque_tipo || 'Caja sellada';
+            const bultos = parseInt(empaque_bultos) || 1;
+            const peso = parseFloat(empaque_peso) || 4.5;
+            const checklist = typeof empaque_checklist === 'object' ? JSON.stringify(empaque_checklist) : (empaque_checklist || 'Checklist conforme');
+
+            db.run(
+                `UPDATE pedidos SET 
+                    estado_logistica = 'EMPACADO Y ETIQUETADO',
+                    empaque_checklist = ?,
+                    empaque_tipo = ?,
+                    empaque_bultos = ?,
+                    empaque_peso = ?,
+                    empaque_responsable = ?,
+                    empaque_fecha = datetime('now')
+                WHERE id = ?`,
+                [checklist, tipo, bultos, peso, resp, pedidoId],
+                function (uErr) {
+                    if (uErr) return res.status(500).json({ error: 'Error al registrar empaque: ' + uErr.message });
+                    registrarAuditoria(resp, `Confirmó empaque y rotulado de Orden #${pedidoId} (${bultos} bultos, ${peso} kg en ${tipo})`, 'EMPAQUE');
+                    res.json({ ok: true, mensaje: 'Orden #' + pedidoId + ' empacada y rotulada exitosamente', estado_logistica: 'EMPACADO Y ETIQUETADO' });
+                }
+            );
+        } else if (etapa === 'DESPACHO') {
+            // REGLA CRÍTICA: Un repartidor NO puede llevarse un pedido que no haya sido marcado como EMPACADO primero!
+            if (ped.estado_logistica !== 'EMPACADO Y ETIQUETADO') {
+                return res.status(400).json({
+                    error: 'Bloqueo Logístico de Almacén: La orden #' + pedidoId + ' no puede salir a reparto porque aún no ha sido marcada como "EMPACADO Y ETIQUETADO".'
+                });
+            }
+
+            const chofer = despacho_chofer || operario || 'Rodrigo Chofer';
+            const placa = despacho_placa || '4029-YHT';
+
+            db.run(
+                `UPDATE pedidos SET 
+                    estado_logistica = 'EN RUTA DE ENTREGA',
+                    estado = 'EN CAMINO',
+                    despacho_chofer = ?,
+                    despacho_placa = ?,
+                    despacho_fecha = datetime('now')
+                WHERE id = ?`,
+                [chofer, placa, pedidoId],
+                function (uErr) {
+                    if (uErr) return res.status(500).json({ error: 'Error al registrar despacho: ' + uErr.message });
+                    registrarAuditoria(chofer, `Despachó y salió a ruta con Orden #${pedidoId} en móvil placa ${placa}`, 'DESPACHO');
+                    res.json({ ok: true, mensaje: 'Orden #' + pedidoId + ' en ruta de entrega', estado_logistica: 'EN RUTA DE ENTREGA' });
+                }
+            );
+        } else if (etapa === 'ENTREGA_FINAL') {
+            const receptor = entrega_receptor_nombre || 'Recepción Taller';
+            const ci = entrega_receptor_ci || 'S/N';
+            const pin = entrega_pin || 'VERIFICADO';
+            const obs = entrega_observaciones || 'Entregado conforme y sellado';
+
+            db.run(
+                `UPDATE pedidos SET 
+                    estado_logistica = 'ENTREGADO Y FINALIZADO',
+                    estado = 'ENTREGADO',
+                    entrega_receptor_nombre = ?,
+                    entrega_receptor_ci = ?,
+                    entrega_pin = ?,
+                    entrega_observaciones = ?,
+                    entrega_fecha = datetime('now')
+                WHERE id = ?`,
+                [receptor, ci, pin, obs, pedidoId],
+                function (uErr) {
+                    if (uErr) return res.status(500).json({ error: 'Error al finalizar entrega: ' + uErr.message });
+                    registrarAuditoria(operario || 'Encargado de Entrega', `Completó entrega de Orden #${pedidoId} en taller receptor ${receptor} (CI: ${ci})`, 'ENTREGA');
+                    res.json({ ok: true, mensaje: 'Orden #' + pedidoId + ' entregada y finalizada con éxito', estado_logistica: 'ENTREGADO Y FINALIZADO' });
+                }
+            );
+        } else {
+            return res.status(400).json({ error: 'Etapa de flujo no reconocida: ' + etapa });
+        }
+    });
+});
+
+/**
+ * Consulta de seguimiento en vivo de un pedido
+ * GET /api/pedidos/:id/seguimiento
+ */
+app.get('/api/pedidos/:id/seguimiento', (req, res) => {
+    const pedidoId = req.params.id;
+    const sql = `
+        SELECT 
+            p.*, 
+            COALESCE(u.nombre, 'Cliente') as cliente_nombre,
+            COALESCE(u.email, '-') as cliente_email
+        FROM pedidos p
+        LEFT JOIN usuarios u ON p.cliente_id = u.id
+        WHERE p.id = ?
+    `;
+    db.get(sql, [pedidoId], (err, pedido) => {
+        if (err || !pedido) return res.status(404).json({ error: 'Pedido no encontrado' });
+
+        db.all('SELECT * FROM pedido_detalles WHERE pedido_id = ?', [pedidoId], (dErr, detalles) => {
+            pedido.detalles = detalles || [];
+            res.json(pedido);
+        });
+    });
+});
+
+/**
+ * Consultar lista de pedidos del cliente en sesión para tracker en vivo
+ * GET /api/mis-pedidos
+ */
+app.get('/api/mis-pedidos', (req, res) => {
+    const clienteId = req.query.cliente_id;
+    let sql = `
+        SELECT 
+            p.*, 
+            COALESCE(u.nombre, 'Cliente') as cliente_nombre
+        FROM pedidos p
+        LEFT JOIN usuarios u ON p.cliente_id = u.id
+    `;
+    const params = [];
+    if (clienteId) {
+        sql += ` WHERE p.cliente_id = ?`;
+        params.push(clienteId);
+    }
+    sql += ` ORDER BY p.id DESC`;
+
+    db.all(sql, params, (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Error al consultar mis pedidos' });
+        res.json(rows || []);
+    });
+});
+
+/**
+ * Actualizar estado de despacho de un pedido (compatibilidad)
  * PUT /api/pedidos/:id/estado
  */
 app.put('/api/pedidos/:id/estado', (req, res) => {
@@ -715,7 +1320,11 @@ app.put('/api/pedidos/:id/estado', (req, res) => {
         return res.status(400).json({ error: 'Estado de pedido no válido. Opciones: PENDIENTE, EN CAMINO, ENTREGADO.' });
     }
 
-    db.run(`UPDATE pedidos SET estado = ? WHERE id = ?`, [estado, req.params.id], function (err) {
+    let estadoLogistica = 'ORDEN RECIBIDA / PAGO VERIFICADO';
+    if (estado === 'EN CAMINO') estadoLogistica = 'EN RUTA DE ENTREGA';
+    if (estado === 'ENTREGADO') estadoLogistica = 'ENTREGADO Y FINALIZADO';
+
+    db.run(`UPDATE pedidos SET estado = ?, estado_logistica = ? WHERE id = ?`, [estado, estadoLogistica, req.params.id], function (err) {
         if (err) {
             console.error('Error al actualizar estado:', err.message);
             return res.status(500).json({ error: 'Error al actualizar estado del pedido.' });
