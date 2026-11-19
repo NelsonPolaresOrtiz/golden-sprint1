@@ -1437,121 +1437,246 @@
                 </div>
                 
                 <div class="modal-body p-4" style="background: #FAF8F5;">
-                    <!-- Selector de Pestañas de Pago -->
+                    <!-- Selector de Pestañas de Pago: QR Directo vs Depósito Bancario vs PayPal -->
                     <ul class="nav nav-pills nav-fill mb-4 p-1 rounded border" id="checkoutPaymentTabs" role="tablist" style="background: #FFFFFF; border-color: #E2E8F0 !important;">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active fw-bold py-2 d-flex align-items-center justify-content-center gap-2" id="tab-qr-btn" data-bs-toggle="pill" data-bs-target="#tab-qr-pane" type="button" role="tab" style="font-size: 0.84rem;">
                                 <i class="bi bi-qr-code-scan text-danger fs-5"></i>
-                                <span>Paga con QR Simple o transferencia bancaria</span>
+                                <span>Pago QR Directo (SIMPLE / Yape)</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold py-2 d-flex align-items-center justify-content-center gap-2" id="tab-deposito-btn" data-bs-toggle="pill" data-bs-target="#tab-deposito-pane" type="button" role="tab" style="font-size: 0.84rem;">
+                                <i class="bi bi-bank2 text-warning fs-5"></i>
+                                <span>Depósito / Transferencia Bancaria</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link fw-bold py-2 d-flex align-items-center justify-content-center gap-2" id="tab-paypal-btn" data-bs-toggle="pill" data-bs-target="#tab-paypal-pane" type="button" role="tab" style="font-size: 0.84rem;">
                                 <i class="bi bi-paypal text-primary fs-5"></i>
-                                <span>Pago con PayPal (Bs. a USD)</span>
+                                <span>PayPal Internacional (USD)</span>
                             </button>
                         </li>
                     </ul>
 
                     <div class="tab-content" id="checkoutTabsContent">
-                        <!-- PESTAÑA 1: PAGO CON QR SIMPLE & DEPÓSITO BANCARIO -->
+                        <!-- ========================================================================= -->
+                        <!-- MÉTODO A: PAGO QR INTEROPERABLE (SIMPLE / YAPE / TODOS LOS BANCOS)        -->
+                        <!-- ========================================================================= -->
                         <div class="tab-pane fade show active" id="tab-qr-pane" role="tabpanel" tabindex="0">
                             <div class="row g-4 align-items-center">
-                                <!-- Columna QR Dinámico -->
+                                <!-- Columna QR Oficial -->
                                 <div class="col-md-5 text-center border-end pe-md-4">
                                     <div class="p-3 bg-white border rounded shadow-sm mb-3">
-                                        <div id="checkoutCodigoQR" class="d-flex justify-content-center align-items-center" style="min-height: 180px;">
-                                            <!-- QR dinámico insertado por JS -->
+                                        <div id="checkoutCodigoQR" class="d-flex justify-content-center align-items-center position-relative mb-2" style="min-height: 220px;">
+                                            <img id="imgQROficial" src="/img/qr-golden-oficial.png" alt="QR Oficial Golden Lubricantes" class="img-fluid rounded border shadow-sm" style="max-width: 210px; max-height: 250px; object-fit: contain;" onerror="fallbackQROficial(this)">
                                         </div>
-                                        <div class="mt-2 text-center">
-                                            <span class="badge" style="background: #141619; color: #F59E0B; font-family: 'Chivo Mono', monospace; font-size: 0.72rem;">
-                                                QR SIMPLE INTERBANCARIO
+                                        <div class="text-center">
+                                            <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-family: 'Chivo Mono', monospace; font-size: 0.72rem;">
+                                                <i class="bi bi-phone me-1"></i>QR INTEROPERABLE BOLIVIA
                                             </span>
-                                            <p class="small text-muted mb-0 mt-1" style="font-size: 0.75rem;">
-                                                Válido para Banco Unión, BNB, BCP, Bisa, Mercantil y billeteras móviles.
+                                            <div class="fw-bold text-dark mt-1" style="font-size: 0.84rem;">Nelson Polares Ortiz</div>
+                                            <p class="small text-muted mb-0" style="font-size: 0.74rem;">
+                                                Válido para Yape, Banco Unión, BCP, BNB, Bisa, Mercantil, Ganadero, FIE y billeteras móviles.
                                             </p>
                                         </div>
                                     </div>
 
-                                    <button type="button" class="btn btn-outline-dark btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center gap-1" onclick="descargarQRPago()">
+                                    <button type="button" class="btn btn-outline-dark btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" onclick="descargarQROficial()">
                                         <i class="bi bi-download text-danger"></i>
-                                        <span>Descargar código QR</span>
+                                        <span>Descargar QR</span>
                                     </button>
 
                                     <div class="mt-3 p-2 bg-light rounded text-start" style="font-size: 0.75rem;">
-                                        <strong>Cuenta oficial de la empresa:</strong><br>
-                                        Banco Unión / BNB - GOLDEN LUBRICANTES S.R.L.<br>
-                                        <span class="font-mono text-dark fw-bold">N° Cta: 1000-458921 (Bs.)</span><br>
-                                        NIT: 1029384756 • Sucre, Bolivia
+                                        <strong>Titular de la cuenta receptora:</strong><br>
+                                        Nelson Polares Ortiz (GOLDEN Lubricantes &amp; Filtros)<br>
+                                        <span class="text-muted">Acepta transferencias directas desde cualquier banco de Bolivia vía QR SIMPLE / Yape sin comisión.</span>
                                     </div>
                                 </div>
 
-                                <!-- Columna Formulario de Comprobante -->
+                                <!-- Columna Formulario de Pago QR Directo -->
                                 <div class="col-md-7 ps-md-3">
                                     <div class="p-3 bg-white border rounded shadow-sm mb-3">
                                         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                                            <span class="text-secondary small fw-bold font-mono text-uppercase">Total a pagar (Bs.):</span>
-                                            <span class="fs-3 fw-bold text-danger font-mono" id="checkoutMontoTotalBs">Bs. 0.00</span>
+                                            <div>
+                                                <span class="text-secondary small fw-bold font-mono text-uppercase d-block">Monto Exacto a Transferir:</span>
+                                                <span class="fs-3 fw-bold text-danger font-mono" id="checkoutMontoTotalBs">Bs. 0.00</span>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1" onclick="copiarMontoQR()">
+                                                <i class="bi bi-clipboard"></i> Copiar Monto
+                                            </button>
                                         </div>
 
-                                        <form id="formPagoQR" onsubmit="event.preventDefault(); confirmarPagoQR();">
+                                        <div class="p-2 mb-3 rounded" style="background: #F1F5F9; border: 1px solid #E2E8F0; font-size: 0.78rem;">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-secondary">Referencia de Orden:</span>
+                                                <span class="font-mono fw-bold text-dark" id="checkoutOrdenRefGlosa">ORD-000000</span>
+                                                <button type="button" class="btn btn-sm py-0 px-2 btn-light border text-dark" onclick="copiarRefGlosa()">Copiar Ref</button>
+                                            </div>
+                                        </div>
+
+                                        <form id="formPagoQR" onsubmit="event.preventDefault(); confirmarPagoQRDirecto();">
                                             <div class="mb-3">
                                                 <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
-                                                    Banco de origen del pago *
+                                                    Banco o Billetera emisora (Opcional)
                                                 </label>
-                                                <select id="checkoutBancoOrigen" class="form-select font-mono" required style="font-size: 0.88rem;">
-                                                    <option value="Banco Unión" selected>Banco Unión S.A.</option>
+                                                <select id="checkoutQRBancoOrigen" class="form-select font-mono" style="font-size: 0.88rem;">
+                                                    <option value="Yape / BCP Bolivia" selected>Yape / BCP Bolivia</option>
+                                                    <option value="Banco Unión S.A.">Banco Unión S.A. (Unimóvil)</option>
                                                     <option value="Banco Nacional de Bolivia (BNB)">Banco Nacional de Bolivia (BNB)</option>
-                                                    <option value="Banco de Crédito BCP">Banco de Crédito BCP</option>
                                                     <option value="Banco Mercantil Santa Cruz">Banco Mercantil Santa Cruz</option>
                                                     <option value="Banco FIE">Banco FIE</option>
                                                     <option value="Banco Bisa">Banco Bisa</option>
-                                                    <option value="Banco Ganadero">Banco Ganadero</option>
-                                                    <option value="Tigo Money / QR Simple">Tigo Money / Simple QR</option>
-                                                    <option value="Otro">Otro Banco / Cooperativa</option>
+                                                    <option value="Banco Ganadero (GanaMóvil)">Banco Ganadero (GanaMóvil)</option>
+                                                    <option value="Tigo Money">Tigo Money</option>
+                                                    <option value="Otro Banco / SIMPLE">Otro Banco / Cooperativa</option>
                                                 </select>
                                             </div>
 
                                             <div class="mb-3">
                                                 <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
-                                                    N° de comprobante o referencia bancaria *
+                                                    N° de Operación Bancaria (Opcional si adjuntas comprobante)
                                                 </label>
                                                 <div class="input-group">
                                                     <span class="input-group-text bg-white"><i class="bi bi-hash text-danger"></i></span>
-                                                    <input type="text" id="checkoutComprobanteRef" class="form-control font-mono fw-bold" placeholder="Ej. TRANSF-849201" required style="font-size: 0.9rem;">
+                                                    <input type="text" id="checkoutQRComprobanteRef" class="form-control font-mono" placeholder="Ej. 9847120 (o deja en blanco si subes captura)" style="font-size: 0.88rem;">
                                                 </div>
-                                                <small class="text-muted" style="font-size: 0.72rem;">Sube el número de comprobante o captura para verificar tu pago.</small>
+                                                <small class="text-muted" style="font-size: 0.72rem;">Si tu app no muestra número de operación, solo adjunta la captura abajo.</small>
                                             </div>
 
                                             <div class="mb-3">
                                                 <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
-                                                    Captura del comprobante de depósito (Opcional)
+                                                    Captura del Pago QR realizado
                                                 </label>
-                                                <input type="file" id="checkoutComprobanteArchivo" class="form-control" accept="image/*,.pdf" style="font-size: 0.82rem;">
+                                                <input type="file" id="checkoutQRCapturaArchivo" class="form-control" accept="image/*,.pdf" style="font-size: 0.82rem;" onchange="validarHabilitacionBotonQR()">
+                                                <small class="text-muted" style="font-size: 0.71rem;">Adjunta la captura de pantalla de tu app bancaria o Yape para verificación inmediata.</small>
                                             </div>
 
-                                            <!-- Conciliación rápida de comprobante bancario -->
-                                            <div class="mb-3 p-2 border rounded" style="background: #F8FAFC; border-color: #E2E8F0 !important;">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <div>
-                                                        <small class="fw-bold text-dark d-block" style="font-size: 0.75rem;">
-                                                            <i class="bi bi-shield-check text-success me-1"></i> Conciliación inmediata de depósito bancario
-                                                        </small>
-                                                        <span class="text-muted" style="font-size: 0.7rem;">Genera el número de referencia y valida la transferencia para despacho.</span>
-                                                    </div>
-                                                    <button type="button" class="btn btn-light border btn-sm fw-bold px-2 py-1 text-dark" onclick="simularConfirmacionBancariaDirecta()" style="font-size: 0.72rem;">
-                                                        Validar Depósito
-                                                    </button>
-                                                </div>
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="checkConfirmoTransferenciaQR" onchange="validarHabilitacionBotonQR()">
+                                                <label class="form-check-label small text-dark" for="checkConfirmoTransferenciaQR" style="font-size: 0.78rem;">
+                                                    Confirmo que escaneé el código QR oficial y transferí el monto exacto indicado.
+                                                </label>
                                             </div>
 
-                                            <button type="submit" id="btnConfirmarPagoQR" class="btn btn-primary w-100 py-2 fw-bold fs-6 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="background-color: #B91C1C; border-color: #B91C1C;">
+                                            <button type="submit" id="btnConfirmarPedidoQR" class="btn btn-primary w-100 py-3 fw-bold fs-6 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="background-color: #B91C1C; border-color: #B91C1C;">
                                                 <i class="bi bi-check-circle-fill"></i>
-                                                <span>Confirmar pago y registrar pedido</span>
+                                                <span>Confirmar Pedido con QR</span>
                                             </button>
                                         </form>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- ========================================================================= -->
+                        <!-- MÉTODO B: DEPÓSITO EN VENTANILLA O TRANSFERENCIA BANCARIA (EFECTIVO/ACH)   -->
+                        <!-- ========================================================================= -->
+                        <div class="tab-pane fade" id="tab-deposito-pane" role="tabpanel" tabindex="0">
+                            <!-- Ficha Bancaria Oficial de la Empresa -->
+                            <div class="p-3 bg-white border rounded shadow-sm mb-3">
+                                <div class="d-flex align-items-center gap-2 pb-2 mb-2 border-bottom">
+                                    <i class="bi bi-bank text-warning fs-4"></i>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Ficha Bancaria Oficial de GOLDEN Lubricantes &amp; Filtros</h6>
+                                        <small class="text-muted" style="font-size: 0.72rem;">Para depósitos en efectivo en ventanilla bancaria, cajero o transferencias ACH interbancarias</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="row g-2 font-mono small text-dark mb-2">
+                                    <div class="col-sm-6">
+                                        <div class="p-2 border rounded bg-light">
+                                            <span class="text-muted d-block" style="font-size: 0.7rem;">ENTIDAD FINANCIERA:</span>
+                                            <strong class="text-dark">Banco Unión S.A. / BCP Bolivia</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="p-2 border rounded bg-light">
+                                            <span class="text-muted d-block" style="font-size: 0.7rem;">TITULAR DE LA CUENTA:</span>
+                                            <strong class="text-dark">GOLDEN Lubricantes &amp; Filtros S.R.L.</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-muted d-block" style="font-size: 0.7rem;">N° DE CUENTA CORRIENTE (BS.):</span>
+                                                <strong class="text-danger fs-6" id="txtCtaBancoUnion">1-0000048291045</strong>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="copiarTextoAlPortapapeles('1-0000048291045', 'N° de Cuenta Corriente copiado')">
+                                                <i class="bi bi-clipboard"></i> Copiar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-muted d-block" style="font-size: 0.7rem;">N° DE IDENTIFICACIÓN TRIBUTARIA (NIT):</span>
+                                                <strong class="text-dark fs-6" id="txtNITGolden">1029384756</strong>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="copiarTextoAlPortapapeles('1029384756', 'NIT copiado')">
+                                                <i class="bi bi-clipboard"></i> Copiar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                    <span class="text-secondary small fw-bold font-mono">TOTAL EXACTO A DEPOSITAR (BS.):</span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fs-4 fw-bold text-danger font-mono" id="depositoMontoTotalBs">Bs. 0.00</span>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="copiarMontoDeposito()">
+                                            <i class="bi bi-clipboard"></i> Copiar Monto
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulario de Depósito Bancario Obligatorio -->
+                            <div class="p-3 bg-white border rounded shadow-sm">
+                                <form id="formDepositoBancario" onsubmit="event.preventDefault(); confirmarDepositoBancario();">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
+                                                Banco donde se realizó el depósito *
+                                            </label>
+                                            <select id="checkoutDepositoBanco" class="form-select font-mono" required style="font-size: 0.88rem;">
+                                                <option value="Banco Unión S.A." selected>Banco Unión S.A.</option>
+                                                <option value="Banco de Crédito BCP">Banco de Crédito BCP</option>
+                                                <option value="Banco Nacional de Bolivia (BNB)">Banco Nacional de Bolivia (BNB)</option>
+                                                <option value="Banco Mercantil Santa Cruz">Banco Mercantil Santa Cruz</option>
+                                                <option value="Banco Bisa">Banco Bisa</option>
+                                                <option value="Banco FIE">Banco FIE</option>
+                                                <option value="Otro Banco (Transferencia ACH)">Otro Banco (Transferencia ACH)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
+                                                N° de Depósito / Comprobante Bancario * (OBLIGATORIO)
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white"><i class="bi bi-receipt text-warning"></i></span>
+                                                <input type="text" id="checkoutBoletaNumero" class="form-control font-mono fw-bold" placeholder="Ej. 48291045 o DEP-7192" required style="font-size: 0.88rem;" oninput="validarHabilitacionBotonDeposito()">
+                                            </div>
+                                            <small class="text-muted" style="font-size: 0.71rem;">Introduce el número de comprobante o boleta emitido por el cajero.</small>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
+                                                Foto de la boleta de depósito o comprobante de transferencia * (OBLIGATORIO)
+                                            </label>
+                                            <input type="file" id="checkoutBoletaArchivo" class="form-control" accept="image/*,.pdf" required style="font-size: 0.82rem;" onchange="validarHabilitacionBotonDeposito()">
+                                            <small class="text-muted" style="font-size: 0.71rem;">Sube una foto clara de la boleta de depósito o el comprobante en PDF emitido por el banco.</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <button type="submit" id="btnConfirmarDeposito" class="btn btn-warning text-dark w-100 py-3 fw-bold fs-6 d-flex align-items-center justify-content-center gap-2 shadow-sm" disabled style="background-color: #F59E0B; border-color: #F59E0B;">
+                                            <i class="bi bi-receipt-cutoff"></i>
+                                            <span>Registrar Depósito y Confirmar Pedido</span>
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
 

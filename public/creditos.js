@@ -95,9 +95,9 @@ function actualizarKPIs(resumen, creditos) {
     const deudaTotal = resumen.total_cartera_deudora || creditos.reduce((a, c) => a + c.saldo_deudor, 0);
     const disponibleTotal = resumen.total_credito_disponible || Math.max(0, limiteTotal - deudaTotal);
 
-    if (elLimite) elLimite.textContent = `$${limiteTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    if (elDeuda) elDeuda.textContent = `$${deudaTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    if (elDisponible) elDisponible.textContent = `$${disponibleTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (elLimite) elLimite.textContent = `Bs. ${limiteTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (elDeuda) elDeuda.textContent = `Bs. ${deudaTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    if (elDisponible) elDisponible.textContent = `Bs. ${disponibleTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (elTalleres) elTalleres.textContent = totalTalleres;
     if (elBadge) elBadge.textContent = `${totalTalleres} Talleres B2B`;
 }
@@ -159,11 +159,11 @@ function renderizarTablaCreditos(creditos) {
                     </div>
                 </td>
                 <td class="small text-secondary font-monospace">${escaparHTML(c.cliente_email)}</td>
-                <td class="text-end font-monospace text-dark fw-semibold" style="font-family: 'Chivo Mono', monospace;">Bs. {limiteCredito.toFixed(2)}</td>
+                <td class="text-end font-monospace text-dark fw-semibold" style="font-family: 'Chivo Mono', monospace;">Bs. ${Number(limiteCredito || 0).toFixed(2)}</td>
                 <td class="text-end font-monospace ${saldoDeudor > 0 ? 'text-danger fw-bold' : 'text-secondary'}">
-                    $${saldoDeudor.toFixed(2)}
+                    Bs. ${Number(saldoDeudor || 0).toFixed(2)}
                 </td>
-                <td class="text-end font-monospace text-emerald fw-bold">$${creditoDisponible.toFixed(2)}</td>
+                <td class="text-end font-monospace text-emerald fw-bold">Bs. ${Number(creditoDisponible || 0).toFixed(2)}</td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
                         <div class="progress flex-grow-1" style="height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 999px;">
@@ -229,7 +229,7 @@ async function abrirModalAmortizacion(clienteId, clienteNombre, saldoDeudor) {
         html: `
             <div class="text-start small text-secondary mb-3">
                 Cliente: <strong class="text-white">${clienteNombre}</strong> (ID #${clienteId})<br>
-                Saldo Deudor Actual: <strong class="text-danger font-monospace fs-6">$${saldoDeudor.toFixed(2)}</strong>
+                Saldo Deudor Actual: <strong class="text-danger font-monospace fs-6">Bs. ${Number(saldoDeudor || 0).toFixed(2)}</strong>
             </div>
             <label class="form-label text-white small fw-bold">Monto del abono o pago (Bs.):</label>
         `,
@@ -285,8 +285,8 @@ async function abrirModalAmortizacion(clienteId, clienteNombre, saldoDeudor) {
                 html: `
                     <p class="text-secondary mb-2">${data.mensaje}</p>
                     <div class="p-3 rounded-3 text-start font-monospace small" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(16, 185, 129, 0.3);">
-                        <div><strong class="text-white">Abono Realizado:</strong> <span class="text-emerald">+$${parseFloat(monto).toFixed(2)}</span></div>
-                        <div><strong class="text-white">Nuevo Saldo Deudor:</strong> <span class="text-warning">$${parseFloat(data.nuevo_saldo).toFixed(2)}</span></div>
+                        <div><strong class="text-white">Abono Realizado:</strong> <span class="text-emerald">+Bs. ${parseFloat(monto || 0).toFixed(2)}</span></div>
+                        <div><strong class="text-white">Nuevo Saldo Deudor:</strong> <span class="text-warning">Bs. ${parseFloat(data.nuevo_saldo || 0).toFixed(2)}</span></div>
                         <div><strong class="text-white">Comprobante ID:</strong> <span class="text-info">#REC-${data.pago_id}</span></div>
                     </div>
                 `,
@@ -348,7 +348,7 @@ async function verEstadoCuenta(clienteId) {
                             <tr>
                                 <td class="text-warning">#REC-${p.id}</td>
                                 <td class="text-secondary">${p.fecha || 'Reciente'}</td>
-                                <td class="text-end text-emerald fw-bold">+$${parseFloat(p.monto).toFixed(2)}</td>
+                                <td class="text-end text-emerald fw-bold">+Bs. ${parseFloat(p.monto || 0).toFixed(2)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -376,7 +376,7 @@ async function verEstadoCuenta(clienteId) {
                                 <td class="text-warning">#PED-${pe.id}</td>
                                 <td class="text-secondary">${pe.fecha_compra ? pe.fecha_compra.split('T')[0] : 'Reciente'}</td>
                                 <td><span class="badge bg-secondary bg-opacity-25 text-light">${pe.estado}</span></td>
-                                <td class="text-end text-white fw-bold">$${parseFloat(pe.total).toFixed(2)}</td>
+                                <td class="text-end text-white fw-bold">Bs. ${parseFloat(pe.total || 0).toFixed(2)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -392,9 +392,9 @@ async function verEstadoCuenta(clienteId) {
                         <span class="small text-secondary font-monospace">${escaparHTML(cli.email)} | Rol: ${cli.rol}</span>
                     </div>
                     <div class="col-12 col-md-6 text-md-end font-monospace">
-                        <span class="small text-secondary d-block">Límite Aprobado: <strong class="text-white">$${cred.limite_credito?.toFixed(2)}</strong></span>
-                        <span class="small text-secondary d-block">Saldo Deudor: <strong class="text-danger">$${cred.saldo_deudor?.toFixed(2)}</strong></span>
-                        <span class="small text-secondary d-block">Disponible: <strong class="text-emerald">$${cred.credito_disponible?.toFixed(2)}</strong></span>
+                        <span class="small text-secondary d-block">Límite Aprobado: <strong class="text-white">Bs. ${Number(cred.limite_credito || 0).toFixed(2)}</strong></span>
+                        <span class="small text-secondary d-block">Saldo Deudor: <strong class="text-danger">Bs. ${Number(cred.saldo_deudor || 0).toFixed(2)}</strong></span>
+                        <span class="small text-secondary d-block">Disponible: <strong class="text-emerald">Bs. ${Number(cred.credito_disponible || 0).toFixed(2)}</strong></span>
                     </div>
                 </div>
             </div>
@@ -440,15 +440,15 @@ function abrirReporteCartera() {
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-secondary">Línea de Crédito Global:</span>
-                    <span class="text-white fw-bold">$${r.total_limite_asignado?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    <span class="text-white fw-bold">Bs. ${Number(r.total_limite_asignado || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-secondary">Cartera Deudora Activa:</span>
-                    <span class="text-danger fw-bold">$${r.total_cartera_deudora?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    <span class="text-danger fw-bold">Bs. ${Number(r.total_cartera_deudora || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-secondary">Crédito Libre Disponible:</span>
-                    <span class="text-emerald fw-bold">$${r.total_credito_disponible?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    <span class="text-emerald fw-bold">Bs. ${Number(r.total_credito_disponible || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div class="d-flex justify-content-between pt-2 border-top border-secondary border-opacity-25">
                     <span class="text-secondary">Talleres en Riesgo (&ge;80%):</span>

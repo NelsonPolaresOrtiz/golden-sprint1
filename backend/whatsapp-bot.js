@@ -115,6 +115,56 @@ async function restaurarSesionDesdeDB() {
     }
 }
 
+// Archivo de bloqueo para garantizar una única instancia activa del bot en segundo plano
+const LOCK_FILE = path.join(__dirname, '.whatsapp_bot.lock');
+
+function verificarInstanciaActiva() {
+    try {
+        if (!fs.existsSync(LOCK_FILE)) return false;
+        const contenido = fs.readFileSync(LOCK_FILE, 'utf8').trim();
+        const pid = parseInt(contenido, 10);
+        if (isNaN(pid)) return false;
+        if (pid === process.pid) return pid;
+        try {
+            process.kill(pid, 0); // Señal 0 comprueba existencia sin alterar el proceso
+            return pid;
+        } catch (e) {
+            try { fs.unlinkSync(LOCK_FILE); } catch (err) {}
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+}
+
+function adquirirBloqueoInstancia() {
+    const pidActivo = verificarInstanciaActiva();
+    if (pidActivo && pidActivo !== process.pid) {
+        return false;
+    }
+    try {
+        fs.writeFileSync(LOCK_FILE, String(process.pid), 'utf8');
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function liberarBloqueoInstancia() {
+    try {
+        if (fs.existsSync(LOCK_FILE)) {
+            const contenido = fs.readFileSync(LOCK_FILE, 'utf8').trim();
+            if (parseInt(contenido, 10) === process.pid) {
+                fs.unlinkSync(LOCK_FILE);
+            }
+        }
+    } catch (e) {}
+}
+
+process.on('exit', liberarBloqueoInstancia);
+process.on('SIGINT', () => { liberarBloqueoInstancia(); process.exit(0); });
+process.on('SIGTERM', () => { liberarBloqueoInstancia(); process.exit(0); });
+
 let respaldoDebounceTimer = null;
 let respaldandoSesionActivo = false;
 const archivosMtimeCache = new Map();
@@ -215,11 +265,13 @@ async function limpiarSesionEnDB() {
  * Consultar estado de conexión del Bot y QR actual para el panel web del ERP
  */
 function obtenerEstadoWhatsApp() {
+    const pidActivo = verificarInstanciaActiva();
+    const activo = Boolean(estaConectado || (pidActivo && pidActivo !== process.pid));
     return {
-        conectado: estaConectado,
+        conectado: activo,
         numero: CONFIG.whatsappOficial,
         adminJid: ADMIN_WHATSAPP,
-        qrDataUrl: !estaConectado ? qrDataUrl : null,
+        qrDataUrl: !activo ? qrDataUrl : null,
         fechaQR: fechaUltimoQR,
         tiempoRestanteQR: fechaUltimoQR ? Math.max(0, 25 - Math.floor((Date.now() - new Date(fechaUltimoQR).getTime()) / 1000)) : 0
     };
@@ -830,6 +882,22 @@ async function iniciarBot() {
         return socketActivo;
     }
 
+    // Verificar si otra instancia del bot ya está corriendo en otro proceso
+    const otroPID = verificarInstanciaActiva();
+    if (otroPID && otroPID !== process.pid) {
+        console.log(`[WhatsApp Bot] Otra instancia del bot ya está activa en segundo plano (PID: ${otroPID}).`);
+        console.log(`[WhatsApp Bot] Omitiendo arranque duplicado para evitar conflictos de socket.`);
+        estaConectado = true;
+        iniciandoBot = false;
+        return null;
+    }
+
+    if (!adquirirBloqueoInstancia()) {
+        console.log('[WhatsApp Bot] No se pudo adquirir el bloqueo de instancia única. Omitiendo arranque.');
+        iniciandoBot = false;
+        return null;
+    }
+
     iniciandoBot = true;
 
     if (socketActivo) {
@@ -898,15 +966,25 @@ async function iniciarBot() {
 
                 if (statusCode === DisconnectReason.loggedOut) {
                     console.warn('[WhatsApp Bot] Sesión cerrada permanentemente en el celular. Limpiando credenciales en SQLite y disco...');
+                    liberarBloqueoInstancia();
                     await limpiarSesionEnDB();
+                    return;
+                }
+
+                if (statusCode === 440) {
+                    console.warn('[WhatsApp Bot] Sesión reemplazada por otra conexión activa (Código: 440). Pausando reintento para evitar colisiones.');
+                    liberarBloqueoInstancia();
+                    setTimeout(iniciarBot, 60000);
+                    return;
                 }
 
                 if (debeReconectar) {
-                    const esperaMs = statusCode === 440 ? 25000 : 7000;
+                    const esperaMs = 8000;
                     console.log(`[WhatsApp Bot] Reintentando conexión en ${esperaMs / 1000} segundos...`);
                     setTimeout(iniciarBot, esperaMs);
                 }
             } else if (connection === 'open') {
+                adquirirBloqueoInstancia();
                 socketActivo = sock;
                 estaConectado = true;
                 ultimoQR = null;

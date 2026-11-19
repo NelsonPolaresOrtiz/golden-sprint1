@@ -16,7 +16,8 @@ app.use((req, res, next) => {
 });
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Helper seguro para construir dinámicamente cláusulas de fecha en SQLite
@@ -991,6 +992,7 @@ const registrarVentaOPedido = (req, res) => {
             carrito, 
             metodo_pago, 
             comprobante_ref, 
+            numero_operacion,
             banco_origen, 
             comprobante_img,
             estado_pago 
@@ -1005,9 +1007,11 @@ const registrarVentaOPedido = (req, res) => {
             return res.status(400).json({ error: 'El total de la venta debe ser mayor a 0.' });
         }
 
-        const mPago = metodo_pago || 'QR_SIMPLE';
-        const compRef = comprobante_ref || ('REF-' + Date.now().toString().slice(-6));
-        const bancoOrig = banco_origen || (mPago === 'PAYPAL' ? 'PayPal Inc.' : 'Banco Unión / BNB');
+        const mPago = metodo_pago || 'QR_DIRECTO';
+        const numOp = (numero_operacion || comprobante_ref || '').trim();
+        const compRef = numOp || (mPago === 'DEPOSITO_BANCARIO' ? ('BOL-' + Date.now().toString().slice(-6)) : ('REF-' + Date.now().toString().slice(-6)));
+        const finalNumOperacion = numOp || compRef;
+        const bancoOrig = banco_origen || (mPago === 'PAYPAL' ? 'PayPal Inc.' : (mPago === 'DEPOSITO_BANCARIO' ? 'Banco Unión S.A.' : 'QR Interoperable / SIMPLE / Yape'));
         
         // Si viene de PayPal o comprobante ya verificado
         const estPago = estado_pago || (mPago === 'PAYPAL' ? ('PAGADO (PayPal API - ID: ' + compRef + ')') : 'PENDIENTE');
@@ -1061,10 +1065,10 @@ const registrarVentaOPedido = (req, res) => {
                         db.run(
                             `INSERT INTO pedidos (
                                 cliente_id, total, estado, fecha_compra,
-                                metodo_pago, comprobante_ref, banco_origen, comprobante_img,
+                                metodo_pago, comprobante_ref, numero_operacion, banco_origen, comprobante_img,
                                 estado_pago, estado_logistica
-                            ) VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?)`,
-                            [cliente_id, totalNum, estGeneral, mPago, compRef, bancoOrig, comprobante_img || null, estPago, estLogistica],
+                            ) VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?, ?)`,
+                            [cliente_id, totalNum, estGeneral, mPago, compRef, finalNumOperacion, bancoOrig, comprobante_img || null, estPago, estLogistica],
                             function (orderErr) {
                                 if (orderErr) {
                                     db.run('ROLLBACK;');
@@ -1147,19 +1151,29 @@ const registrarVentaOPedido = (req, res) => {
 
                                         // Disparador Proactivo 1: Alerta por WhatsApp a Gerencia de nuevo pedido
                                         const codPedidoFmt = `PED-${String(pedidoId).padStart(4, '0')}`;
-                                        const metodoPagoEtiqueta = mPago === 'PAYPAL' ? 'PayPal API Internacional' : (mPago === 'QR_SIMPLE' ? 'Pago QR Simple Bancario' : mPago);
-                                        const estPagoEtiqueta = estPago.includes('PAGADO') ? 'PAGADO / VERIFICADO' : 'PENDIENTE DE PAGO';
+                                        let metodoPagoEtiqueta = mPago;
+                                        if (mPago === 'QR_DIRECTO' || mPago === 'QR_SIMPLE') {
+                                            metodoPagoEtiqueta = 'Pago QR Interoperable (SIMPLE / Yape / Todos los Bancos)';
+                                        } else if (mPago === 'DEPOSITO_BANCARIO') {
+                                            metodoPagoEtiqueta = `Depósito en Ventanilla / Transferencia Bancaria (${bancoOrig})`;
+                                        } else if (mPago === 'PAYPAL') {
+                                            metodoPagoEtiqueta = 'PayPal API Internacional';
+                                        }
+
+                                        const estPagoEtiqueta = estPago.includes('PAGADO') ? 'PAGADO / VERIFICADO' : 'PENDIENTE DE VALIDACIÓN BANCARIA';
 
                                         const alertaNuevoPedido = `🔔 *NUEVO PEDIDO REGISTRADO (#${codPedidoFmt})*\n` +
                                             `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
                                             `🏢 *Cliente / Taller:* ${user.nombre}\n` +
                                             `💰 *Monto Total:* *Bs. ${totalNum.toFixed(2)}*\n` +
                                             `💳 *Método de Pago:* ${metodoPagoEtiqueta}\n` +
-                                            `📑 *Estado de Pago:* ${estPagoEtiqueta} (Ref: ${compRef})\n` +
-                                            `📦 *Ítems Solicitados:* ${carrito.length} producto(s)\n` +
+                                            `📑 *N° Boleta / Referencia:* \`${finalNumOperacion}\`\n` +
+                                            `🏦 *Entidad Financiera:* ${bancoOrig}\n` +
+                                            `📊 *Estado de Cobro:* ${estPagoEtiqueta}\n` +
+                                            `📦 *Ítems Solicitados:* ${carrito.length} repuesto(s)\n` +
                                             `🚚 *Logística Inicial:* ${estLogistica}\n` +
                                             `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                                            `_Consulte el ERP administrativo para despachar este pedido._`;
+                                            `_Consulte el panel de Cobranzas del ERP para validar el ingreso._`;
 
                                         enviarAlertaAdmin(alertaNuevoPedido).catch(() => {});
 
@@ -1186,6 +1200,7 @@ const registrarVentaOPedido = (req, res) => {
                                             total: totalNum,
                                             metodo_pago: mPago,
                                             comprobante_ref: compRef,
+                                            numero_operacion: finalNumOperacion,
                                             banco_origen: bancoOrig,
                                             estado_pago: estPago,
                                             estado_logistica: estLogistica
@@ -1270,6 +1285,7 @@ app.get('/api/pedidos', (req, res) => {
                 p.fecha_compra, 
                 p.metodo_pago,
                 p.comprobante_ref,
+                p.numero_operacion,
                 p.banco_origen,
                 p.comprobante_img,
                 p.estado_pago,
@@ -1365,7 +1381,7 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
         const pedidoId = req.params.id;
         const { usuario_nombre } = req.body || {};
 
-        db.get('SELECT id, total, estado_pago, metodo_pago, comprobante_ref FROM pedidos WHERE id = ?', [pedidoId], (err, ped) => {
+        db.get('SELECT id, total, estado_pago, metodo_pago, comprobante_ref, numero_operacion, banco_origen FROM pedidos WHERE id = ?', [pedidoId], (err, ped) => {
             if (err || !ped) return res.status(404).json({ error: 'Pedido no encontrado' });
 
             db.run(
@@ -1374,15 +1390,31 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
                 function (updErr) {
                     if (updErr) return res.status(500).json({ error: 'Error al aprobar cobro en BD: ' + updErr.message });
 
+                    const numBoleta = ped.numero_operacion || ped.comprobante_ref || 'S/N';
+                    const metodoTexto = ped.metodo_pago === 'DEPOSITO_BANCARIO' ? 'Depósito Bancario' : (ped.metodo_pago === 'QR_DIRECTO' ? 'QR Directo' : ped.metodo_pago);
+
                     registrarAuditoria(
                         usuario_nombre || 'Cajero / Administrador',
-                        `Verificó y aprobó el cobro de la Orden #${pedidoId} (Bs. ${parseFloat(ped.total).toFixed(2)}) - Ref: ${ped.comprobante_ref || 'N/A'}`,
+                        `Verificó y aprobó el cobro de la Orden #${pedidoId} (Bs. ${parseFloat(ped.total).toFixed(2)}) vía ${metodoTexto} - Boleta/Ref: ${numBoleta}. Habilitado para Empaque / Almacén.`,
                         'COBRANZAS'
                     );
 
+                    // Alerta WhatsApp proactiva a Gerencia de cobro verificado
+                    const codPed = `PED-${String(pedidoId).padStart(4, '0')}`;
+                    const alertaCobroAprobado = `✅ *PAGO VERIFICADO Y PASADO A EMPAQUE (#${codPed})*\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                        `💰 *Monto Validado:* *Bs. ${parseFloat(ped.total || 0).toFixed(2)}*\n` +
+                        `💳 *Método de Pago:* ${metodoTexto}\n` +
+                        `📑 *N° Boleta / Ref:* \`${numBoleta}\`\n` +
+                        `🏦 *Banco:* ${ped.banco_origen || 'Banco Unión'}\n` +
+                        `📦 *Siguiente Paso:* Listo para Picking y Empaque en Almacén\n` +
+                        `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                        `_Validado por: ${usuario_nombre || 'Cobranzas / Administración'}_`;
+                    enviarAlertaAdmin(alertaCobroAprobado).catch(() => {});
+
                     res.status(200).json({
                         ok: true,
-                        mensaje: `Cobro de la Orden #${pedidoId} verificado y aprobado con éxito`,
+                        mensaje: `Cobro de la Orden #${pedidoId} verificado y aprobado con éxito. Pasado a Empaque/Almacén.`,
                         estado_pago: 'VERIFICADO',
                         estado: 'PAGADO',
                         estado_logistica: 'ORDEN RECIBIDA / PAGO VERIFICADO'
@@ -1393,6 +1425,68 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
     } catch (error) {
         console.error('Error crítico en aprobar cobro:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+/**
+ * Webhook para conciliación bancaria automática vía API QR
+ * POST /api/pagos/webhook-qr
+ */
+app.post('/api/pagos/webhook-qr', (req, res) => {
+    try {
+        const { pedido_id, referencia, monto, estado, id_transaccion, banco } = req.body || {};
+        const refId = pedido_id || (referencia ? parseInt(String(referencia).replace(/\D/g, '')) : null);
+
+        if (!refId) {
+            return res.status(400).json({ error: 'Falta identificador de pedido o referencia válida' });
+        }
+
+        db.get('SELECT id, total, estado_pago, metodo_pago, cliente_id FROM pedidos WHERE id = ?', [refId], (err, ped) => {
+            if (err || !ped) {
+                return res.status(404).json({ error: 'Pedido no encontrado para conciliación de webhook' });
+            }
+
+            const nuevoEstadoPago = (estado && String(estado).toUpperCase().includes('FAIL')) ? 'RECHAZADO' : 'VERIFICADO';
+            const nuevoEstadoGen = nuevoEstadoPago === 'VERIFICADO' ? 'PAGADO' : 'PENDIENTE';
+            const numOperacion = id_transaccion || referencia || ('QR-AUTO-' + Date.now().toString().slice(-6));
+
+            db.run(
+                `UPDATE pedidos SET estado_pago = ?, estado = ?, estado_logistica = 'ORDEN RECIBIDA / PAGO VERIFICADO', numero_operacion = COALESCE(numero_operacion, ?), comprobante_ref = COALESCE(comprobante_ref, ?) WHERE id = ?`,
+                [nuevoEstadoPago, nuevoEstadoGen, numOperacion, numOperacion, ped.id],
+                function (updErr) {
+                    if (updErr) return res.status(500).json({ error: 'Error al actualizar pedido por webhook: ' + updErr.message });
+
+                    registrarAuditoria(
+                        'WEBHOOK-QR-BANCO',
+                        `Conciliación automática vía Webhook QR para Pedido #${ped.id} (Bs. ${parseFloat(ped.total).toFixed(2)}) - Ref: ${numOperacion}`,
+                        'COBRANZAS'
+                    );
+
+                    if (nuevoEstadoPago === 'VERIFICADO') {
+                        const alertaWebhook = `⚡ *CONFIRMACIÓN AUTOMÁTICA QR (WEBHOOK BANCARIO)*\n` +
+                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                            `🆔 *Pedido:* #PED-${String(ped.id).padStart(4, '0')}\n` +
+                            `💰 *Monto Conciliado:* *Bs. ${parseFloat(ped.total).toFixed(2)}*\n` +
+                            `🏦 *Canal:* API Interoperable (${banco || 'SIMPLE / Yape'})\n` +
+                            `📑 *Transacción ID:* \`${numOperacion}\`\n` +
+                            `📦 *Acción:* Habilitado automáticamente para Empaque y Despacho\n` +
+                            `━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+                        enviarAlertaAdmin(alertaWebhook).catch(() => {});
+                    }
+
+                    return res.status(200).json({
+                        ok: true,
+                        recibido: true,
+                        pedido_id: ped.id,
+                        estado_pago: nuevoEstadoPago,
+                        mensaje: 'Webhook de pago QR procesado exitosamente'
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        console.error('Error en webhook-qr:', error);
+        res.status(500).json({ error: 'Error procesando webhook QR' });
     }
 });
 

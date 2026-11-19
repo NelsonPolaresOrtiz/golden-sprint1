@@ -142,6 +142,7 @@ db.serialize(() => {
         fecha_compra DATETIME DEFAULT CURRENT_TIMESTAMP,
         metodo_pago TEXT DEFAULT 'QR_SIMPLE',
         comprobante_ref TEXT,
+        numero_operacion TEXT,
         banco_origen TEXT,
         comprobante_img TEXT,
         estado_pago TEXT DEFAULT 'PENDIENTE',
@@ -170,6 +171,7 @@ db.serialize(() => {
             const colsToAdd = [
                 { name: 'metodo_pago', type: "TEXT DEFAULT 'QR_SIMPLE'" },
                 { name: 'comprobante_ref', type: 'TEXT' },
+                { name: 'numero_operacion', type: 'TEXT' },
                 { name: 'banco_origen', type: 'TEXT' },
                 { name: 'comprobante_img', type: 'TEXT' },
                 { name: 'estado_pago', type: "TEXT DEFAULT 'PENDIENTE'" },

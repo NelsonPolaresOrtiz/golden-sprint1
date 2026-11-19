@@ -161,9 +161,65 @@ function renderizarTablaFacturas(lista) {
             : '10/11/2026, 01:08';
 
         const totalNum = parseFloat(f.total || 0).toFixed(2);
-        const mPago = f.metodo_pago || 'QR_SIMPLE';
-        const banco = f.banco_origen || 'Banco Unión';
-        const refComp = f.comprobante_ref || 'S/R';
+        const mPago = String(f.metodo_pago || 'QR_DIRECTO').toUpperCase();
+        const banco = f.banco_origen || 'Banco Unión S.A.';
+        const numBoleta = f.numero_operacion || f.comprobante_ref || 'S/N';
+        const tieneImagen = Boolean(f.comprobante_img);
+
+        let metodoHTML = '';
+        if (mPago === 'DEPOSITO_BANCARIO') {
+            metodoHTML = `
+                <div class="d-flex flex-column gap-1">
+                    <div>
+                        <span class="badge px-2 py-1 rounded-pill" style="background: #F59E0B !important; color: #18181B; font-weight: 700; font-size: 0.72rem;">
+                            <i class="bi bi-bank2 me-1"></i>Depósito Bancario
+                        </span>
+                    </div>
+                    <div class="font-mono text-dark fw-bold small" style="font-size: 0.82rem;">
+                        <i class="bi bi-receipt text-danger me-1"></i>Boleta #${escaparHTML(numBoleta)}
+                    </div>
+                    <small class="text-secondary" style="font-size: 0.72rem;">${escaparHTML(banco)}</small>
+                </div>
+            `;
+        } else if (mPago === 'QR_DIRECTO' || mPago === 'QR_SIMPLE') {
+            metodoHTML = `
+                <div class="d-flex flex-column gap-1">
+                    <div>
+                        <span class="badge px-2 py-1 rounded-pill text-white" style="background: #7C3AED !important; font-weight: 700; font-size: 0.72rem;">
+                            <i class="bi bi-qr-code-scan me-1"></i>QR Directo
+                        </span>
+                    </div>
+                    <div class="font-mono text-secondary small" style="font-size: 0.78rem;">
+                        <span class="text-dark fw-semibold">Ref:</span> ${escaparHTML(numBoleta)}
+                    </div>
+                    <small class="text-muted" style="font-size: 0.72rem;">${escaparHTML(banco)}</small>
+                </div>
+            `;
+        } else if (mPago === 'PAYPAL') {
+            metodoHTML = `
+                <div class="d-flex flex-column gap-1">
+                    <div>
+                        <span class="badge px-2 py-1 rounded-pill bg-primary text-white" style="font-weight: 700; font-size: 0.72rem;">
+                            <i class="bi bi-paypal me-1"></i>PayPal Internacional
+                        </span>
+                    </div>
+                    <div class="font-mono text-secondary small" style="font-size: 0.78rem;">
+                        <span class="text-dark fw-semibold">ID:</span> ${escaparHTML(numBoleta)}
+                    </div>
+                </div>
+            `;
+        } else {
+            metodoHTML = `
+                <div class="d-flex flex-column gap-1">
+                    <div>
+                        <span class="badge px-2 py-1 rounded-pill bg-secondary text-white" style="font-weight: 700; font-size: 0.72rem;">
+                            ${mPago}
+                        </span>
+                    </div>
+                    <small class="text-secondary font-mono">${escaparHTML(numBoleta)}</small>
+                </div>
+            `;
+        }
 
         return `
             <tr>
@@ -177,15 +233,7 @@ function renderizarTablaFacturas(lista) {
                     <small class="text-secondary">${escaparHTML(f.cliente_email || 'ventas@goldenerp.com')}</small>
                 </td>
                 <td>
-                    <div class="d-flex align-items-center gap-1 mb-1">
-                        <span class="badge ${mPago === 'PAYPAL' ? 'bg-primary' : 'bg-dark text-warning'}" style="font-size:0.68rem; font-family:'Chivo Mono', monospace;">
-                            ${mPago}
-                        </span>
-                        <small class="text-muted text-truncate" style="max-width: 140px;">${escaparHTML(banco)}</small>
-                    </div>
-                    <div class="font-mono text-dark fw-bold small" style="font-size: 0.78rem;">
-                        <i class="bi bi-receipt me-1 text-danger"></i>${escaparHTML(refComp)}
-                    </div>
+                    ${metodoHTML}
                 </td>
                 <td class="text-secondary small">
                     <i class="bi bi-calendar3 me-1 text-warning opacity-75"></i>${fechaStr}
@@ -200,10 +248,16 @@ function renderizarTablaFacturas(lista) {
                 </td>
                 <td class="pe-4 text-end">
                     <div class="d-inline-flex align-items-center gap-1">
+                        ${tieneImagen ? `
+                            <button class="btn btn-sm btn-outline-info py-1 px-2 rounded fw-semibold d-inline-flex align-items-center gap-1 shadow-sm" onclick="verComprobanteAdjunto(${f.id})" style="font-size: 0.75rem;" title="Ver captura o boleta adjunta">
+                                <i class="bi bi-image"></i>
+                                <span>Ver Boleta</span>
+                            </button>
+                        ` : ''}
                         ${!esPagado ? `
-                            <button class="btn btn-sm btn-success py-1 px-2 rounded fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="verificarYAprobarCobro(${f.id})" style="font-size: 0.75rem;" title="Verificar y Aprobar Cobro Bancario / QR">
+                            <button class="btn btn-sm btn-success py-1 px-2 rounded fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="verificarYAprobarCobro(${f.id})" style="font-size: 0.75rem;" title="Verificar cobro y pasar a Empaque / Almacén">
                                 <i class="bi bi-check2-circle"></i>
-                                <span>Aprobar</span>
+                                <span>Aprobar a Empaque</span>
                             </button>
                         ` : ''}
                         <button class="btn btn-outline-warning btn-sm py-1 px-2 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm fw-semibold" onclick="generarRecibo(${f.id})" style="font-size: 0.75rem;" title="Descargar Factura Oficial en PDF (Carta / A4)">
@@ -219,34 +273,76 @@ function renderizarTablaFacturas(lista) {
     tbody.innerHTML = html;
 }
 
+function verComprobanteAdjunto(id) {
+    const f = facturasGlobal.find(item => item.id == id);
+    if (!f || !f.comprobante_img) {
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'info', title: 'Esta orden no tiene archivo adjunto' });
+        return;
+    }
+    const numBoleta = f.numero_operacion || f.comprobante_ref || 'S/N';
+    const esDeposito = (f.metodo_pago || '').toUpperCase() === 'DEPOSITO_BANCARIO';
+
+    Swal.fire({
+        title: `<div class="d-flex align-items-center justify-content-center gap-2"><i class="bi bi-receipt-cutoff text-warning"></i><span>Comprobante de Pago - Orden #${id}</span></div>`,
+        html: `
+            <div class="text-start p-2 mb-3 rounded bg-light border font-mono small text-dark">
+                <div><strong>Tipo de Pago:</strong> ${esDeposito ? 'Depósito en Ventanilla / ACH' : 'Pago QR Directo'}</div>
+                <div><strong>N° Boleta / Ref:</strong> <span class="text-danger fw-bold">${escaparHTML(numBoleta)}</span></div>
+                <div><strong>Banco Emisor:</strong> ${escaparHTML(f.banco_origen || 'Banco Unión S.A.')}</div>
+                <div><strong>Monto:</strong> <span class="text-success fw-bold">Bs. ${parseFloat(f.total || 0).toFixed(2)}</span></div>
+            </div>
+            <div class="text-center p-2 rounded" style="background: #0f172a; max-height: 520px; overflow-y: auto;">
+                <img src="${f.comprobante_img}" alt="Comprobante de Pago" class="img-fluid rounded shadow" style="max-height: 480px; object-fit: contain;">
+            </div>
+        `,
+        confirmButtonColor: '#B91C1C',
+        confirmButtonText: 'Cerrar Comprobante',
+        width: 620,
+        background: '#FAF8F5',
+        color: '#141619'
+    });
+}
+window.verComprobanteAdjunto = verComprobanteAdjunto;
+
 async function verificarYAprobarCobro(id) {
-    const usuario = JSON.parse(localStorage.getItem('usuario_golden') || '{}');
+    const f = facturasGlobal.find(item => item.id == id);
+    const numBoleta = f ? (f.numero_operacion || f.comprobante_ref || 'S/N') : 'S/N';
+    const tipoPago = f && f.metodo_pago === 'DEPOSITO_BANCARIO' ? 'Depósito Bancario' : 'Pago QR Directo';
+
     const resp = await (typeof Swal !== 'undefined' ? Swal.fire({
-        title: `¿Verificar y Aprobar Cobro de Orden #${id}?`,
-        text: 'Se validará el número de comprobante bancario / QR y se registrará el ingreso como VERIFICADO.',
+        title: `¿Aprobar Pago y Pasar a Empaque?`,
+        html: `
+            <p class="text-secondary small mb-2">Orden <strong>#${id}</strong> por <strong>Bs. ${f ? parseFloat(f.total).toFixed(2) : ''}</strong></p>
+            <div class="p-2 border rounded bg-light font-mono small text-start">
+                <strong>Método:</strong> ${tipoPago}<br>
+                <strong>Boleta / Ref:</strong> ${escaparHTML(numBoleta)}
+            </div>
+            <p class="text-muted small mt-2 mb-0">Al confirmar, el pago queda <strong>VERIFICADO</strong> y la orden pasará inmediatamente a la bandeja de <strong>Empaque y Picking de Almacén</strong>.</p>
+        `,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#15803D',
         cancelButtonColor: '#64748B',
-        confirmButtonText: 'Sí, verificar y aprobar',
+        confirmButtonText: '<i class="bi bi-box-seam me-1"></i> Sí, Aprobar y Pasar a Empaque',
         cancelButtonText: 'Cancelar'
     }) : { isConfirmed: confirm(`¿Aprobar cobro de Orden #${id}?`) });
 
     if (!resp.isConfirmed) return;
 
     try {
+        const usuario = JSON.parse(localStorage.getItem('usuario_golden') || '{}');
         const res = await fetch(`/api/pedidos/${id}/aprobar-cobro`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario_nombre: usuario.nombre || 'Administrador / Cajero' })
+            body: JSON.stringify({ usuario_nombre: usuario.nombre || 'Cobranzas / Administración' })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error al aprobar cobro');
 
         if (typeof Toast !== 'undefined') {
-            Toast.fire({ icon: 'success', title: `Cobro de Orden #${id} aprobado como VERIFICADO` });
+            Toast.fire({ icon: 'success', title: `Cobro de Orden #${id} verificado. ¡Pasado a Empaque/Almacén!` });
         } else {
-            alert(`Cobro de Orden #${id} aprobado como VERIFICADO`);
+            alert(`Cobro de Orden #${id} verificado y pasado a empaque.`);
         }
         cargarFacturacion();
     } catch (e) {

@@ -2823,15 +2823,20 @@ function abrirModalCheckout() {
     };
 
     const elTotalBs = document.getElementById('checkoutMontoTotalBs');
+    const elDepositoBs = document.getElementById('depositoMontoTotalBs');
     const elPpBs = document.getElementById('paypalMontoBs');
     const elPpUsd = document.getElementById('paypalMontoUsd');
+    const elRefGlosa = document.getElementById('checkoutOrdenRefGlosa');
 
     if (elTotalBs) elTotalBs.innerText = `Bs. ${totalBs.toFixed(2)}`;
+    if (elDepositoBs) elDepositoBs.innerText = `Bs. ${totalBs.toFixed(2)}`;
     if (elPpBs) elPpBs.innerText = `Bs. ${totalBs.toFixed(2)}`;
     if (elPpUsd) elPpUsd.innerText = `$${totalUsd} USD`;
+    if (elRefGlosa) elRefGlosa.innerText = `ORD-${Date.now().toString().slice(-6)}`;
 
-    // Generar código QR dinámico con la orden y monto exacto
-    generarQRCheckout(totalBs);
+    // Resetear estados de validación de botones
+    validarHabilitacionBotonQR();
+    validarHabilitacionBotonDeposito();
 
     // Inicializar botones PayPal si el SDK está disponible
     setTimeout(inicializarPayPalSDK, 300);
@@ -2854,98 +2859,146 @@ function procesarCompra() {
     abrirModalCheckout();
 }
 
-function generarQRCheckout(totalBs) {
-    const contenedor = document.getElementById('checkoutCodigoQR');
-    if (!contenedor) return;
-    contenedor.innerHTML = '';
-
-    const qrPayload = `GOLDEN-PAY-B2B|ORDEN-${Date.now()}|BS-${totalBs.toFixed(2)}|CTA-UNION-1000458921|NIT-1029384756`;
-
-    if (window.QRCode && typeof window.QRCode === 'function') {
-        new QRCode(contenedor, {
-            text: qrPayload,
-            width: 170,
-            height: 170,
-            colorDark: "#141619",
-            colorLight: "#FFFFFF",
-            correctLevel: QRCode.CorrectLevel.M
-        });
-    } else {
-        contenedor.innerHTML = `<img id="imgQRDescargable" src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(qrPayload)}" alt="QR Simple" style="width: 170px; height: 170px; display: block; margin: 0 auto; border-radius: 4px;">`;
-    }
-}
-
-function descargarQRPago() {
-    const img = document.querySelector('#checkoutCodigoQR img') || document.querySelector('#checkoutCodigoQR canvas');
-    if (!img) {
-        Toast.fire({ icon: 'info', title: 'Generando imagen QR...' });
-        return;
-    }
-
-    let url = '';
-    if (img.tagName && img.tagName.toLowerCase() === 'canvas') {
-        url = img.toDataURL('image/png');
-    } else {
-        url = img.src;
-    }
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `QR_Pago_GOLDEN_${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    Toast.fire({ icon: 'success', title: 'Código QR descargado correctamente' });
-}
-
-function simularConfirmacionBancariaDirecta() {
-    const refInput = document.getElementById('checkoutComprobanteRef');
-    const bancoSelect = document.getElementById('checkoutBancoOrigen');
-    const randomRef = 'TRANSF-' + Math.floor(100000 + Math.random() * 900000);
-
-    if (refInput) refInput.value = randomRef;
-    if (bancoSelect) bancoSelect.value = 'Banco Unión';
-
-    Toast.fire({
-        icon: 'success',
-        title: `Comprobante verificado: N° ${randomRef} para despacho inmediato.`
+function leerArchivoComoDataURL(file) {
+    return new Promise((resolve) => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
     });
 }
 
-async function confirmarPagoQR() {
+function validarHabilitacionBotonQR() {
+    const btn = document.getElementById('btnConfirmarPedidoQR');
+    if (!btn) return;
+    const archivoInput = document.getElementById('checkoutQRCapturaArchivo');
+    const tieneArchivo = archivoInput && archivoInput.files && archivoInput.files.length > 0;
+    const checkConfirmado = document.getElementById('checkConfirmoTransferenciaQR')?.checked;
+    // Se habilita si sube captura o si marca el checkbox de confirmación
+    btn.disabled = !(tieneArchivo || checkConfirmado);
+}
+
+function validarHabilitacionBotonDeposito() {
+    const btn = document.getElementById('btnConfirmarDeposito');
+    if (!btn) return;
+    const num = (document.getElementById('checkoutBoletaNumero')?.value || '').trim();
+    const archivoInput = document.getElementById('checkoutBoletaArchivo');
+    const tieneArchivo = archivoInput && archivoInput.files && archivoInput.files.length > 0;
+    // Estricto: exige N° de boleta y foto del comprobante
+    btn.disabled = !(num.length > 0 && tieneArchivo);
+}
+
+function copiarMontoQR() {
+    const total = ordenEnProcesoCheckout ? ordenEnProcesoCheckout.totalBs.toFixed(2) : '0.00';
+    copiarTextoAlPortapapeles(total, `Monto copiado: Bs. ${total}`);
+}
+
+function copiarMontoDeposito() {
+    const total = ordenEnProcesoCheckout ? ordenEnProcesoCheckout.totalBs.toFixed(2) : '0.00';
+    copiarTextoAlPortapapeles(total, `Monto a depositar copiado: Bs. ${total}`);
+}
+
+function copiarRefGlosa() {
+    const glosa = document.getElementById('checkoutOrdenRefGlosa')?.innerText || '';
+    copiarTextoAlPortapapeles(glosa, `Referencia copiada: ${glosa}`);
+}
+
+function copiarTextoAlPortapapeles(texto, mensaje) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+            if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: mensaje || `Copiado: ${texto}` });
+        }).catch(() => fallbackCopiar(texto, mensaje));
+    } else {
+        fallbackCopiar(texto, mensaje);
+    }
+}
+
+function fallbackCopiar(texto, mensaje) {
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: mensaje || `Copiado: ${texto}` });
+    } catch (e) {}
+    document.body.removeChild(ta);
+}
+
+function descargarQROficial() {
+    const img = document.getElementById('imgQROficial');
+    if (!img || !img.src) {
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'info', title: 'Descargando QR oficial...' });
+        return;
+    }
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = `QR_Golden_Lubricantes_${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: 'Código QR descargado correctamente' });
+}
+
+function fallbackQROficial(img) {
+    const total = ordenEnProcesoCheckout ? ordenEnProcesoCheckout.totalBs.toFixed(2) : '100.00';
+    const payload = `GOLDEN-PAY-B2B|ORDEN-${Date.now()}|BS-${total}|CTA-UNION-1000048291045|NIT-1029384756`;
+    img.onerror = null;
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payload)}`;
+}
+
+// Método A: Confirmar Pedido con Pago QR Interoperable (SIMPLE / Yape / Todos los Bancos)
+async function confirmarPagoQRDirecto() {
     if (carrito.length === 0) return;
     const usuario = obtenerUsuarioSesion();
     if (!usuario) {
-        window.location.href = 'index.html';
+        window.location.href = 'index.html?modo=cliente';
         return;
     }
 
-    const ref = (document.getElementById('checkoutComprobanteRef')?.value || '').trim() || ('REF-' + Date.now().toString().slice(-6));
-    const banco = document.getElementById('checkoutBancoOrigen')?.value || 'Banco Unión';
+    const archivoInput = document.getElementById('checkoutQRCapturaArchivo');
+    const archivo = archivoInput && archivoInput.files ? archivoInput.files[0] : null;
+    const checkConfirmado = document.getElementById('checkConfirmoTransferenciaQR')?.checked;
+
+    if (!archivo && !checkConfirmado) {
+        Toast.fire({ icon: 'warning', title: 'Adjunta la captura del pago QR o confirma la transferencia realizada.' });
+        return;
+    }
+
+    const ref = (document.getElementById('checkoutQRComprobanteRef')?.value || '').trim() || ('QR-' + Date.now().toString().slice(-6));
+    const banco = document.getElementById('checkoutQRBancoOrigen')?.value || 'Yape / BCP Bolivia';
     const totalVenta = ordenEnProcesoCheckout ? ordenEnProcesoCheckout.totalBs : 0;
 
-    const payload = {
-        cliente_id: usuario.id,
-        total: totalVenta,
-        metodo_pago: 'QR_SIMPLE',
-        comprobante_ref: ref,
-        banco_origen: banco,
-        estado_pago: 'VERIFICADO',
-        carrito: carrito.map(item => ({
-            id: item.id,
-            nombre: item.nombre,
-            precio: item.precio,
-            cantidad: item.cantidad
-        }))
-    };
-
-    const btn = document.getElementById('btnConfirmarPagoQR');
+    const btn = document.getElementById('btnConfirmarPedidoQR');
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Registrando pedido...`;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Confirmando pedido con QR...`;
     }
 
     try {
+        let comprobanteImgData = null;
+        if (archivo) {
+            comprobanteImgData = await leerArchivoComoDataURL(archivo);
+        }
+
+        const payload = {
+            cliente_id: usuario.id,
+            total: totalVenta,
+            metodo_pago: 'QR_DIRECTO',
+            comprobante_ref: ref,
+            numero_operacion: ref,
+            banco_origen: banco,
+            comprobante_img: comprobanteImgData,
+            estado_pago: 'PENDIENTE',
+            carrito: carrito.map(item => ({
+                id: item.id,
+                nombre: item.nombre,
+                precio: item.precio,
+                cantidad: item.cantidad
+            }))
+        };
+
         const res = await fetch(`${API_URL}/pedidos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2964,7 +3017,7 @@ async function confirmarPagoQR() {
             if (bsModal) bsModal.hide();
         }
 
-        Toast.fire({ icon: 'success', title: 'Comprobante registrado. Pedido recibido con éxito.' });
+        Toast.fire({ icon: 'success', title: '¡Pedido registrado con QR! El comprobante fue enviado para validación.' });
 
         abrirModalConfirmacion(data.pedidoId, usuario, carrito, totalVenta);
 
@@ -2978,7 +3031,100 @@ async function confirmarPagoQR() {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>Confirmar Pago y Registrar Orden</span>`;
+            btn.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>Confirmar Pedido con QR</span>`;
+        }
+    }
+}
+// Alias para compatibilidad
+window.confirmarPagoQR = confirmarPagoQRDirecto;
+
+// Método B: Confirmar Pedido con Depósito en Ventanilla o Transferencia Bancaria
+async function confirmarDepositoBancario() {
+    if (carrito.length === 0) return;
+    const usuario = obtenerUsuarioSesion();
+    if (!usuario) {
+        window.location.href = 'index.html?modo=cliente';
+        return;
+    }
+
+    const boletaInput = document.getElementById('checkoutBoletaNumero');
+    const boletaNumero = (boletaInput?.value || '').trim();
+    if (!boletaNumero) {
+        Toast.fire({ icon: 'warning', title: 'Debes ingresar el N° de boleta o comprobante bancario.' });
+        if (boletaInput) boletaInput.focus();
+        return;
+    }
+
+    const archivoInput = document.getElementById('checkoutBoletaArchivo');
+    const archivo = archivoInput && archivoInput.files ? archivoInput.files[0] : null;
+    if (!archivo) {
+        Toast.fire({ icon: 'warning', title: 'Debes adjuntar la foto de la boleta de depósito o comprobante de transferencia.' });
+        if (archivoInput) archivoInput.focus();
+        return;
+    }
+
+    const banco = document.getElementById('checkoutDepositoBanco')?.value || 'Banco Unión S.A.';
+    const totalVenta = ordenEnProcesoCheckout ? ordenEnProcesoCheckout.totalBs : 0;
+
+    const btn = document.getElementById('btnConfirmarDeposito');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Registrando depósito...`;
+    }
+
+    try {
+        const comprobanteImgData = await leerArchivoComoDataURL(archivo);
+
+        const payload = {
+            cliente_id: usuario.id,
+            total: totalVenta,
+            metodo_pago: 'DEPOSITO_BANCARIO',
+            comprobante_ref: boletaNumero,
+            numero_operacion: boletaNumero,
+            banco_origen: banco,
+            comprobante_img: comprobanteImgData,
+            estado_pago: 'PENDIENTE',
+            carrito: carrito.map(item => ({
+                id: item.id,
+                nombre: item.nombre,
+                precio: item.precio,
+                cantidad: item.cantidad
+            }))
+        };
+
+        const res = await fetch(`${API_URL}/pedidos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            Toast.fire({ icon: 'error', title: data.error || 'No se pudo registrar el pedido' });
+            return;
+        }
+
+        const modalEl = document.getElementById('modalCheckoutPago');
+        if (modalEl) {
+            const bsModal = bootstrap.Modal.getInstance(modalEl);
+            if (bsModal) bsModal.hide();
+        }
+
+        Toast.fire({ icon: 'success', title: `Boleta N° ${boletaNumero} registrada. En espera de aprobación en Almacén.` });
+
+        abrirModalConfirmacion(data.pedidoId, usuario, carrito, totalVenta);
+
+        carrito = [];
+        actualizarCarrito();
+        cargarCatalogo();
+
+    } catch (e) {
+        console.error('Error al registrar depósito bancario:', e);
+        Toast.fire({ icon: 'error', title: 'Error de comunicación con el servidor ERP' });
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="bi bi-receipt-cutoff"></i><span>Registrar Depósito y Confirmar Pedido</span>`;
         }
     }
 }

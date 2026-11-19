@@ -283,8 +283,8 @@ function renderizarMenu(paginaActiva) {
     }
 
     const menuHTML = `
-    <nav class="navbar navbar-expand-lg" style="background: transparent; border: none; padding: 0.4rem 0.75rem;">
-        <div class="container-fluid px-2 px-xl-3 py-1 d-flex align-items-center justify-content-between">
+    <nav class="navbar navbar-expand-lg navbar-golden" style="background: transparent; border: none; padding: 12px 24px; min-height: 72px;">
+        <div class="container-fluid px-0 py-0 d-flex align-items-center justify-content-between">
             
             <!-- Lado Izquierdo: Botón Hamburguesa (<1024px) + Isotipo de Marca Oficial -->
             <div class="d-flex align-items-center gap-2">
@@ -412,14 +412,16 @@ function renderizarMenu(paginaActiva) {
         </div>
     </div>`;
 
-    const contenedor = document.getElementById('menu-contenedor');
+    const contenedor = document.getElementById('menu-contenedor') || document.getElementById('menu-container') || document.querySelector('.navbar-golden');
     if (contenedor) {
         contenedor.style.position = 'sticky';
         contenedor.style.top = '0';
         contenedor.style.zIndex = '1000';
         contenedor.style.width = '100%';
+        contenedor.style.minHeight = '72px';
         contenedor.style.backgroundColor = '#1C1917';
         contenedor.style.borderBottom = '3px solid #C81E1E';
+        contenedor.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.28)';
         contenedor.innerHTML = menuHTML;
         if (!esCliente) {
             setTimeout(iniciarMonitorAlertasStock, 300);
@@ -430,7 +432,7 @@ window.renderizarMenu = renderizarMenu;
 
 // Auto-inicialización de contingencia del Menú ERP si el contenedor está vacío
 document.addEventListener('DOMContentLoaded', () => {
-    const contenedor = document.getElementById('menu-contenedor');
+    const contenedor = document.getElementById('menu-contenedor') || document.getElementById('menu-container');
     if (contenedor && !contenedor.classList.contains('d-none') && (!contenedor.innerHTML || !contenedor.innerHTML.trim())) {
         const pag = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
         if (pag !== 'index' && pag !== 'login') {

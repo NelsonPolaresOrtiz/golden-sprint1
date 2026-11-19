@@ -148,7 +148,10 @@ main h1, main h2, main h3, main h4, main h5, main h6 {
    NAVBAR SUPERIOR (CARBÓN GRAFITO #1C1917 CON LÍNEA ROJA #C81E1E DE 3px)
    ========================================================================== */
 
-#menu-contenedor {
+#menu-contenedor,
+#menu-container,
+.navbar-golden,
+header.navbar-golden {
     position: sticky !important;
     top: 0 !important;
     z-index: 1000 !important;
@@ -157,13 +160,17 @@ main h1, main h2, main h3, main h4, main h5, main h6 {
     box-sizing: border-box !important;
     background-color: var(--stitch-navbar-bg) !important;
     border-bottom: 3px solid var(--stitch-navbar-border) !important;
-    box-shadow: 0 2px 8px rgba(28, 25, 23, 0.15) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28) !important;
+    min-height: 72px !important;
 }
 
-#menu-contenedor .navbar {
+#menu-contenedor .navbar,
+#menu-container .navbar,
+.navbar-golden .navbar {
     background-color: transparent !important;
     border: none !important;
-    padding: 0.35rem 0.65rem !important;
+    padding: 12px 24px !important;
+    min-height: 72px !important;
     width: 100% !important;
     min-width: 100% !important;
     box-sizing: border-box !important;
@@ -214,16 +221,35 @@ main h1, main h2, main h3, main h4, main h5, main h6 {
 
 .nav-link-stitch {
     color: #E7E5E4 !important;
-    font-size: clamp(0.72rem, 0.8vw, 0.82rem) !important;
-    font-weight: 500;
-    padding: 5px 0.5vw !important;
+    font-size: 14.5px !important;
+    font-weight: 600 !important;
+    padding: 9px 14px !important;
     border-radius: var(--stitch-radius-sm);
     transition: all 0.15s ease;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 3px !important;
+    gap: 6px !important;
     white-space: nowrap !important;
+    letter-spacing: 0.15px;
+}
+
+.nav-link-stitch i {
+    font-size: 16px !important;
+    opacity: 0.95 !important;
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (max-width: 1399.98px) and (min-width: 1024px) {
+    .nav-link-stitch {
+        font-size: 13.5px !important;
+        padding: 7px 10px !important;
+        gap: 4px !important;
+    }
+    .nav-link-stitch i {
+        font-size: 15px !important;
+    }
 }
 
 .btn-header-logout {
@@ -2915,7 +2941,9 @@ body {
     padding-right: env(safe-area-inset-right, 0px);
 }
 
-#menu-contenedor {
+#menu-contenedor,
+#menu-container,
+.navbar-golden {
     padding-top: env(safe-area-inset-top, 0px);
 }
 
