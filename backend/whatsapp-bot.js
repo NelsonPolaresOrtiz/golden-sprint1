@@ -39,7 +39,7 @@ const CONFIG = {
     direccion: 'Av. Jaime Mendoza #1420, Sucre, Bolivia',
     telefonoFijo: '(4) 64-52890',
     whatsappOficial: '+591 67375645',
-    catalogoWeb: 'https://golden-sprint1.onrender.com/tienda.html',
+    catalogoWeb: 'https://golden-sprint1.onrender.com/tienda.html?vista=cliente',
     portalClientesWeb: 'https://golden-sprint1.onrender.com/?modo=cliente',
     horario: 'Lunes a Sábado de 08:00 a 18:30 (Continuado)',
     pausaHumanaMs: 1200,
@@ -115,25 +115,84 @@ async function restaurarSesionDesdeDB() {
     }
 }
 
+let respaldoDebounceTimer = null;
+let respaldandoSesionActivo = false;
+const archivosMtimeCache = new Map();
+
+function programarRespaldoSesion() {
+    if (respaldoDebounceTimer) clearTimeout(respaldoDebounceTimer);
+    respaldoDebounceTimer = setTimeout(() => {
+        respaldarSesionEnDB().catch(e => console.warn('[WhatsApp Bot] Error en respaldo:', e.message));
+    }, 2000);
+}
+
 async function respaldarSesionEnDB() {
-    if (!fs.existsSync(AUTH_DIR)) return;
+    if (!fs.existsSync(AUTH_DIR) || respaldandoSesionActivo) return;
+    respaldandoSesionActivo = true;
+
     try {
         const archivos = fs.readdirSync(AUTH_DIR);
+        const aGuardar = [];
+
         for (const archivo of archivos) {
             const filePath = path.join(AUTH_DIR, archivo);
-            if (fs.statSync(filePath).isFile()) {
-                const contenido = fs.readFileSync(filePath, 'utf-8');
-                await dbQuery.run(
-                    `INSERT INTO whatsapp_sesion (clave, valor, fecha_actualizacion) 
-                     VALUES (?, ?, CURRENT_TIMESTAMP)
-                     ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor, fecha_actualizacion = CURRENT_TIMESTAMP`,
-                    [archivo, contenido]
-                );
-            }
+            try {
+                const stat = fs.statSync(filePath);
+                if (stat.isFile()) {
+                    const cacheMtime = archivosMtimeCache.get(archivo);
+                    if (!cacheMtime || cacheMtime < stat.mtimeMs) {
+                        const contenido = fs.readFileSync(filePath, 'utf-8');
+                        aGuardar.push({ archivo, contenido, mtime: stat.mtimeMs });
+                    }
+                }
+            } catch (readErr) {}
         }
-        console.log(`[WhatsApp Bot] Sesión respaldada en SQLite (${archivos.length} archivos sincronizados).`);
+
+        if (aGuardar.length === 0) {
+            respaldandoSesionActivo = false;
+            return;
+        }
+
+        // Ejecutar en una sola transacción atómica de SQLite con prepared statement
+        await new Promise((resolve, reject) => {
+            db.serialize(() => {
+                db.run('BEGIN IMMEDIATE TRANSACTION', (beginErr) => {
+                    if (beginErr) return reject(beginErr);
+
+                    const stmt = db.prepare(`
+                        INSERT INTO whatsapp_sesion (clave, valor, fecha_actualizacion) 
+                        VALUES (?, ?, CURRENT_TIMESTAMP)
+                        ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor, fecha_actualizacion = CURRENT_TIMESTAMP
+                    `);
+
+                    for (const item of aGuardar) {
+                        stmt.run(item.archivo, item.contenido);
+                    }
+
+                    stmt.finalize((finalErr) => {
+                        if (finalErr) {
+                            db.run('ROLLBACK', () => reject(finalErr));
+                        } else {
+                            db.run('COMMIT', (commitErr) => {
+                                if (commitErr) reject(commitErr);
+                                else resolve();
+                            });
+                        }
+                    });
+                });
+            });
+        });
+
+        // Actualizar caché de timestamps
+        for (const item of aGuardar) {
+            archivosMtimeCache.set(item.archivo, item.mtime);
+        }
+
+        console.log(`[WhatsApp Bot] Sesión sincronizada en SQLite (${aGuardar.length} archivos actualizados).`);
     } catch (err) {
         console.warn('[WhatsApp Bot] Advertencia al respaldar sesión en SQLite:', err.message);
+    } finally {
+        respaldandoSesionActivo = false;
     }
 }
 
@@ -773,6 +832,16 @@ async function iniciarBot() {
 
     iniciandoBot = true;
 
+    if (socketActivo) {
+        try {
+            socketActivo.ev.removeAllListeners('connection.update');
+            socketActivo.ev.removeAllListeners('creds.update');
+            socketActivo.ev.removeAllListeners('messages.upsert');
+            socketActivo.end();
+        } catch (e) {}
+        socketActivo = null;
+    }
+
     try {
         // 1. Restaurar sesión desde SQLite si existe (Cloud / Render persistence)
         await restaurarSesionDesdeDB();
@@ -789,10 +858,10 @@ async function iniciarBot() {
             browser: ['GOLDEN Lubricantes', 'Chrome', '1.0.0']
         });
 
-        // Guardar credenciales en disco y respaldar en SQLite
+        // Guardar credenciales en disco y respaldar en SQLite (debounced y atómico)
         sock.ev.on('creds.update', async () => {
             await saveCreds();
-            respaldarSesionEnDB().catch(() => {});
+            programarRespaldoSesion();
         });
 
         // Monitorear estado de conexión y renderizar QR
@@ -833,8 +902,9 @@ async function iniciarBot() {
                 }
 
                 if (debeReconectar) {
-                    console.log('[WhatsApp Bot] Reintentando conexión en 5 segundos...');
-                    setTimeout(iniciarBot, 5000);
+                    const esperaMs = statusCode === 440 ? 25000 : 7000;
+                    console.log(`[WhatsApp Bot] Reintentando conexión en ${esperaMs / 1000} segundos...`);
+                    setTimeout(iniciarBot, esperaMs);
                 }
             } else if (connection === 'open') {
                 socketActivo = sock;
@@ -848,7 +918,7 @@ async function iniciarBot() {
                 console.log('============================================================\n');
 
                 // Respaldar sesión en SQLite
-                respaldarSesionEnDB().catch(() => {});
+                programarRespaldoSesion();
 
                 // Iniciar despacho de alertas encoladas pendientes
                 procesarColaAlertas();

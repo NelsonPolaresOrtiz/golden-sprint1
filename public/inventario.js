@@ -240,12 +240,29 @@ async function registrarEntradaStock(id, nombre, stockActual) {
     }
 }
 
+function obtenerHeadersAuthInventario() {
+    const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+    let rol = '';
+    let email = '';
+    if (raw) {
+        try {
+            const u = JSON.parse(raw);
+            rol = u.rol || '';
+            email = u.email || u.correo || '';
+        } catch(e) {}
+    }
+    return {
+        'x-usuario-rol': rol,
+        'x-usuario-email': email
+    };
+}
+
 async function aplicarEntradaStockAPI(id, stockActual, incremento) {
     const nuevoStock = stockActual + incremento;
     try {
         const res = await fetch(`${API_URL}/productos/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...obtenerHeadersAuthInventario(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ stock: nuevoStock })
         });
         if (res.ok) {
@@ -314,7 +331,7 @@ if (formProductoInv) {
         try {
             const res = await fetch(url, {
                 method: metodo,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { ...obtenerHeadersAuthInventario(), 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos)
             });
             const data = await res.json();

@@ -11,9 +11,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-// Habilitar claves foráneas e inicializar esquema relacional
+// Habilitar claves foráneas, modo WAL y timeout de espera para evitar bloqueos concurrentes
 db.serialize(() => {
     db.run('PRAGMA foreign_keys = ON;');
+    db.run('PRAGMA journal_mode = WAL;');
+    db.run('PRAGMA busy_timeout = 8000;');
 
     // 1. Tabla de Usuarios y Roles
     db.run(`CREATE TABLE IF NOT EXISTS usuarios (
@@ -120,7 +122,7 @@ db.serialize(() => {
         if (!err && row && row.count === 0) {
             db.run(`INSERT INTO config_catalogo (id, hero_titulo, hero_subtitulo, hero_destacado, hero_badge, banner_activo) VALUES (
                 1,
-                'EL FUTURO DE LA\nLUBRICACIÓN Y FILTROS\nDE PESADOS Y LIVIANOS\nLLEGÓ A SU TALLER',
+                'LUBRICANTES Y FILTROS\nDE ALTO RENDIMIENTO\nPARA TALLERES Y FLOTAS',
                 'Máxima potencia, más eficiencia y la mayor durabilidad para quien exige mucho del vehículo en ruta y ciudad.',
                 'Lotes con -15% Mayorista',
                 'Fabricación & Distribución Mayorista',

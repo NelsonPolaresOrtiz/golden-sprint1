@@ -7,6 +7,32 @@ function renderizarMenu(paginaActiva) {
     const usuarioSesion = obtenerUsuarioSesion();
     const rol = usuarioSesion && usuarioSesion.rol ? String(usuarioSesion.rol).toUpperCase().trim() : null;
 
+    // Validación de vista comercial limpia (?vista=cliente) y roles en tienda.html
+    const urlParams = new URLSearchParams(window.location.search);
+    const esVistaCliente = urlParams.get('vista') === 'cliente';
+
+    if (paginaActiva === 'tienda') {
+        const esGestorAutorizado = !esVistaCliente && usuarioSesion && [
+            'ADMIN', 'ADMINISTRADOR', 'SUPERADMIN', 'GERENTE', 
+            'EMPAQUE', 'ALMACENERO', 'ALMACEN'
+        ].includes(rol);
+
+        const contenedor = document.getElementById('menu-contenedor');
+        if (!esGestorAutorizado) {
+            if (contenedor) {
+                contenedor.innerHTML = '';
+                contenedor.classList.add('d-none');
+                contenedor.style.display = 'none';
+            }
+            return;
+        } else {
+            if (contenedor) {
+                contenedor.classList.remove('d-none');
+                contenedor.style.display = 'block';
+            }
+        }
+    }
+
     // Identificación estricta de tipo de usuario
     const esCliente = !rol || rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C';
     const esAdminOTrabajador = rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'TRABAJADOR' || rol === 'SUPERADMIN' || rol === 'GERENTE';
@@ -536,6 +562,9 @@ function protegerRuta(paginaActual, rolesPermitidos) {
     const usuario = obtenerUsuarioSesion();
 
     if (!usuario) {
+        if (paginaActual === 'tienda') {
+            return null; // Catálogo abierto para visitantes sin forzar login
+        }
         if (paginaActual !== 'login') {
             window.location.href = 'index.html';
             return null;

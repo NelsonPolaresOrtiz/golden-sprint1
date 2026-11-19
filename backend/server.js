@@ -44,6 +44,14 @@ app.use((err, req, res, next) => {
     next();
 });
 
+// Captura defensiva de errores no controlados para blindar disponibilidad en Render
+process.on('unhandledRejection', (reason) => {
+    console.warn('[Server Warning] Rechazo no controlado capturado de forma segura:', reason?.message || reason);
+});
+process.on('uncaughtException', (err) => {
+    console.warn('[Server Warning] Excepción no capturada atrapada de forma segura:', err?.message || err);
+});
+
 /**
  * Middleware / Función Asíncrona de Trazabilidad y Auditoría Enterprise
  * Inserta un registro silencioso en la tabla 'auditoria' de SQLite sin bloquear transacciones
@@ -76,7 +84,11 @@ async function registrarAuditoria(usuario, accion, modulo) {
  * Iniciar sesión de usuario
  * POST /api/auth/login
  */
-app.post('/api/auth/login', (req, res) => {
+/**
+ * Autenticación de usuarios por credenciales locales (email/password)
+ * POST /api/auth/login & POST /api/login
+ */
+const loginHandler = (req, res) => {
     try {
         const email = req.body.email || req.body.correo;
         const password = req.body.password;
@@ -151,12 +163,10 @@ app.post('/api/auth/login', (req, res) => {
         console.error('Error crítico en login:', error);
         return res.status(500).json({ error: 'Error del servidor al procesar inicio de sesión.' });
     }
-});
+};
 
-// Alias compatible para /api/login
-app.post('/api/login', (req, res) => {
-    res.redirect(307, '/api/auth/login');
-});
+app.post('/api/auth/login', loginHandler);
+app.post('/api/login', loginHandler);
 
 /**
  * Configuración pública de autenticación (Google Client ID, etc.)
@@ -539,10 +549,79 @@ app.get('/api/productos/:id', (req, res) => {
 });
 
 /**
+ * Middleware para validar permisos granulares de gestión de catálogo
+ * Solo se permite el acceso a ADMIN y EMPAQUE (Encargado de Almacén).
+ * CLIENTE, DESPACHO y peticiones no autenticadas son bloqueadas con HTTP 403 Forbidden.
+ */
+function verificarPermisoGestorCatalogo(req, res, next) {
+    const rolHeader = (
+        req.headers['x-usuario-rol'] || 
+        req.headers['x-user-rol'] || 
+        req.headers['x-rol'] || 
+        req.body?.usuario_rol || 
+        req.body?.rol || 
+        req.body?.usuario?.rol || 
+        req.query?.rol || 
+        ''
+    ).toString().toUpperCase().trim();
+
+    const emailHeader = (
+        req.headers['x-usuario-email'] || 
+        req.headers['x-user-email'] || 
+        req.headers['x-email'] || 
+        req.body?.usuario_email || 
+        req.body?.email || 
+        ''
+    ).toString().toLowerCase().trim();
+
+    // Bloqueo explícito de roles no autorizados (CLIENTE y DESPACHO)
+    if (
+        rolHeader === 'CLIENTE' || 
+        rolHeader === 'CLIENTE_B2B' || 
+        rolHeader === 'CLIENTE_B2C' || 
+        rolHeader === 'DESPACHO' || 
+        rolHeader === 'CHOFER' || 
+        rolHeader === 'REPARTIDOR'
+    ) {
+        registrarAuditoria('SEGURIDAD', `Acceso denegado a gestión de catálogo: intento no autorizado con rol ${rolHeader} (${emailHeader || 'sin email'})`, 'CATALOGO');
+        return res.status(403).json({
+            error: `Acceso denegado (403 Forbidden): El rol "${rolHeader}" no tiene permisos para gestionar productos o banners del catálogo. Se requiere rol ADMIN o EMPAQUE (Encargado de Almacén).`
+        });
+    }
+
+    const rolesAutorizados = ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN', 'GERENTE', 'EMPAQUE', 'ALMACENERO', 'ALMACEN'];
+
+    if (rolHeader && rolesAutorizados.includes(rolHeader)) {
+        if (emailHeader) {
+            return db.get('SELECT rol, estado FROM usuarios WHERE LOWER(email) = ? OR LOWER(correo) = ?', [emailHeader, emailHeader], (err, user) => {
+                if (!err && user) {
+                    const rolDB = (user.rol || '').toUpperCase().trim();
+                    if (user.estado !== 'ACTIVO') {
+                        return res.status(403).json({ error: 'Acceso denegado: El usuario gestor está inactivo.' });
+                    }
+                    if (!rolesAutorizados.includes(rolDB)) {
+                        registrarAuditoria('SEGURIDAD', `Acceso denegado: rol en headers (${rolHeader}) no coincide con rol en base de datos (${rolDB}) para ${emailHeader}`, 'CATALOGO');
+                        return res.status(403).json({ error: 'Acceso denegado: Credenciales no autorizadas.' });
+                    }
+                }
+                next();
+            });
+        }
+        return next();
+    }
+
+    // Si no se proporcionó rol o no es ADMIN ni EMPAQUE: 403 Forbidden
+    registrarAuditoria('SEGURIDAD', `Intento no autorizado de modificar catálogo sin credenciales de rol válidas (${rolHeader || 'ANÓNIMO'})`, 'CATALOGO');
+    return res.status(403).json({
+        error: 'Acceso denegado (403 Forbidden): Se requiere autorización de ADMIN o EMPAQUE (Encargado de Almacén) para gestionar el catálogo.'
+    });
+}
+
+/**
  * Registrar nuevo producto en inventario
  * POST /api/productos
  */
-app.post('/api/productos', (req, res) => {
+app.post('/api/productos', verificarPermisoGestorCatalogo, (req, res) => {
     try {
         const {
             sku, nombre, categoria, precio, stock, stock_minimo = 5,
@@ -607,7 +686,7 @@ app.post('/api/productos', (req, res) => {
  * Actualizar producto existente (Soporta actualización completa y parcial de ofertas/precios)
  * PUT /api/productos/:id
  */
-app.put('/api/productos/:id', (req, res) => {
+app.put('/api/productos/:id', verificarPermisoGestorCatalogo, (req, res) => {
     try {
         const prodId = req.params.id;
         db.get('SELECT * FROM productos WHERE id = ?', [prodId], (getErr, prodExistente) => {
@@ -683,7 +762,7 @@ app.put('/api/productos/:id', (req, res) => {
  * Eliminar producto del inventario
  * DELETE /api/productos/:id
  */
-app.delete('/api/productos/:id', (req, res) => {
+app.delete('/api/productos/:id', verificarPermisoGestorCatalogo, (req, res) => {
     try {
         const prodId = req.params.id;
         db.run(`DELETE FROM productos WHERE id = ?`, [prodId], function (err) {
@@ -710,9 +789,9 @@ app.delete('/api/productos/:id', (req, res) => {
 
 /**
  * Obtener configuración activa del Hero Banner y Anuncios del Catálogo
- * GET /api/config-catalogo
+ * GET /api/config-catalogo & GET /api/config/banner
  */
-app.get('/api/config-catalogo', (req, res) => {
+const obtenerConfigBannerHandler = (req, res) => {
     try {
         db.get('SELECT * FROM config_catalogo WHERE id = 1', [], (err, row) => {
             if (err) {
@@ -722,7 +801,7 @@ app.get('/api/config-catalogo', (req, res) => {
             if (!row) {
                 return res.status(200).json({
                     id: 1,
-                    hero_titulo: "EL FUTURO DE LA\nLUBRICACIÓN Y FILTROS\nDE PESADOS Y LIVIANOS\nLLEGÓ A SU TALLER",
+                    hero_titulo: "LUBRICANTES Y FILTROS\nDE ALTO RENDIMIENTO\nPARA TALLERES Y FLOTAS",
                     hero_subtitulo: "Máxima potencia, más eficiencia y la mayor durabilidad para quien exige mucho del vehículo en ruta y ciudad.",
                     hero_destacado: "Lotes con -15% Mayorista",
                     hero_badge: "Fabricación & Distribución Mayorista",
@@ -735,13 +814,14 @@ app.get('/api/config-catalogo', (req, res) => {
         console.error('Error crítico en GET /api/config-catalogo:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
-});
+};
 
 /**
  * Actualizar configuración y textos del Hero Banner
- * PUT /api/config-catalogo
+ * PUT /api/config-catalogo & PUT /api/config/banner
+ * Protegido estrictamente: solo ADMIN y EMPAQUE autorizados
  */
-app.put('/api/config-catalogo', (req, res) => {
+const actualizarConfigBannerHandler = (req, res) => {
     try {
         const { hero_titulo, hero_subtitulo, hero_destacado, hero_badge, banner_activo } = req.body;
         
@@ -752,7 +832,7 @@ app.put('/api/config-catalogo', (req, res) => {
                 db.run(
                     `INSERT INTO config_catalogo (id, hero_titulo, hero_subtitulo, hero_destacado, hero_badge, banner_activo) VALUES (1, ?, ?, ?, ?, ?)`,
                     [
-                        hero_titulo || 'EL FUTURO DE LA LUBRICACIÓN',
+                        hero_titulo || 'LUBRICANTES Y FILTROS DE ALTO RENDIMIENTO',
                         hero_subtitulo || 'Distribución mayorista',
                         hero_destacado || 'Lotes con -15% Mayorista',
                         hero_badge || 'Fabricación & Distribución Mayorista',
@@ -760,7 +840,8 @@ app.put('/api/config-catalogo', (req, res) => {
                     ],
                     (insErr) => {
                         if (insErr) return res.status(500).json({ error: 'Error al insertar configuración.' });
-                        registrarAuditoria('GESTOR_CATALOGO', 'Creó la configuración inicial del Hero Banner', 'CATALOGO');
+                        const usuarioLog = req.headers['x-usuario-email'] || req.headers['x-usuario-rol'] || 'GESTOR_CATALOGO';
+                        registrarAuditoria(usuarioLog, 'Creó la configuración inicial del Hero Banner', 'CATALOGO');
                         return res.status(200).json({ mensaje: 'Configuración de catálogo guardada exitosamente.' });
                     }
                 );
@@ -784,7 +865,8 @@ app.put('/api/config-catalogo', (req, res) => {
                         console.error('Error al actualizar config_catalogo:', updErr.message);
                         return res.status(500).json({ error: 'Error al actualizar configuración del catálogo.' });
                     }
-                    registrarAuditoria('GESTOR_CATALOGO', 'Actualizó textos del Hero Banner en el catálogo', 'CATALOGO');
+                    const usuarioLog = req.headers['x-usuario-email'] || req.headers['x-usuario-rol'] || 'GESTOR_CATALOGO';
+                    registrarAuditoria(usuarioLog, 'Actualizó textos del Hero Banner en el catálogo', 'CATALOGO');
                     res.status(200).json({ mensaje: 'Banner del catálogo actualizado exitosamente.' });
                 });
             }
@@ -793,7 +875,12 @@ app.put('/api/config-catalogo', (req, res) => {
         console.error('Error crítico al actualizar config_catalogo:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
-});
+};
+
+app.get('/api/config-catalogo', obtenerConfigBannerHandler);
+app.get('/api/config/banner', obtenerConfigBannerHandler);
+app.put('/api/config-catalogo', verificarPermisoGestorCatalogo, actualizarConfigBannerHandler);
+app.put('/api/config/banner', verificarPermisoGestorCatalogo, actualizarConfigBannerHandler);
 
 /**
  * Kardex / Historial de movimientos y salidas de un repuesto específico

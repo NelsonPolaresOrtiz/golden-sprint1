@@ -178,7 +178,35 @@ let viscosidadActual = '';
 // Estado de Roles y Modo Gestor de Catálogo en Vivo
 let usuarioActual = null;
 let esAdminOTrabajador = false;
-let modoEdicionActivo = true; // Por defecto activo para administradores y trabajadores
+let modoEdicionActivo = false; // Por defecto inactivo hasta verificar rol autorizado
+const ROLES_GESTORES_AUTORIZADOS = ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN', 'GERENTE', 'EMPAQUE', 'ALMACENERO', 'ALMACEN'];
+
+function esGestorCatalogoAutorizado(usuario, esVistaCliente) {
+    if (esVistaCliente) return false;
+    if (!usuario || !usuario.rol) return false;
+    const rol = String(usuario.rol).toUpperCase().trim();
+    if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C' || rol === 'DESPACHO' || rol === 'REPARTIDOR' || rol === 'CHOFER') {
+        return false;
+    }
+    return ROLES_GESTORES_AUTORIZADOS.includes(rol);
+}
+
+function obtenerHeadersAuth() {
+    const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+    let rol = '';
+    let email = '';
+    if (raw) {
+        try {
+            const u = JSON.parse(raw);
+            rol = u.rol || '';
+            email = u.email || u.correo || '';
+        } catch(e) {}
+    }
+    return {
+        'x-usuario-rol': rol,
+        'x-usuario-email': email
+    };
+}
 
 // Estado de la presentación seleccionada para cada producto: { [prodId]: presId }
 const presentacionesSeleccionadas = {};
@@ -392,7 +420,7 @@ function sincronizarControlesUsuarioHeader() {
 
     const nombre = usuarioActual.nombre || 'Taller Particular';
     const rol = (usuarioActual.rol || 'CLIENTE').toUpperCase().trim();
-    const esAdmin = rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'TRABAJADOR' || rol === 'SUPERADMIN' || rol === 'ALMACENERO';
+    const esAdmin = esAdminOTrabajador;
 
     // TopBar Tecfil (Línea superior)
     const topBarUser = document.getElementById('topBarUserName');
@@ -400,9 +428,10 @@ function sincronizarControlesUsuarioHeader() {
     if (topBarUser) topBarUser.innerText = nombre;
     if (topBarRol) {
         let labelRol = 'Cuenta Taller';
-        if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelRol = 'Administración';
-        else if (rol === 'TRABAJADOR') labelRol = 'Almacén & Ventas';
-        else if (rol === 'ALMACENERO') labelRol = 'Almacén Central';
+        if (esAdmin) {
+            if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelRol = 'Administración';
+            else if (rol === 'EMPAQUE' || rol === 'ALMACENERO' || rol === 'ALMACEN') labelRol = 'Encargado de Almacén';
+        }
         topBarRol.innerText = labelRol;
     }
 
@@ -416,10 +445,12 @@ function sincronizarControlesUsuarioHeader() {
     if (navName) navName.innerText = nombre;
     if (navRol) {
         let labelTag = 'CLIENTE (TALLER)';
-        if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelTag = 'ADMINISTRADOR';
-        else if (rol === 'TRABAJADOR') labelTag = 'TRABAJADOR';
-        else if (rol === 'ALMACENERO') labelTag = 'ALMACENERO';
-        else if (rol === 'DESPACHO' || rol === 'REPARTIDOR') labelTag = 'LOGÍSTICA';
+        if (esAdmin) {
+            if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelTag = 'ADMINISTRADOR';
+            else if (rol === 'EMPAQUE' || rol === 'ALMACENERO' || rol === 'ALMACEN') labelTag = 'ALMACÉN';
+        } else if (rol === 'DESPACHO' || rol === 'REPARTIDOR') {
+            labelTag = 'DISTRIBUCIÓN';
+        }
         navRol.innerText = labelTag;
         navRol.style.color = esAdmin ? '#B91C1C' : '#D97706';
     }
@@ -428,8 +459,8 @@ function sincronizarControlesUsuarioHeader() {
         navAvatar.style.background = esAdmin ? '#B91C1C' : '#D97706';
     }
 
-    // Si es ADMIN o TRABAJADOR: mostrar dropdown con 9 módulos ERP
-    // Si es CLIENTE: mostrar botón "Mis Pedidos"
+    // Si es ADMIN o EMPAQUE autorizado: mostrar dropdown con 9 módulos ERP
+    // Si es CLIENTE, DESPACHO o vista=cliente: mostrar botón "Mis Pedidos"
     if (btnMisPedidos) {
         if (esAdmin) {
             btnMisPedidos.classList.add('d-none');
@@ -451,37 +482,48 @@ window.sincronizarControlesUsuarioHeader = sincronizarControlesUsuarioHeader;
 document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('cupon_ruleta_golden');
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const esVistaClienteForzada = urlParams.get('vista') === 'cliente';
+
     // Carga de sesión opcional (catálogo libre para cualquier visitante sin forzar login)
     const rawSesion = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
     if (rawSesion) {
         try {
-            usuarioActual = (typeof protegerRuta === 'function') ? protegerRuta('tienda') : JSON.parse(rawSesion);
-        } catch(e) {
             usuarioActual = JSON.parse(rawSesion);
+        } catch(e) {
+            usuarioActual = null;
         }
     } else {
         usuarioActual = null;
     }
 
-    const rol = (usuarioActual && usuarioActual.rol ? String(usuarioActual.rol).toUpperCase().trim() : 'CLIENTE');
-    esAdminOTrabajador = Boolean(
-        usuarioActual && (
-            rol === 'ADMIN' || 
-            rol === 'ADMINISTRADOR' || 
-            rol === 'TRABAJADOR' || 
-            rol === 'SUPERADMIN' || 
-            rol === 'ALMACENERO'
-        )
-    );
+    // Permisos granulares: solo ADMIN y EMPAQUE cuando NO está forzada la vista comercial limpia
+    esAdminOTrabajador = esGestorCatalogoAutorizado(usuarioActual, esVistaClienteForzada);
 
-    // Renderizar barra de navegación oficial del ERP solo si es personal interno
-    if (typeof renderizarMenu === 'function' && esAdminOTrabajador) {
-        renderizarMenu('tienda');
-    }
+    if (esAdminOTrabajador) {
+        document.body.classList.add('rol-gestor-catalogo');
+        // Por defecto para administradores y encargados de almacén, activar modo edición
+        modoEdicionActivo = true;
+        document.body.classList.add('modo-edicion-activo');
 
-    // Si es cliente o invitado, el modo de edición está 100% inactivo
-    if (!esAdminOTrabajador) {
+        // Renderizar barra de navegación oficial del ERP solo si es personal interno autorizado
+        const contenedorMenu = document.getElementById('menu-contenedor');
+        if (contenedorMenu) {
+            contenedorMenu.classList.remove('d-none');
+            contenedorMenu.style.display = 'block';
+        }
+        if (typeof renderizarMenu === 'function') {
+            renderizarMenu('tienda');
+        }
+    } else {
+        document.body.classList.remove('rol-gestor-catalogo', 'modo-edicion-activo');
         modoEdicionActivo = false;
+        const contenedorMenu = document.getElementById('menu-contenedor');
+        if (contenedorMenu) {
+            contenedorMenu.innerHTML = '';
+            contenedorMenu.classList.add('d-none');
+            contenedorMenu.style.display = 'none';
+        }
     }
 
     // Restaurar carrito pendiente si viene de un login/registro reciente
@@ -500,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarConfigBanner();
     sincronizarControlesUsuarioHeader();
 
-    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('verPedidos') === '1' && usuarioActual) {
         setTimeout(() => {
             abrirModalSeguimiento();
@@ -528,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarCatalogo();
     actualizarCarrito();
     iniciarAutoPlayTecfil();
+    inicializarEventosWhatsappWidget();
 });
 
 // =========================================================================
@@ -540,9 +582,13 @@ function inicializarBarraGestor() {
     const btnHeroEdit = document.getElementById('btnEditarBannerHero');
 
     if (esAdminOTrabajador) {
-        if (toolbar) toolbar.classList.remove('d-none');
-        if (statusText) {
-            const badgeColor = usuarioActual.rol === 'ADMIN' ? 'bg-danger' : 'bg-warning text-dark';
+        document.body.classList.add('rol-gestor-catalogo');
+        if (toolbar) {
+            toolbar.classList.remove('d-none');
+            toolbar.style.display = 'block';
+        }
+        if (statusText && usuarioActual) {
+            const badgeColor = (usuarioActual.rol === 'ADMIN' || usuarioActual.rol === 'ADMINISTRADOR') ? 'bg-danger' : 'bg-warning text-dark';
             statusText.innerHTML = `<span class="badge ${badgeColor} me-1">[${usuarioActual.rol}]</span> ${usuarioActual.nombre} • Gestor de Catálogo Activo`;
         }
         if (btnHeroEdit) {
@@ -550,14 +596,27 @@ function inicializarBarraGestor() {
             else btnHeroEdit.classList.add('d-none');
         }
     } else {
-        if (toolbar) toolbar.classList.add('d-none');
-        if (btnHeroEdit) btnHeroEdit.classList.add('d-none');
+        document.body.classList.remove('rol-gestor-catalogo', 'modo-edicion-activo');
+        if (toolbar) {
+            toolbar.classList.add('d-none');
+            toolbar.style.display = 'none';
+        }
+        if (btnHeroEdit) {
+            btnHeroEdit.classList.add('d-none');
+            btnHeroEdit.style.display = 'none';
+        }
     }
 }
 
 function establecerModoEdicion(activar) {
     if (!esAdminOTrabajador) return;
     modoEdicionActivo = activar;
+
+    if (activar) {
+        document.body.classList.add('modo-edicion-activo');
+    } else {
+        document.body.classList.remove('modo-edicion-activo');
+    }
 
     const btnModoEdicion = document.getElementById('btnModoEdicion');
     const btnModoVistaCliente = document.getElementById('btnModoVistaCliente');
@@ -643,6 +702,10 @@ function abrirModalEditarBanner() {
 }
 
 async function guardarBannerDesdeModal() {
+    if (!esAdminOTrabajador) {
+        Toast.fire({ icon: 'error', title: 'Acceso denegado: solo personal autorizado puede modificar el banner.' });
+        return;
+    }
     const hero_badge = document.getElementById('bannerBadgeInput').value.trim();
     const hero_titulo = document.getElementById('bannerTituloInput').value.trim();
     const hero_subtitulo = document.getElementById('bannerSubtituloInput').value.trim();
@@ -651,7 +714,7 @@ async function guardarBannerDesdeModal() {
     try {
         const res = await fetch(`${API_URL}/config-catalogo`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...obtenerHeadersAuth(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ hero_badge, hero_titulo, hero_subtitulo, hero_destacado })
         });
         const data = await res.json();
@@ -733,6 +796,10 @@ function setImagenPreset(ruta) {
 }
 
 async function guardarProductoDesdeModal() {
+    if (!esAdminOTrabajador) {
+        Toast.fire({ icon: 'error', title: 'Acceso denegado: solo personal autorizado puede registrar o modificar repuestos.' });
+        return;
+    }
     const prodId = document.getElementById('editProdId').value;
     const nombre = document.getElementById('editProdNombre').value.trim();
     const sku = document.getElementById('editProdSku').value.trim().toUpperCase();
@@ -780,7 +847,7 @@ async function guardarProductoDesdeModal() {
 
         const res = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...obtenerHeadersAuth(), 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -819,7 +886,7 @@ async function alternarOfertaRapida(prodId) {
     try {
         const res = await fetch(`${API_URL}/productos/${prodId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...obtenerHeadersAuth(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ en_oferta: nuevoEstado })
         });
         const data = await res.json();
@@ -840,6 +907,7 @@ async function alternarOfertaRapida(prodId) {
 }
 
 async function darDeBajaProducto() {
+    if (!esAdminOTrabajador) return;
     const prodId = document.getElementById('editProdId').value;
     if (!prodId) return;
 
@@ -858,7 +926,8 @@ async function darDeBajaProducto() {
 
     try {
         const res = await fetch(`${API_URL}/productos/${prodId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { ...obtenerHeadersAuth() }
         });
         const data = await res.json();
         if (!res.ok) {
@@ -874,7 +943,7 @@ async function darDeBajaProducto() {
                 if (pausar.isConfirmed) {
                     await fetch(`${API_URL}/productos/${prodId}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { ...obtenerHeadersAuth(), 'Content-Type': 'application/json' },
                         body: JSON.stringify({ stock: 0 })
                     });
                     Toast.fire({ icon: 'success', title: 'Repuesto pausado (Stock en 0)' });
@@ -3538,3 +3607,72 @@ function escaparHTML(texto) {
     div.textContent = String(texto);
     return div.innerHTML;
 }
+
+// =========================================================================
+// WIDGET FLOTANTE DE ATENCIÓN WHATSAPP (+591 67375645) EN ESQUINA INFERIOR IZQUIERDA
+// =========================================================================
+
+function togglePopupWhatsapp() {
+    const card = document.getElementById('whatsappPopupCard');
+    if (!card) return;
+    if (card.classList.contains('d-none')) {
+        card.classList.remove('d-none');
+    } else {
+        card.classList.add('d-none');
+    }
+}
+
+function cerrarPopupWhatsapp() {
+    const card = document.getElementById('whatsappPopupCard');
+    if (card) {
+        card.classList.add('d-none');
+    }
+}
+
+function inicializarEventosWhatsappWidget() {
+    const wrapperWA = document.getElementById('whatsappWidgetWrapper');
+    const panelCarrito = document.getElementById('carritoLateral');
+
+    // Ocultar WhatsApp al abrir carrito lateral (offcanvas)
+    if (panelCarrito && wrapperWA) {
+        panelCarrito.addEventListener('show.bs.offcanvas', () => {
+            wrapperWA.classList.add('whatsapp-oculto');
+            cerrarPopupWhatsapp();
+        });
+        panelCarrito.addEventListener('hidden.bs.offcanvas', () => {
+            if (!document.querySelector('.modal.show')) {
+                wrapperWA.classList.remove('whatsapp-oculto');
+            }
+        });
+    }
+
+    // Ocultar WhatsApp al abrir cualquier modal (checkout, seguimiento, ficha técnica, login, etc.)
+    document.addEventListener('show.bs.modal', () => {
+        if (wrapperWA) {
+            wrapperWA.classList.add('whatsapp-oculto');
+            cerrarPopupWhatsapp();
+        }
+    });
+
+    // Restaurar WhatsApp al cerrar modales si el carrito no está abierto
+    document.addEventListener('hidden.bs.modal', () => {
+        if (wrapperWA && !document.querySelector('.modal.show')) {
+            const carritoAbierto = panelCarrito && panelCarrito.classList.contains('show');
+            if (!carritoAbierto) {
+                wrapperWA.classList.remove('whatsapp-oculto');
+            }
+        }
+    });
+
+    // Cerrar mini-ventana de WhatsApp al hacer clic fuera del widget
+    document.addEventListener('click', (e) => {
+        if (wrapperWA && !wrapperWA.contains(e.target)) {
+            cerrarPopupWhatsapp();
+        }
+    });
+}
+
+window.togglePopupWhatsapp = togglePopupWhatsapp;
+window.cerrarPopupWhatsapp = cerrarPopupWhatsapp;
+window.inicializarEventosWhatsappWidget = inicializarEventosWhatsappWidget;
+

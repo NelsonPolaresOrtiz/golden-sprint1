@@ -16,13 +16,13 @@
 </head>
 <body style="background-color: #FAF8F5;">
 
-    <!-- MENÚ COMPARTIDO ERP (STICKY HEADER CARBÓN GRAFITO) -->
-    <div id="menu-contenedor"></div>
+    <!-- MENÚ COMPARTIDO ERP (STICKY HEADER CARBÓN GRAFITO) - Oculto por defecto -->
+    <div id="menu-contenedor" class="d-none" style="display: none !important;"></div>
 
     <!-- ========================================================================= -->
-    <!-- BARRA FLOTANTE GESTOR DE CATÁLOGO (SOLO VISIBLE PARA ADMIN Y TRABAJADOR)   -->
+    <!-- BARRA FLOTANTE GESTOR DE CATÁLOGO (SOLO VISIBLE PARA ADMIN Y EMPAQUE)       -->
     <!-- ========================================================================= -->
-    <div id="adminCatalogToolbar" class="admin-catalog-toolbar d-none">
+    <div id="adminCatalogToolbar" class="admin-catalog-toolbar d-none" style="display: none !important;">
         <div class="container-fluid px-4 px-lg-5">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-3">
@@ -218,10 +218,9 @@
                     </span>
                     
                     <h1 class="tecfil-hero-title mb-3" id="heroTitleText">
-                        EL FUTURO DE LA<br>
-                        <span class="highlight-gold">LUBRICACIÓN Y FILTROS</span><br>
-                        DE PESADOS Y LIVIANOS<br>
-                        LLEGÓ A SU TALLER
+                        LUBRICANTES Y FILTROS<br>
+                        <span class="highlight-gold">DE ALTO RENDIMIENTO</span><br>
+                        PARA TALLERES Y FLOTAS
                     </h1>
                     
                     <p class="tecfil-hero-p mb-4" id="heroParagraphText">
@@ -1391,7 +1390,7 @@
                             <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
                                 Título Principal del Banner (Líneas de Impacto)
                             </label>
-                            <textarea id="bannerTituloInput" class="form-control" rows="3" placeholder="EL FUTURO DE LA&#10;LUBRICACIÓN Y FILTROS&#10;DE PESADOS Y LIVIANOS&#10;LLEGÓ A SU TALLER" required style="font-family: 'Archivo', sans-serif; font-size: 0.95rem; font-weight: 700;"></textarea>
+                            <textarea id="bannerTituloInput" class="form-control" rows="3" placeholder="LUBRICANTES Y FILTROS&#10;DE ALTO RENDIMIENTO&#10;PARA TALLERES Y FLOTAS" required style="font-family: 'Archivo', sans-serif; font-size: 0.95rem; font-weight: 700;"></textarea>
                             <small class="text-muted" style="font-size: 0.72rem;">Usa saltos de línea para estructurar el titular.</small>
                         </div>
 
@@ -1649,37 +1648,94 @@
         </div>
     </div>
 
-    <!-- Botón Flotante Oficial de WhatsApp (+591 67375645) -->
-    <a href="https://wa.me/59167375645?text=Hola%20GOLDEN%20Lubricantes,%20quisiera%20consultar%20sobre%20productos%20para%20mi%20taller"
-       target="_blank"
-       rel="noopener noreferrer"
-       id="btnWhatsappFlotante"
-       class="btn-whatsapp-flotante"
-       title="Atención y Pedidos por WhatsApp"
-       aria-label="Atención y Pedidos por WhatsApp">
-        <i class="bi bi-whatsapp fs-4"></i>
-        <span class="whatsapp-flotante-label">Atención WhatsApp</span>
-    </a>
+    <!-- ========================================================================= -->
+    <!-- WIDGET FLOTANTE OFICIAL DE WHATSAPP (+591 67375645) EN ESQUINA INFERIOR IZQUIERDA -->
+    <!-- ========================================================================= -->
+    <div id="whatsappWidgetWrapper" class="whatsapp-widget-wrapper">
+        <!-- Mini-Ventana Emergente Desplegada hacia Arriba a la Izquierda -->
+        <div id="whatsappPopupCard" class="whatsapp-popup-card d-none" role="dialog" aria-labelledby="waPopupTitle" aria-modal="false">
+            <div class="whatsapp-popup-header d-flex align-items-center justify-content-between p-3" style="background: #141619; border-bottom: 2px solid #25D366; border-radius: 12px 12px 0 0;">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="d-flex align-items-center justify-content-center text-white rounded-circle shadow-sm" style="width: 36px; height: 36px; background: #25D366;">
+                        <i class="bi bi-whatsapp fs-5"></i>
+                    </span>
+                    <div>
+                        <h6 class="fw-bold text-white mb-0" id="waPopupTitle" style="font-size: 0.88rem;">GOLDEN Lubricantes</h6>
+                        <small class="text-white-50 font-mono" style="font-size: 0.72rem;">Distribuidora Oficial • Sucre</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" style="font-size: 0.75rem;" onclick="cerrarPopupWhatsapp()" aria-label="Cerrar ventana WhatsApp"></button>
+            </div>
+            <div class="whatsapp-popup-body p-3" style="background: #FAF8F5; border-radius: 0 0 12px 12px;">
+                <div class="whatsapp-bubble p-3 rounded-3 mb-3 shadow-sm" style="background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 0.82rem; line-height: 1.45;">
+                    <div class="fw-semibold text-dark mb-1">¡Hola! 👋 Bienvenido a GOLDEN</div>
+                    <p class="text-secondary mb-0">
+                        ¿Deseas cotizar lubricantes o filtros al por mayor para tu taller o flota en Sucre? Escríbenos directamente al <strong>+591 67375645</strong>.
+                    </p>
+                    <span class="text-muted d-block text-end font-mono mt-1" style="font-size: 0.65rem;">En línea</span>
+                </div>
+                <a href="https://wa.me/59167375645?text=Hola%20GOLDEN%20Lubricantes,%20quisiera%20consultar%20sobre%20precios%20mayoristas%20para%20mi%20taller"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn w-100 py-2 fw-bold text-white d-flex align-items-center justify-content-center gap-2 shadow-sm"
+                   style="background: #25D366; border-color: #25D366; border-radius: 6px; font-size: 0.85rem;"
+                   onclick="cerrarPopupWhatsapp()">
+                    <i class="bi bi-whatsapp fs-5"></i>
+                    <span>Iniciar Chat por WhatsApp</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Botón Flotante -->
+        <button type="button"
+                id="btnWhatsappFlotante"
+                class="btn-whatsapp-flotante"
+                onclick="togglePopupWhatsapp()"
+                title="Atención y Pedidos por WhatsApp (+591 67375645)"
+                aria-label="Atención y Pedidos por WhatsApp">
+            <i class="bi bi-whatsapp fs-4"></i>
+            <span class="whatsapp-flotante-label">Atención WhatsApp</span>
+        </button>
+    </div>
 
     <style>
-        .btn-whatsapp-flotante {
+        /* Contenedor Flotante en la Esquina Inferior Izquierda (z-index: 900) */
+        .whatsapp-widget-wrapper {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
+            left: 22px;
+            bottom: 22px;
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+        }
+
+        /* Ocultamiento suave cuando el carrito lateral o modales están abiertos */
+        .whatsapp-widget-wrapper.whatsapp-oculto {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(12px) !important;
+            visibility: hidden !important;
+        }
+
+        /* Botón de WhatsApp */
+        .btn-whatsapp-flotante {
             background-color: #25D366;
             color: #FFFFFF !important;
+            border: none;
             border-radius: 50px;
             padding: 10px 18px;
             display: inline-flex;
             align-items: center;
             gap: 10px;
             box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
-            z-index: 1050;
             text-decoration: none;
             font-family: 'Inter', sans-serif;
             font-size: 0.88rem;
             font-weight: 700;
             letter-spacing: 0.2px;
+            cursor: pointer;
             transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.2s ease;
             animation: pulsoWhatsappBtn 2.8s infinite;
         }
@@ -1689,6 +1745,33 @@
             box-shadow: 0 8px 24px rgba(37, 211, 102, 0.65);
             color: #FFFFFF !important;
         }
+
+        /* Mini-Ventana Emergente Desplegada Hacia Arriba a la Izquierda */
+        .whatsapp-popup-card {
+            position: fixed;
+            left: 22px;
+            bottom: 88px;
+            width: 340px;
+            max-width: calc(100vw - 32px);
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+            z-index: 900;
+            animation: fadeInPopupWA 0.2s ease-out forwards;
+        }
+
+        @keyframes fadeInPopupWA {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @keyframes pulsoWhatsappBtn {
             0%, 100% {
                 box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
@@ -1697,16 +1780,65 @@
                 box-shadow: 0 4px 26px rgba(37, 211, 102, 0.8);
             }
         }
+
+        /* Z-Index superior para Carrito y Modales sobre el Widget */
+        #carritoLateral {
+            z-index: 1060 !important;
+        }
+        .offcanvas-backdrop {
+            z-index: 1055 !important;
+        }
+        .modal {
+            z-index: 1100 !important;
+        }
+        .modal-backdrop {
+            z-index: 1090 !important;
+        }
+
+        /* Responsividad móvil */
         @media (max-width: 576px) {
+            .whatsapp-widget-wrapper {
+                left: 16px;
+                bottom: calc(18px + env(safe-area-inset-bottom));
+            }
+            .whatsapp-popup-card {
+                left: 16px;
+                bottom: calc(76px + env(safe-area-inset-bottom));
+                max-width: calc(100vw - 32px);
+            }
             .btn-whatsapp-flotante {
-                bottom: 18px;
-                right: 18px;
                 padding: 12px;
                 border-radius: 50%;
             }
             .whatsapp-flotante-label {
                 display: none;
             }
+        }
+
+        /* =========================================================================
+           AISLAMIENTO ESTRICTO DE ROLES & PERMISOS DE GESTIÓN EN TIENDA
+           Por defecto, todos los elementos administrativos están estrictamente ocultos.
+           Solo se muestran si el usuario es verificado con rol ADMIN o EMPAQUE
+           y la URL NO contiene ?vista=cliente.
+           ========================================================================= */
+        #adminCatalogToolbar,
+        .admin-only-btn,
+        .admin-card-overlay-actions,
+        #btnEditarBannerHero {
+            display: none !important;
+        }
+
+        body.rol-gestor-catalogo #adminCatalogToolbar {
+            display: block !important;
+        }
+        body.rol-gestor-catalogo .admin-only-btn {
+            display: inline-flex !important;
+        }
+        body.rol-gestor-catalogo.modo-edicion-activo .admin-card-overlay-actions {
+            display: flex !important;
+        }
+        body.rol-gestor-catalogo.modo-edicion-activo #btnEditarBannerHero {
+            display: inline-flex !important;
         }
     </style>
 
