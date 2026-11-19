@@ -26,7 +26,7 @@
     <!-- Tipografía Editorial Automotriz -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -41,7 +41,7 @@
         <!-- Título de Sección con Filtro de Fecha Gerencial -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
             <div>
-                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style="font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
                     <i class="bi bi-speedometer2" style="color: #57534E;"></i>
                     <span>Panel de control de ventas y almacén</span>
                 </h2>
@@ -72,114 +72,60 @@
         <!-- 3. TARJETAS DE INDICADORES (4 KPIs COMPACTOS Y CON CONTEXTO) -->
         <div class="row g-3 mb-4">
             
-            <!-- KPI 1: Ingresos Totales (Cobrado) -->
+            <!-- KPI 1: Ingresos Cobrados -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Ingresos Totales (Cobrado)
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #15803D; background: #DCFCE7; border-color: #BBF7D0;">
-                            <i class="bi bi-cash-stack"></i>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <h2 class="fw-bold text-dark mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.55rem;">
-                            Bs. <span id="kpiIngresos">0.00</span>
-                        </h2>
-                        <div class="d-flex align-items-center gap-2 mt-1">
-                            <span class="badge" style="background: #ECFDF5; color: #15803D; border: 1px solid #A7F3D0; font-size: 0.72rem; font-weight: 600;">
-                                <i class="bi bi-arrow-up-right"></i> +18% vs. mes anterior
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
-                            Contado y QR verificados
-                        </small>
-                    </div>
+                <div class="card p-3 h-100">
+                    <span class="text-secondary small fw-medium d-block mb-1">
+                        Ingresos cobrados
+                    </span>
+                    <h2 class="fw-bold text-dark mb-1" style="font-size: 1.55rem;">
+                        Bs. <span id="kpiIngresos">0.00</span>
+                    </h2>
                 </div>
             </div>
 
-            <!-- KPI 2: Cuentas por Cobrar (Créditos) -->
+            <!-- KPI 2: Cuentas por Cobrar -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Cuentas por Cobrar (Créditos)
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #D97706; background: #FEF3C7; border-color: #FDE68A;">
-                            <i class="bi bi-credit-card-2-front"></i>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <h2 class="fw-bold text-dark mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.55rem;">
-                            Bs. <span id="kpiCuentasPorCobrar">0.00</span>
-                        </h2>
-                        <div class="d-flex align-items-center gap-2 mt-1">
-                            <span class="badge" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; font-size: 0.72rem; font-weight: 600;">
-                                <i class="bi bi-clock-history"></i> <span id="kpiFacturasCreditoActivas">0</span> facturas activas
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
-                            Saldos pendientes talleres B2B
-                        </small>
-                    </div>
+                <div class="card p-3 h-100">
+                    <span class="text-secondary small fw-medium d-block mb-1">
+                        Cuentas por cobrar
+                    </span>
+                    <h2 class="fw-bold text-dark mb-1" style="font-size: 1.55rem;">
+                        Bs. <span id="kpiCuentasPorCobrar">0.00</span>
+                    </h2>
+                    <span class="d-none" id="kpiFacturasCreditoActivas">0</span>
                 </div>
             </div>
 
             <!-- KPI 3: Órdenes Despachadas -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Órdenes Despachadas
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #2563EB; background: #DBEAFE; border-color: #BFDBFE;">
-                            <i class="bi bi-truck"></i>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <h2 class="fw-bold text-dark mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.55rem;" id="kpiVentas">
-                            0
-                        </h2>
-                        <div class="d-flex align-items-center gap-2 mt-1">
-                            <span class="small text-secondary" style="font-size: 0.75rem;">
-                                <strong class="text-success" id="kpiEntregadosCount">0</strong> Entregados • <strong class="text-warning" id="kpiEnRutaCount">0</strong> En ruta
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
-                            Total de pedidos en el período
-                        </small>
-                    </div>
+                <div class="card p-3 h-100">
+                    <span class="text-secondary small fw-medium d-block mb-1">
+                        Órdenes despachadas
+                    </span>
+                    <h2 class="fw-bold text-dark mb-1" style="font-size: 1.55rem;" id="kpiVentas">
+                        0
+                    </h2>
+                    <span class="small text-secondary mt-1">
+                        <strong class="text-success" id="kpiEntregadosCount">0</strong> Entregados • <strong class="text-warning" id="kpiEnRutaCount">0</strong> En ruta
+                    </span>
                 </div>
             </div>
 
-            <!-- KPI 4: Stock Crítico en Almacén -->
+            <!-- KPI 4: Stock Bajo en Almacén -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Stock Crítico en Almacén
+                <div class="card p-3 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-secondary small fw-medium">
+                            Stock bajo en almacén
                         </span>
-                        <div class="kpi-icon-wrap" style="color: #B91C1C; background: #FEE2E2; border-color: #FECACA;">
-                            <i class="bi bi-shield-exclamation"></i>
-                        </div>
+                        <a href="#panelReabastecimiento" class="small text-danger text-decoration-none">
+                            Ver repuestos &rarr;
+                        </a>
                     </div>
-                    <div class="mt-2">
-                        <h2 class="fw-bold text-danger mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.55rem;" id="kpiAlertas">
-                            0
-                        </h2>
-                        <div class="d-flex align-items-center justify-content-between mt-1">
-                            <span class="small text-danger fw-semibold" style="font-size: 0.74rem;">
-                                Límite mínimo alcanzado
-                            </span>
-                            <a href="#panelReabastecimiento" class="small fw-bold text-danger text-decoration-none" style="font-size: 0.75rem;">
-                                Ver repuestos &rarr;
-                            </a>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
-                            Requiere reposición urgente
-                        </small>
-                    </div>
+                    <h2 class="fw-bold text-danger mb-0" style="font-size: 1.55rem;" id="kpiAlertas">
+                        0
+                    </h2>
                 </div>
             </div>
 
@@ -275,7 +221,7 @@
                             <canvas id="graficoVentasDona"></canvas>
                             <!-- Indicador Central Visual -->
                             <div id="donaCentroMetrica" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; line-height: 1.15;">
-                                <div class="fw-bold font-monospace text-dark" id="donaCentroMonto" style="font-family: 'Chivo Mono', monospace; font-size: 1.05rem; color: #1C1917;">
+                                <div class="fw-bold font-monospace text-dark" id="donaCentroMonto" style="font-family: 'Inter', sans-serif; font-size: 1.05rem; color: #1C1917;">
                                     Bs. 0.00
                                 </div>
                                 <div class="text-secondary text-uppercase fw-semibold" style="font-size: 0.62rem; letter-spacing: 0.5px; color: #78716C; margin-top: 2px;">

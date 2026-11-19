@@ -30,7 +30,7 @@
     <!-- Tipografía Editorial Automotriz -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -45,7 +45,7 @@
         <!-- ENCABEZADO DE SECCIÓN -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
             <div>
-                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                <h2 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style="font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
                     <i class="bi bi-truck-flatbed" style="color: #57534E;"></i>
                     <span>Proveedores y compras</span>
                 </h2>
@@ -70,111 +70,47 @@
         <!-- TARJETAS DE KPIs SUPERIORES -->
         <div class="row g-3 mb-4">
             
-            <!-- KPI 1: Repuestos Críticos -->
+            <!-- KPI 1: Repuestos críticos -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Repuestos Críticos
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #B91C1C; background: #FEE2E2; border: 1px solid #FECACA; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-shield-exclamation fs-6"></i>
-                        </div>
+                <div class="card p-3 h-100" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <div class="text-secondary small fw-medium">Repuestos críticos</div>
+                    <div class="d-flex align-items-baseline gap-2 mt-2">
+                        <h3 class="fw-bold mb-0 text-dark" style="font-size: 1.65rem;" id="kpiRepuestosCriticos">0</h3>
                     </div>
-                    <div class="mt-2">
-                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.65rem; color: #B91C1C;" id="kpiRepuestosCriticos">
-                            0
-                        </h3>
-                        <div class="small text-secondary mt-1">
-                            <span class="badge" style="background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; font-size: 0.72rem; font-weight: 600;">
-                                Existencias &le; Stock mínimo
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
-                            Requiere reposición prioritaria
-                        </small>
-                    </div>
+                    <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Existencias en nivel mínimo o agotado</small>
                 </div>
             </div>
 
-            <!-- KPI 2: Unidades a Reponer -->
+            <!-- KPI 2: Unidades a reponer -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Unidades a Reponer
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #D97706; background: #FEF3C7; border: 1px solid #FDE68A; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-boxes fs-6"></i>
-                        </div>
+                <div class="card p-3 h-100" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <div class="text-secondary small fw-medium">Unidades a reponer</div>
+                    <div class="d-flex align-items-baseline gap-2 mt-2">
+                        <h3 class="fw-bold mb-0 text-dark" style="font-size: 1.65rem;" id="kpiUnidadesSugeridas">0</h3>
                     </div>
-                    <div class="mt-2">
-                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.65rem; color: #18181B;" id="kpiUnidadesSugeridas">
-                            0
-                        </h3>
-                        <div class="small text-secondary mt-1">
-                            <span class="badge" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; font-size: 0.72rem; font-weight: 600;">
-                                Nivel óptimo objetivo
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
-                            Volumen consolidado SCM
-                        </small>
-                    </div>
+                    <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Volumen total sugerido por compras</small>
                 </div>
             </div>
 
-            <!-- KPI 3: Inversión Estimada SCM -->
+            <!-- KPI 3: Inversión estimada -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Inversión Estimada SCM
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #15803D; background: #DCFCE7; border: 1px solid #BBF7D0; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-cash-stack fs-6"></i>
-                        </div>
+                <div class="card p-3 h-100" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <div class="text-secondary small fw-medium">Inversión estimada</div>
+                    <div class="d-flex align-items-baseline gap-2 mt-2">
+                        <h3 class="fw-bold mb-0 text-dark" style="font-size: 1.55rem;" id="kpiInversionTotal">Bs. 0,00</h3>
                     </div>
-                    <div class="mt-2">
-                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.55rem; color: #18181B;" id="kpiInversionTotal">
-                            Bs. 0,00
-                        </h3>
-                        <div class="small text-secondary mt-1">
-                            <span class="badge" style="background: #ECFDF5; color: #15803D; border: 1px solid #A7F3D0; font-size: 0.72rem; font-weight: 600;">
-                                Costo mayorista (70% PVP)
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
-                            Presupuesto de compra estimado
-                        </small>
-                    </div>
+                    <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Presupuesto calculado a costo mayorista</small>
                 </div>
             </div>
 
-            <!-- KPI 4: Proveedores Homologados -->
+            <!-- KPI 4: Proveedores activos -->
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="kpi-card-stitch h-100 p-3" style="background: #FFFFFF; border: 1px solid #DFDBD2; border-radius: 6px;">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="text-uppercase fw-bold text-secondary tracking-wide" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            Proveedores Homologados
-                        </span>
-                        <div class="kpi-icon-wrap" style="color: #57534E; background: #F3EFEA; border: 1px solid #DFDBD2; width: 36px; height: 36px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-building fs-6"></i>
-                        </div>
+                <div class="card p-3 h-100" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <div class="text-secondary small fw-medium">Proveedores activos</div>
+                    <div class="d-flex align-items-baseline gap-2 mt-2">
+                        <h3 class="fw-bold mb-0 text-dark" style="font-size: 1.65rem;" id="kpiTotalProveedores">0</h3>
                     </div>
-                    <div class="mt-2">
-                        <h3 class="fw-bold mb-1" style="font-family: 'Chivo Mono', monospace; font-size: 1.65rem; color: #18181B;" id="kpiTotalProveedores">
-                            0
-                        </h3>
-                        <div class="small text-secondary mt-1">
-                            <span class="badge" style="background: #F3EFEA; color: #57534E; border: 1px solid #DFDBD2; font-size: 0.72rem; font-weight: 600;">
-                                Convenios OEM directos
-                            </span>
-                        </div>
-                        <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
-                            Santa Cruz, Cochabamba y La Paz
-                        </small>
-                    </div>
+                    <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">Distribuidores mayoristas y fabricantes</small>
                 </div>
             </div>
 

@@ -10,7 +10,7 @@
     <!-- Tipografía Editorial Automotriz: Archivo (Títulos), Work Sans (Cuerpo), Chivo Mono (SKU / Precios) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Estilos Comerciales Automotrices Tecfil -->
     <link rel="stylesheet" href="styles.css?v=27">
 </head>
@@ -105,7 +105,7 @@
                 
                 <!-- Secciones de Menú Tecfil en Mayúsculas 'Archivo' -->
                 <div class="d-flex align-items-center gap-1 flex-wrap">
-                    <span class="badge me-1 px-2 py-1" style="background: #141619; color: #F59E0B; font-family: 'Archivo', sans-serif; font-size: 0.72rem; letter-spacing: 0.5px;">
+                    <span class="badge me-1 px-2 py-1" style="background: #141619; color: #F59E0B; font-family: 'Inter', sans-serif; font-size: 0.72rem; letter-spacing: 0.5px;">
                         LÍNEAS TECFIL
                     </span>
                     <a href="#catalogoGeneral" class="tecfil-nav-item active">CATÁLOGO</a>
@@ -205,75 +205,60 @@
     </nav>
 
     <!-- ========================================================================= -->
-    <!-- 2. HERO BANNER INDUSTRIAL DE ANCHO COMPLETO ("MAX PRO PESADO")            -->
+    <!-- 2. HERO BANNER INDUSTRIAL Y COMERCIAL                                      -->
     <!-- ========================================================================= -->
     <section class="tecfil-hero" id="heroBanner">
         <div class="container-fluid px-4 px-lg-5 position-relative" style="z-index: 2;">
             <div class="row align-items-center g-4">
                 
-                <!-- Columna Izquierda: Texto escalonado de alto impacto -->
-                <div class="col-12 col-lg-5">
-                    <span class="badge mb-3 font-mono text-uppercase" id="heroBadgeText" style="background: rgba(245, 158, 11, 0.15); color: #FACC15; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.72rem; letter-spacing: 1px;">
-                        <i class="bi bi-shield-fill-check text-warning me-1"></i> Fabricación &amp; Distribución Mayorista
+                <!-- Columna Izquierda: Presentación limpia y directa -->
+                <div class="col-12 col-lg-7">
+                    <span class="badge mb-3 bg-dark text-light border border-secondary" id="heroBadgeText" style="font-size: 0.78rem; font-weight: 500; padding: 5px 10px;">
+                        <i class="bi bi-shield-check text-danger me-1"></i> Distribución oficial en Sucre
                     </span>
                     
-                    <h1 class="tecfil-hero-title mb-3" id="heroTitleText">
-                        LUBRICANTES Y FILTROS<br>
-                        <span class="highlight-gold">DE ALTO RENDIMIENTO</span><br>
-                        PARA TALLERES Y FLOTAS
+                    <h1 class="mb-3 fw-bold text-white" id="heroTitleText" style="font-size: 2.2rem; line-height: 1.25; letter-spacing: -0.01em;">
+                        Distribución de lubricantes y filtros
                     </h1>
                     
-                    <p class="tecfil-hero-p mb-4" id="heroParagraphText">
-                        Máxima potencia, más eficiencia y la mayor durabilidad para quien exige mucho del vehículo en ruta y ciudad.
+                    <p class="mb-4 text-light text-opacity-75" id="heroParagraphText" style="font-size: 1.05rem; line-height: 1.5; max-width: 580px;">
+                        Ventas por mayor y menor para talleres, transporte e industria en Sucre.
                     </p>
 
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <a href="#lanzamientosOfertas" class="btn btn-danger py-2 px-4 fw-bold text-uppercase d-inline-flex align-items-center gap-2 shadow-sm" style="background:#B91C1C; border-color:#B91C1C; font-size: 0.85rem; border-radius: 4px;">
-                            <span>Ver Ofertas del Lote</span>
-                            <i class="bi bi-arrow-down-circle"></i>
+                        <a href="#catalogoGeneral" class="btn btn-danger py-2 px-4 fw-semibold shadow-sm" style="background:#B91C1C; border-color:#B91C1C; font-size: 0.88rem; border-radius: 6px;">
+                            Ver catálogo de repuestos
                         </a>
-                        <a href="#catalogoGeneral" class="btn btn-outline-light py-2 px-3 fw-semibold" style="font-size: 0.85rem; border-radius: 4px;">
-                            Ver Catálogo Completo
+                        <a href="#lanzamientosOfertas" class="btn btn-outline-light py-2 px-3 fw-medium" style="font-size: 0.88rem; border-radius: 6px;">
+                            Ofertas destacadas
                         </a>
-                        <button type="button" class="btn btn-outline-warning py-2 px-3 fw-bold admin-only-btn d-none" id="btnEditarBannerHero" onclick="abrirModalEditarBanner()" style="font-size: 0.85rem; border-radius: 4px;">
-                            <i class="bi bi-pencil-square me-1"></i> Editar Banner
+                        <button type="button" class="btn btn-outline-warning py-2 px-3 fw-medium admin-only-btn d-none" id="btnEditarBannerHero" onclick="abrirModalEditarBanner()" style="font-size: 0.88rem; border-radius: 6px;">
+                            <i class="bi bi-pencil-square me-1"></i> Editar banner
                         </button>
                     </div>
                 </div>
 
-                <!-- Columna Centro: Composición visual con envases y filtros estrella -->
-                <div class="col-12 col-lg-4 text-center">
-                    <div class="position-relative d-inline-block py-2" style="max-width: 360px; min-height: 260px;">
+                <!-- Columna Derecha: Composición de producto limpia y equilibrada -->
+                <div class="col-12 col-lg-5 text-center">
+                    <div class="position-relative d-inline-block py-2" style="max-width: 360px; min-height: 250px;">
                         <!-- Envase Trasero Izquierdo: Galón OAT Rojo -->
-                        <img src="./img/Refrigerante_Galon_Rojo.svg" alt="Refrigerante OAT" class="tecfil-showcase-float-img position-absolute" style="width: 140px; left: 0; bottom: 20px; transform: rotate(-10deg); z-index: 1;">
+                        <img src="./img/Refrigerante_Galon_Rojo.svg" alt="Refrigerante OAT" class="tecfil-showcase-float-img position-absolute" style="width: 130px; left: 0; bottom: 15px; transform: rotate(-8deg); z-index: 1;">
                         
                         <!-- Envase Central: Aceite Sintético Golden Ultra 5W-30 -->
-                        <img src="./img/Aceite_Sintetico.jpg" alt="Aceite Sintético Golden" class="tecfil-showcase-float-img position-relative" style="width: 190px; border-radius: 8px; z-index: 3; border: 3px solid #F59E0B;">
+                        <img src="./img/Aceite_Sintetico.jpg" alt="Aceite Sintético Golden" class="tecfil-showcase-float-img position-relative" style="width: 180px; border-radius: 8px; z-index: 3; border: 2px solid #E2E8F0;">
                         
                         <!-- Filtro Delantero Derecho: Filtro de Aceite Spin-On -->
-                        <img src="./img/Filtro_de_Aceite.jpg" alt="Filtro Blindado Spin-On" class="tecfil-showcase-float-img position-absolute" style="width: 130px; right: 0; bottom: 0; transform: rotate(12deg); z-index: 4; border-radius: 6px; border: 2px solid #FFFFFF;">
+                        <img src="./img/Filtro_de_Aceite.jpg" alt="Filtro Blindado Spin-On" class="tecfil-showcase-float-img position-absolute" style="width: 120px; right: 0; bottom: 0; transform: rotate(8deg); z-index: 4; border-radius: 6px; border: 2px solid #FFFFFF;">
                     </div>
+
+                    <!-- Elementos de control preservados para compatibilidad de scripts -->
+                    <span id="heroDestacadoText" class="d-none">Lotes mayoristas</span>
+                    <a href="#lanzamientosOfertas" id="heroDestacadoBtn" class="d-none"></a>
                 </div>
 
-                <!-- Columna Derecha: Sello tipográfico con marco + Acción rápida -->
-                <div class="col-12 col-lg-3">
-                    <div class="tecfil-hero-stamp">
-                        <span class="d-block font-mono text-warning small fw-bold mb-1" style="letter-spacing: 2px;">TECNOLOGÍA HOMOLOGADA</span>
-                        <h3 class="fw-bold mb-0 text-white" style="font-family: 'Archivo', sans-serif; letter-spacing: 1px;">GOLDEN</h3>
-                        <div class="badge my-2 py-1 px-3 fw-bold fs-6" style="background: #FACC15; color: #141619; font-family: 'Chivo Mono', monospace; border-radius: 2px;">
-                            [MAX PRO]
-                        </div>
-                        <span class="d-block text-uppercase fw-bold text-white small" style="letter-spacing: 1px;">LÍNEA TALLER &amp; PESADO</span>
-                        <small class="d-block text-muted mt-2 font-mono" style="font-size: 0.72rem;">ISO 9001 / IATF 16949 • DISTRIBUCIÓN DIRECTA</small>
-                        
-                        <hr style="border-color: rgba(250, 204, 21, 0.3);" class="my-3">
-                        
-                        <a href="#lanzamientosOfertas" id="heroDestacadoBtn" class="btn btn-warning w-100 py-2 fw-bold text-uppercase d-flex align-items-center justify-content-center gap-2" style="background:#F59E0B; border-color:#F59E0B; color:#141619; font-size: 0.82rem; border-radius: 4px;">
-                            <i class="bi bi-tags-fill"></i>
-                            <span id="heroDestacadoText">Lotes con -15% Mayorista</span>
-                        </a>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </section>
 
             </div>
         </div>
@@ -291,7 +276,7 @@
                     <span class="text-danger fw-bold text-uppercase font-mono small d-block mb-1" style="letter-spacing: 1px;">
                         <i class="bi bi-stars me-1"></i> Catálogo Destacado 2026
                     </span>
-                    <h2 class="mb-0 fw-bold" style="font-family: 'Archivo', sans-serif; font-size: 1.85rem; color: #141619; letter-spacing: -0.02em;">
+                    <h2 class="mb-0 fw-bold" style="font-family: 'Inter', sans-serif; font-size: 1.85rem; color: #141619; letter-spacing: -0.02em;">
                         Lanzamientos y Ofertas
                     </h2>
                 </div>
@@ -351,7 +336,7 @@
                 <span class="text-danger fw-bold text-uppercase font-mono small d-block mb-1" style="letter-spacing: 1px;">
                     <i class="bi bi-gear-wide-connected me-1"></i> Ingeniería de Filtración y Fluidos
                 </span>
-                <h2 class="fw-bold mb-0" style="font-family: 'Archivo', sans-serif; font-size: 2rem; color: #141619; letter-spacing: -0.02em;">
+                <h2 class="fw-bold mb-0" style="font-family: 'Inter', sans-serif; font-size: 2rem; color: #141619; letter-spacing: -0.02em;">
                     Conozca nuestros productos
                 </h2>
             </div>
@@ -383,7 +368,7 @@
                 <div class="col-12 col-md-5 col-lg-6">
                     <div class="bg-white p-4 rounded-3 border shadow-sm">
                         <span class="badge mb-2 font-mono" style="background:#FEF3C7; color:#B45309;" id="showcaseBadge">LÍNEA AUTOMOTRIZ</span>
-                        <h3 class="fw-bold mb-2" style="font-family: 'Archivo', sans-serif; font-size: 1.45rem; color: #141619;" id="showcaseTitulo">
+                        <h3 class="fw-bold mb-2" style="font-family: 'Inter', sans-serif; font-size: 1.45rem; color: #141619;" id="showcaseTitulo">
                             Aceites de Motor Sintéticos y Minerales
                         </h3>
                         <h6 class="text-danger fw-semibold mb-3" style="font-size: 0.92rem;" id="showcaseSubtitulo">
@@ -427,10 +412,10 @@
                         <!-- Tarjeta Blanca Flotante con Código Destacado -->
                         <div class="tecfil-showcase-floating-card">
                             <div>
-                                <span class="d-block text-muted text-uppercase" style="font-size: 0.65rem; font-family: 'Chivo Mono', monospace;">CÓDIGO DESTACADO</span>
+                                <span class="d-block text-muted text-uppercase" style="font-size: 0.65rem; font-family: 'Inter', sans-serif;">CÓDIGO DESTACADO</span>
                                 <strong class="font-mono text-dark" style="font-size: 0.85rem;" id="showcaseCodigoDestacado">SYN-5W30 • 100% Sintético Larga Vida</strong>
                             </div>
-                            <span class="badge" style="background: #141619; color: #FACC15; font-family: 'Chivo Mono', monospace; font-size: 0.72rem;">TECFIL SPEC</span>
+                            <span class="badge" style="background: #141619; color: #FACC15; font-family: 'Inter', sans-serif; font-size: 0.72rem;">TECFIL SPEC</span>
                         </div>
                     </div>
                 </div>
@@ -451,7 +436,7 @@
                     <span class="text-danger fw-bold text-uppercase font-mono small d-block mb-1" style="letter-spacing: 1px;">
                         <i class="bi bi-grid-3x3-gap-fill me-1"></i> Aplicaciones Automotrices
                     </span>
-                    <h2 class="fw-bold mb-1" style="font-family: 'Archivo', sans-serif; font-size: 1.85rem; color: #141619;">
+                    <h2 class="fw-bold mb-1" style="font-family: 'Inter', sans-serif; font-size: 1.85rem; color: #141619;">
                         Segmentos Golden
                     </h2>
                     <p class="text-secondary small mb-0">
@@ -465,7 +450,7 @@
                             <div class="tecfil-segment-circle-icon">
                                 <i class="bi bi-car-front-fill"></i>
                             </div>
-                            <h5 class="fw-bold mb-1" style="font-family: 'Archivo', sans-serif; font-size: 1rem; color: #141619;">
+                            <h5 class="fw-bold mb-1" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #141619;">
                                 Automóviles y Camionetas
                             </h5>
                             <p class="small text-muted mb-0" style="font-size: 0.76rem;">
@@ -479,7 +464,7 @@
                             <div class="tecfil-segment-circle-icon">
                                 <i class="bi bi-truck-front-fill"></i>
                             </div>
-                            <h5 class="fw-bold mb-1" style="font-family: 'Archivo', sans-serif; font-size: 1rem; color: #141619;">
+                            <h5 class="fw-bold mb-1" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #141619;">
                                 Camiones de Carga
                             </h5>
                             <p class="small text-muted mb-0" style="font-size: 0.76rem;">
@@ -493,7 +478,7 @@
                             <div class="tecfil-segment-circle-icon">
                                 <i class="bi bi-bus-front-fill"></i>
                             </div>
-                            <h5 class="fw-bold mb-1" style="font-family: 'Archivo', sans-serif; font-size: 1rem; color: #141619;">
+                            <h5 class="fw-bold mb-1" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #141619;">
                                 Ómnibus y Flotas
                             </h5>
                             <p class="small text-muted mb-0" style="font-size: 0.76rem;">
@@ -507,7 +492,7 @@
                             <div class="tecfil-segment-circle-icon">
                                 <i class="bi bi-gear-fill"></i>
                             </div>
-                            <h5 class="fw-bold mb-1" style="font-family: 'Archivo', sans-serif; font-size: 1rem; color: #141619;">
+                            <h5 class="fw-bold mb-1" style="font-family: 'Inter', sans-serif; font-size: 1rem; color: #141619;">
                                 Tractores y Maquinaria
                             </h5>
                             <p class="small text-muted mb-0" style="font-size: 0.76rem;">
@@ -627,7 +612,7 @@
                             <i class="bi bi-envelope-paper-fill"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold mb-1" style="font-family: 'Archivo', sans-serif; color: #141619;">
+                            <h5 class="fw-bold mb-1" style="font-family: 'Inter', sans-serif; color: #141619;">
                                 Reciba lista de precios mayoristas en su correo / WhatsApp
                             </h5>
                             <p class="text-secondary small mb-0">
@@ -661,7 +646,7 @@
                             <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
                         </svg>
                         <div>
-                            <span class="fw-bold text-white d-block" style="font-family: 'Archivo', sans-serif; font-size: 1.15rem; letter-spacing: -0.01em;">GOLDEN</span>
+                            <span class="fw-bold text-white d-block" style="font-family: 'Inter', sans-serif; font-size: 1.15rem; letter-spacing: -0.01em;">GOLDEN</span>
                             <span class="d-block" style="font-size: 0.58rem; color: #F59E0B; font-weight: 700; letter-spacing: 0.1em;">LUBRICANTES &amp; FILTROS</span>
                         </div>
                     </div>
@@ -795,7 +780,7 @@
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                <span class="badge" style="background: #27272A; border: 1px solid #3F3F46; color: #E7E5E4; font-family: 'Chivo Mono', monospace;" id="fichaModalSku">SKU-000</span>
+                                <span class="badge" style="background: #27272A; border: 1px solid #3F3F46; color: #E7E5E4; font-family: 'Inter', sans-serif;" id="fichaModalSku">SKU-000</span>
                                 <span class="badge" style="background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;" id="fichaModalCategoria">Categoría</span>
                                 <span class="badge" style="background: rgba(21, 128, 61, 0.2); color: #15803D; border: 1px solid #15803D;"><i class="bi bi-check-circle-fill me-1"></i>Calidad Homologada</span>
                             </div>
@@ -1080,7 +1065,7 @@
 
                 <div class="modal-body p-3 bg-light">
                     <!-- Contenedor con vista previa e impresión de la factura -->
-                    <div id="factura-render-container" class="bg-white p-4 shadow-sm border mx-auto" style="max-width: 720px; font-family: 'Work Sans', sans-serif;">
+                    <div id="factura-render-container" class="bg-white p-4 shadow-sm border mx-auto" style="max-width: 720px; font-family: 'Inter', sans-serif;">
                         <!-- Encabezado de Factura -->
                         <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
                             <div>
@@ -1390,7 +1375,7 @@
                             <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
                                 Título Principal del Banner (Líneas de Impacto)
                             </label>
-                            <textarea id="bannerTituloInput" class="form-control" rows="3" placeholder="LUBRICANTES Y FILTROS&#10;DE ALTO RENDIMIENTO&#10;PARA TALLERES Y FLOTAS" required style="font-family: 'Archivo', sans-serif; font-size: 0.95rem; font-weight: 700;"></textarea>
+                            <textarea id="bannerTituloInput" class="form-control" rows="3" placeholder="LUBRICANTES Y FILTROS&#10;DE ALTO RENDIMIENTO&#10;PARA TALLERES Y FLOTAS" required style="font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;"></textarea>
                             <small class="text-muted" style="font-size: 0.72rem;">Usa saltos de línea para estructurar el titular.</small>
                         </div>
 
@@ -1472,7 +1457,7 @@
                                             <img id="imgQROficial" src="/img/qr-golden-oficial.png" alt="QR Oficial Golden Lubricantes" class="img-fluid rounded border shadow-sm" style="max-width: 210px; max-height: 250px; object-fit: contain;" onerror="fallbackQROficial(this)">
                                         </div>
                                         <div class="text-center">
-                                            <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-family: 'Chivo Mono', monospace; font-size: 0.72rem;">
+                                            <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 0.72rem;">
                                                 <i class="bi bi-phone me-1"></i>QR INTEROPERABLE BOLIVIA
                                             </span>
                                             <div class="fw-bold text-dark mt-1" style="font-size: 0.84rem;">Nelson Polares Ortiz</div>
@@ -1793,7 +1778,7 @@
             </div>
             <div class="whatsapp-popup-body p-3" style="background: #FAF8F5; border-radius: 0 0 12px 12px;">
                 <div class="whatsapp-bubble p-3 rounded-3 mb-3 shadow-sm" style="background: #FFFFFF; border: 1px solid #E2E8F0; font-size: 0.82rem; line-height: 1.45;">
-                    <div class="fw-semibold text-dark mb-1">¡Hola! 👋 Bienvenido a GOLDEN</div>
+                    <div class="fw-semibold text-dark mb-1">Bienvenido a GOLDEN Lubricantes &amp; Filtros</div>
                     <p class="text-secondary mb-0">
                         ¿Deseas cotizar lubricantes o filtros al por mayor para tu taller o flota en Sucre? Escríbenos directamente al <strong>+591 67375645</strong>.
                     </p>

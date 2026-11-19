@@ -1,0 +1,14 @@
+$kind: collection
+description: |-
+  # Suite Profesional de Pruebas Automatizadas (Postman v2.1)
+
+  **GOLDEN Lubricantes & Filtros — Distribución Automotriz Mayorista & Minorista (Sucre, Bolivia)**
+
+  Esta colección implementa una batería completa de pruebas de integración, seguridad RBAC, transacciones de venta con QR y notificaciones para ser ejecutada tanto individualmente como en lote con el **Postman Collection Runner** o **Newman**.
+
+  ### Variables Requeridas:
+  - `base_url`: Endpoint raíz (`https://golden-sprint1.onrender.com` o `http://localhost:3000`)
+  - `admin_email` / `admin_pass`: Credenciales administrativas
+  - `cliente_email` / `cliente_pass`: Credenciales de cliente/taller
+  - `token_admin` y `token_cliente`: Se autocompletan en la carpeta 01
+  - `ultimo_pedido_id` y `ultimo_producto_id`: Se autocompletan en las carpetas 02 y 03.

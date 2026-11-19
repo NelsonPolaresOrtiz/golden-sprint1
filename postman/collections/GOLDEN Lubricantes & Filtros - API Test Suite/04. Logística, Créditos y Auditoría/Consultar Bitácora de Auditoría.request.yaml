@@ -1,0 +1,28 @@
+$kind: http-request
+description: Recupera los últimos registros de eventos y transacciones en el ERP para auditoría forense y control interno.
+url: "{{base_url}}/api/auditoria"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Bitácora devuelve lista de registros con usuario, acción y módulo", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.be.an("array");
+          pm.expect(jsonData.length > 0).to.be.true;
+          
+          var log = jsonData[0];
+          pm.expect(log).to.have.property("usuario_nombre");
+          pm.expect(log).to.have.property("accion");
+          pm.expect(log).to.have.property("modulo");
+          pm.expect(log).to.have.property("fecha");
+      });
+
+      pm.test("Tiempo de respuesta de auditoría < 1500ms", function () {
+          pm.expect(pm.response.responseTime).to.be.below(1500);
+      });
+    language: text/javascript
+order: 2000

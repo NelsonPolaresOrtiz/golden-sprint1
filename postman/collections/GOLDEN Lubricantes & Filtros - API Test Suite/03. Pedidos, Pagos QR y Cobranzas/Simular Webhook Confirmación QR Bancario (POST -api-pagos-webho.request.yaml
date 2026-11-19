@@ -1,0 +1,38 @@
+$kind: http-request
+name: Simular Webhook Confirmación QR Bancario (POST /api/pagos/webhook-qr)
+description: Simula la llamada automática del Webhook Bancario / Pasarela QR confirmando que el cliente transfirió los fondos, actualizando el pedido a VERIFICADO.
+url: "{{base_url}}/api/pagos/webhook-qr"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "pedido_id": "{{ultimo_pedido_id}}",
+      "referencia": "REF-HOOK-{{$timestamp}}",
+      "monto": 170,
+      "estado": "SUCCESS",
+      "id_transaccion": "TX-BCP-INTEROP-{{$timestamp}}",
+      "banco": "Banco de Crédito BCP / SIMPLE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Webhook procesado y aceptado", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("ok", true);
+          pm.expect(jsonData).to.have.property("recibido", true);
+      });
+
+      pm.test("Estado de pago actualizado automáticamente a VERIFICADO", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.estado_pago).to.eql("VERIFICADO");
+          pm.expect(jsonData.pedido_id).to.eql(parseInt(pm.environment.get("ultimo_pedido_id")));
+      });
+    language: text/javascript
+order: 2000

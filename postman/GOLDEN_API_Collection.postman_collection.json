@@ -1,0 +1,788 @@
+{
+  "info": {
+    "_postman_id": "c794e502-3112-4299-8d19-4bc2b6f10c3f",
+    "name": "GOLDEN Lubricantes & Filtros - API Test Suite",
+    "description": "# Suite Profesional de Pruebas Automatizadas (Postman v2.1)\n\n**GOLDEN Lubricantes & Filtros — Distribución Automotriz Mayorista & Minorista (Sucre, Bolivia)**\n\nEsta colección implementa una batería completa de pruebas de integración, seguridad RBAC, transacciones de venta con QR y notificaciones para ser ejecutada tanto individualmente como en lote con el **Postman Collection Runner** o **Newman**.\n\n### Variables Requeridas:\n- `base_url`: Endpoint raíz (`https://golden-sprint1.onrender.com` o `http://localhost:3000`)\n- `admin_email` / `admin_pass`: Credenciales administrativas\n- `cliente_email` / `cliente_pass`: Credenciales de cliente/taller\n- `token_admin` y `token_cliente`: Se autocompletan en la carpeta 01\n- `ultimo_pedido_id` y `ultimo_producto_id`: Se autocompletan en las carpetas 02 y 03.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01. Autenticación y Control de Acceso (RBAC)",
+      "description": "Pruebas de validación de identidad, emisión de sesión y bloqueo estricto de cruce de portales entre personal administrativo y clientes.",
+      "item": [
+        {
+          "name": "Login Administrador (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Estructura de respuesta contiene usuario y credenciales\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"usuario\");",
+                  "    pm.expect(jsonData.usuario).to.have.property(\"id\");",
+                  "    pm.expect(jsonData.usuario).to.have.property(\"email\");",
+                  "    pm.expect(jsonData.usuario).to.have.property(\"rol\");",
+                  "});",
+                  "",
+                  "pm.test(\"Rol autenticado es ADMIN y almacenamiento en token_admin\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.usuario.rol).to.eql(\"ADMIN\");",
+                  "    ",
+                  "    // Guardar token/rol en variables de entorno",
+                  "    pm.environment.set(\"token_admin\", jsonData.usuario.rol);",
+                  "    pm.environment.set(\"admin_id\", jsonData.usuario.id);",
+                  "    pm.environment.set(\"admin_email\", jsonData.usuario.email);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta óptimo (< 2000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_pass}}\",\n  \"tipo_portal\": \"INTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "description": "Autenticación del Administrador en el Portal Interno ERP. Almacena 'token_admin' en el entorno para peticiones privilegiadas subsiguientes."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Cliente (CLIENTE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Estructura de respuesta contiene objeto usuario\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"usuario\");",
+                  "    pm.expect(jsonData.usuario).to.have.property(\"id\");",
+                  "});",
+                  "",
+                  "pm.test(\"Rol autenticado es CLIENTE y almacenamiento en token_cliente\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect([\"CLIENTE\", \"CLIENTE_B2B\", \"CLIENTE_B2C\"]).to.include(jsonData.usuario.rol);",
+                  "    ",
+                  "    // Guardar token/rol y cliente_id en variables de entorno",
+                  "    pm.environment.set(\"token_cliente\", jsonData.usuario.rol);",
+                  "    pm.environment.set(\"cliente_id\", jsonData.usuario.id);",
+                  "    pm.environment.set(\"cliente_email\", jsonData.usuario.email);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta óptimo (< 2000ms)\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{cliente_email}}\",\n  \"password\": \"{{cliente_pass}}\",\n  \"tipo_portal\": \"CLIENTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "description": "Autenticación de un Cliente/Taller en el Catálogo Comercial. Guarda 'token_cliente' y 'cliente_id' en variables de entorno."
+          },
+          "response": []
+        },
+        {
+          "name": "Prueba de Seguridad: Cruce de Portal (Negativo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Bloqueo estricto con HTTP 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensaje de error especifica restricción de portal para rol Cliente\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"error\");",
+                  "    pm.expect(jsonData.error).to.include(\"Acceso denegado\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{cliente_email}}\",\n  \"password\": \"{{cliente_pass}}\",\n  \"tipo_portal\": \"INTERNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "description": "Verifica que un usuario con rol CLIENTE no pueda vulnerar el sistema intentando ingresar al portal administrativo INTERNO."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02. Catálogo e Inventario",
+      "description": "Consultas públicas del catálogo de productos y validación de permisos granulares RBAC para creación/edición de repuestos.",
+      "item": [
+        {
+          "name": "Listar Productos Públicos (GET /api/productos)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Catálogo no vacío devuelto como Array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.length > 0).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Estructura comercial requerida en productos (SKU, nombre, precio, stock)\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var prod = jsonData[0];",
+                  "    pm.expect(prod).to.have.property(\"id\");",
+                  "    pm.expect(prod).to.have.property(\"sku\");",
+                  "    pm.expect(prod).to.have.property(\"nombre\");",
+                  "    pm.expect(prod).to.have.property(\"precio\");",
+                  "    pm.expect(prod).to.have.property(\"stock\");",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta < 1500ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/productos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            },
+            "description": "Consulta pública del catálogo automotriz sin requerir inicio de sesión previo."
+          },
+          "response": []
+        },
+        {
+          "name": "Prueba de Seguridad: Cliente intenta crear producto (Negativo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Bloqueo estricto con HTTP 403 Forbidden\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensaje de error especifica bloqueo RBAC de rol no gestor\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"error\");",
+                  "    pm.expect(jsonData.error).to.include(\"403 Forbidden\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-usuario-rol",
+                "value": "{{token_cliente}}"
+              },
+              {
+                "key": "x-usuario-email",
+                "value": "{{cliente_email}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_cliente}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"HACK-CLI-{{$timestamp}}\",\n  \"nombre\": \"Intento no autorizado de creación\",\n  \"categoria\": \"Aceites de Motor\",\n  \"precio\": 25,\n  \"stock\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/productos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            },
+            "description": "Comprueba que un cliente o atacante que intente registrar repuestos mediante API sea rechazado con HTTP 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear Producto de Prueba (ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created o 200 OK\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Producto creado con identificador y guardado en variable ultimo_producto_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "    pm.expect(jsonData.id).to.be.a(\"number\");",
+                  "    pm.environment.set(\"ultimo_producto_id\", jsonData.id);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensaje de éxito retornado por el backend\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"mensaje\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-usuario-rol",
+                "value": "{{token_admin}}"
+              },
+              {
+                "key": "x-usuario-email",
+                "value": "{{admin_email}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku\": \"POSTMAN-SKU-{{$timestamp}}\",\n  \"nombre\": \"Aceite Sintético Postman 5W-40 Pro\",\n  \"categoria\": \"Aceites de Motor\",\n  \"precio\": 195,\n  \"stock\": 30,\n  \"stock_minimo\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/productos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            },
+            "description": "Crea un producto nuevo en el catálogo autorizado por el rol ADMIN y almacena su ID en 'ultimo_producto_id'."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03. Pedidos, Pagos QR y Cobranzas",
+      "description": "Flujo integral de creación de órdenes con Pago QR Interoperable, simulación de conciliación bancaria por Webhook y consulta de cobranzas.",
+      "item": [
+        {
+          "name": "Crear Pedido con Pago QR Directo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created o 200 OK\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "pm.test(\"Orden de compra creada y guardada en ultimo_pedido_id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"ok\", true);",
+                  "    var orderId = jsonData.pedidoId || jsonData.id;",
+                  "    pm.expect(orderId).to.be.a(\"number\");",
+                  "    pm.environment.set(\"ultimo_pedido_id\", orderId);",
+                  "});",
+                  "",
+                  "pm.test(\"Método de pago QR_DIRECTO y estado PENDIENTE\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.metodo_pago).to.eql(\"QR_DIRECTO\");",
+                  "    pm.expect(jsonData.estado_pago).to.eql(\"PENDIENTE\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_id\": 38,\n  \"total\": 170,\n  \"metodo_pago\": \"QR_DIRECTO\",\n  \"comprobante_ref\": \"REF-QR-TEST-{{$timestamp}}\",\n  \"numero_operacion\": \"OP-YAPE-{{$timestamp}}\",\n  \"banco_origen\": \"QR Interoperable / SIMPLE / Yape\",\n  \"carrito\": [\n    {\n      \"id\": 1,\n      \"sku\": \"LUB-SYN-5W30\",\n      \"nombre\": \"Aceite Sintético 5W-30\",\n      \"precio\": 85,\n      \"cantidad\": 2\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pedidos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "description": "Registra una orden de compra con método QR Directo, dejando el estado inicial en PENDIENTE hasta la confirmación del pago."
+          },
+          "response": []
+        },
+        {
+          "name": "Simular Webhook Confirmación QR Bancario (POST /api/pagos/webhook-qr)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Webhook procesado y aceptado\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"ok\", true);",
+                  "    pm.expect(jsonData).to.have.property(\"recibido\", true);",
+                  "});",
+                  "",
+                  "pm.test(\"Estado de pago actualizado automáticamente a VERIFICADO\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.estado_pago).to.eql(\"VERIFICADO\");",
+                  "    pm.expect(jsonData.pedido_id).to.eql(parseInt(pm.environment.get(\"ultimo_pedido_id\")));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido_id\": \"{{ultimo_pedido_id}}\",\n  \"referencia\": \"REF-HOOK-{{$timestamp}}\",\n  \"monto\": 170,\n  \"estado\": \"SUCCESS\",\n  \"id_transaccion\": \"TX-BCP-INTEROP-{{$timestamp}}\",\n  \"banco\": \"Banco de Crédito BCP / SIMPLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/pagos/webhook-qr",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "webhook-qr"
+              ]
+            },
+            "description": "Simula la llamada automática del Webhook Bancario / Pasarela QR confirmando que el cliente transfirió los fondos, actualizando el pedido a VERIFICADO."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Pedidos y Cobranzas (GET /api/pedidos)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Listado de pedidos devuelto como Array no vacío\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.length > 0).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"El pedido conciliado figura con estado VERIFICADO\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var targetId = parseInt(pm.environment.get(\"ultimo_pedido_id\"));",
+                  "    var match = jsonData.find(p => p.id === targetId);",
+                  "    pm.expect(match).to.not.be.undefined;",
+                  "    pm.expect(match.estado_pago).to.eql(\"VERIFICADO\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pedidos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "description": "Consulta el listado general de pedidos y cuentas por cobrar para auditar el estado financiero."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04. Logística, Créditos y Auditoría",
+      "description": "Endpoints de monitoreo de cartera de créditos B2B para talleres mecánicos y trazabilidad en la bitácora de auditoría.",
+      "item": [
+        {
+          "name": "Consultar Líneas de Crédito B2B",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Estructura contiene resumen y detalle de créditos\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"resumen\");",
+                  "    pm.expect(jsonData).to.have.property(\"creditos\");",
+                  "    pm.expect(jsonData.creditos).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Métricas de crédito expresadas en valores numéricos válidos en Bolivianos\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.resumen.total_limite_asignado).to.be.at.least(0);",
+                  "    pm.expect(jsonData.resumen.total_cartera_deudora).to.be.at.least(0);",
+                  "    pm.expect(jsonData.resumen.total_credito_disponible).to.be.at.least(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta < 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/creditos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "creditos"
+              ]
+            },
+            "description": "Consulta el estado consolidado de las líneas de crédito asignadas a talleres mecánicos y empresas de transporte B2B."
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar Bitácora de Auditoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Bitácora devuelve lista de registros con usuario, acción y módulo\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.length > 0).to.be.true;",
+                  "    ",
+                  "    var log = jsonData[0];",
+                  "    pm.expect(log).to.have.property(\"usuario_nombre\");",
+                  "    pm.expect(log).to.have.property(\"accion\");",
+                  "    pm.expect(log).to.have.property(\"modulo\");",
+                  "    pm.expect(log).to.have.property(\"fecha\");",
+                  "});",
+                  "",
+                  "pm.test(\"Tiempo de respuesta de auditoría < 1500ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auditoria",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auditoria"
+              ]
+            },
+            "description": "Recupera los últimos registros de eventos y transacciones en el ERP para auditoría forense y control interno."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05. Notificaciones (WhatsApp Bot & Gmail)",
+      "description": "Monitoreo del servicio WhatsApp Baileys en segundo plano y emisión formal de cotizaciones proforma enviadas por correo electrónico.",
+      "item": [
+        {
+          "name": "Estado del Bot de WhatsApp (GET /api/whatsapp/estado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Estructura contiene flags de conexión y número asignado\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"conectado\");",
+                  "    pm.expect(jsonData.conectado).to.be.a(\"boolean\");",
+                  "    pm.expect(jsonData).to.have.property(\"numero\");",
+                  "});",
+                  "",
+                  "pm.test(\"Número corporativo coincide con canal oficial (+591 67375645)\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.numero).to.include(\"67375645\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-usuario-rol",
+                "value": "{{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/whatsapp/estado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "whatsapp",
+                "estado"
+              ]
+            },
+            "description": "Verifica el estado operativo del Bot de WhatsApp (+591 67375645) ejecutado en segundo plano dentro del servidor Node.js."
+          },
+          "response": []
+        },
+        {
+          "name": "Enviar Cotización Mayorista por Gmail (POST /api/cotizaciones)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cotización generada formalmente con código COT-XXXXXX\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"ok\", true);",
+                  "    pm.expect(jsonData).to.have.property(\"codigo\");",
+                  "    pm.expect(jsonData.codigo).to.match(/^COT-\\d+$/);",
+                  "});",
+                  "",
+                  "pm.test(\"Total proforma calculado en Bs. 1350.00\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.total).to.eql(1350);",
+                  "});",
+                  "",
+                  "pm.test(\"Mensaje confirma emisión formal de proforma\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.mensaje).to.include(\"correo electrónico\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente\": {\n    \"nombre\": \"Taller San Cristóbal (Postman Automation)\",\n    \"email\": \"polaresn7@gmail.com\",\n    \"telefono\": \"+591 67375645\",\n    \"ciudad\": \"Sucre, Bolivia\"\n  },\n  \"items\": [\n    {\n      \"sku\": \"FIL-ACE-010\",\n      \"nombre\": \"Filtro de Aceite Blindado\",\n      \"cantidad\": 10,\n      \"precio\": 45,\n      \"subtotal\": 450\n    },\n    {\n      \"sku\": \"LUB-SYN-5W30\",\n      \"nombre\": \"Aceite Sintético 5W-30\",\n      \"cantidad\": 5,\n      \"precio\": 180,\n      \"subtotal\": 900\n    }\n  ],\n  \"total\": 1350,\n  \"notas\": \"Proforma comercial mayorista generada automáticamente desde Postman Collection Runner.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cotizaciones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cotizaciones"
+              ]
+            },
+            "description": "Genera una proforma comercial mayorista con código oficial 'COT-XXXXXX', asienta el ticket en BD, envía notificación por WhatsApp a Gerencia y despacha el correo HTML oficial vía Gmail."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

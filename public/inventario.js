@@ -166,7 +166,7 @@ function renderizarTabla(productos, filtroBusqueda = '') {
         return `
             <tr>
                 <td class="ps-4">
-                    <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Chivo Mono', monospace;">${skuEscapado}</span>
+                    <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Inter', sans-serif;">${skuEscapado}</span>
                 </td>
                 <td>
                     <div class="fw-bold text-dark">${nombreEscapado}</div>
@@ -175,7 +175,7 @@ function renderizarTabla(productos, filtroBusqueda = '') {
                         ${marca ? `<span class="badge font-monospace px-1 text-secondary border" style="font-size: 0.68rem; background: #FAF8F5;">${marcaEscapada}</span>` : ''}
                     </div>
                 </td>
-                <td class="fw-bold fs-6" style="color: #15803D; font-family: 'Chivo Mono', monospace;">Bs. ${precio.toFixed(2)}</td>
+                <td class="fw-bold fs-6" style="color: #15803D; font-family: 'Inter', sans-serif;">Bs. ${precio.toFixed(2)}</td>
                 <td>
                     <span class="badge-pill-stitch ${stockBadge}">${stockActual} unid.</span>
                     <small class="text-secondary d-block mt-1" style="font-size: 0.7rem;">Mínimo: ${stockMin}</small>
@@ -654,11 +654,11 @@ async function abrirKardex(sku) {
 
             tbody.innerHTML += `
                 <tr>
-                    <td class="ps-4 text-nowrap font-monospace small" style="color: #57534E; font-family: 'Chivo Mono', monospace;">
+                    <td class="ps-4 text-nowrap font-monospace small" style="color: #57534E; font-family: 'Inter', sans-serif;">
                         <i class="bi bi-calendar3 text-warning me-1"></i>${fechaStr}
                     </td>
                     <td>
-                        <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Chivo Mono', monospace;">#00${m.pedido_id}</span>
+                        <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Inter', sans-serif;">#00${m.pedido_id}</span>
                     </td>
                     <td>
                         <span class="fw-bold text-dark d-block">${m.cliente}</span>
@@ -667,7 +667,7 @@ async function abrirKardex(sku) {
                     <td class="text-center">
                         <span class="badge-pill-stitch badge-pill-ruby fw-bold">-${m.cantidad} unid.</span>
                     </td>
-                    <td class="text-end font-monospace" style="color: #57534E; font-family: 'Chivo Mono', monospace;">
+                    <td class="text-end font-monospace" style="color: #57534E; font-family: 'Inter', sans-serif;">
                         Bs. ${m.precio_unitario.toFixed(2)}
                     </td>
                     <td class="text-end font-monospace fw-bold" style="color: #34d399;">

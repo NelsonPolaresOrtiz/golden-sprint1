@@ -1,0 +1,61 @@
+$kind: http-request
+name: Enviar Cotización Mayorista por Gmail (POST /api/cotizaciones)
+description: Genera una proforma comercial mayorista con código oficial 'COT-XXXXXX', asienta el ticket en BD, envía notificación por WhatsApp a Gerencia y despacha el correo HTML oficial vía Gmail.
+url: "{{base_url}}/api/cotizaciones"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "cliente": {
+        "nombre": "Taller San Cristóbal (Postman Automation)",
+        "email": "polaresn7@gmail.com",
+        "telefono": "+591 67375645",
+        "ciudad": "Sucre, Bolivia"
+      },
+      "items": [
+        {
+          "sku": "FIL-ACE-010",
+          "nombre": "Filtro de Aceite Blindado",
+          "cantidad": 10,
+          "precio": 45,
+          "subtotal": 450
+        },
+        {
+          "sku": "LUB-SYN-5W30",
+          "nombre": "Aceite Sintético 5W-30",
+          "cantidad": 5,
+          "precio": 180,
+          "subtotal": 900
+        }
+      ],
+      "total": 1350,
+      "notas": "Proforma comercial mayorista generada automáticamente desde Postman Collection Runner."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Cotización generada formalmente con código COT-XXXXXX", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("ok", true);
+          pm.expect(jsonData).to.have.property("codigo");
+          pm.expect(jsonData.codigo).to.match(/^COT-\d+$/);
+      });
+
+      pm.test("Total proforma calculado en Bs. 1350.00", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.total).to.eql(1350);
+      });
+
+      pm.test("Mensaje confirma emisión formal de proforma", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.mensaje).to.include("correo electrónico");
+      });
+    language: text/javascript
+order: 2000

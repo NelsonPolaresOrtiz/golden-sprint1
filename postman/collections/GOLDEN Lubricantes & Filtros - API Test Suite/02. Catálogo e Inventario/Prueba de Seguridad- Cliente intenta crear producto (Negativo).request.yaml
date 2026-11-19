@@ -1,0 +1,34 @@
+$kind: http-request
+name: "Prueba de Seguridad: Cliente intenta crear producto (Negativo)"
+description: Comprueba que un cliente o atacante que intente registrar repuestos mediante API sea rechazado con HTTP 403.
+url: "{{base_url}}/api/productos"
+method: POST
+headers:
+  Content-Type: application/json
+  x-usuario-rol: "{{token_cliente}}"
+  x-usuario-email: "{{cliente_email}}"
+  Authorization: Bearer {{token_cliente}}
+body:
+  type: json
+  content: |-
+    {
+      "sku": "HACK-CLI-{{$timestamp}}",
+      "nombre": "Intento no autorizado de creación",
+      "categoria": "Aceites de Motor",
+      "precio": 25,
+      "stock": 100
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Bloqueo estricto con HTTP 403 Forbidden", function () {
+          pm.response.to.have.status(403);
+      });
+
+      pm.test("Mensaje de error especifica bloqueo RBAC de rol no gestor", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("error");
+          pm.expect(jsonData.error).to.include("403 Forbidden");
+      });
+    language: text/javascript
+order: 2000

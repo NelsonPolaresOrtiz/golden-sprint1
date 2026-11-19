@@ -171,11 +171,11 @@ function renderizarTablaFacturas(lista) {
             metodoHTML = `
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <span class="badge px-2 py-1 rounded-pill" style="background: #F59E0B !important; color: #18181B; font-weight: 700; font-size: 0.72rem;">
-                            <i class="bi bi-bank2 me-1"></i>Depósito Bancario
+                        <span class="badge px-2 py-1 rounded" style="background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; font-weight: 600; font-size: 0.75rem;">
+                            <i class="bi bi-bank2 me-1"></i>Depósito bancario
                         </span>
                     </div>
-                    <div class="font-mono text-dark fw-bold small" style="font-size: 0.82rem;">
+                    <div class="text-dark fw-bold small" style="font-size: 0.82rem;">
                         <i class="bi bi-receipt text-danger me-1"></i>Boleta #${escaparHTML(numBoleta)}
                     </div>
                     <small class="text-secondary" style="font-size: 0.72rem;">${escaparHTML(banco)}</small>
@@ -185,11 +185,11 @@ function renderizarTablaFacturas(lista) {
             metodoHTML = `
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <span class="badge px-2 py-1 rounded-pill text-white" style="background: #7C3AED !important; font-weight: 700; font-size: 0.72rem;">
-                            <i class="bi bi-qr-code-scan me-1"></i>QR Directo
+                        <span class="badge px-2 py-1 rounded" style="background: #F5F3FF; color: #6D28D9; border: 1px solid #DDD6FE; font-weight: 600; font-size: 0.75rem;">
+                            <i class="bi bi-qr-code-scan me-1"></i>Pago QR
                         </span>
                     </div>
-                    <div class="font-mono text-secondary small" style="font-size: 0.78rem;">
+                    <div class="text-secondary small" style="font-size: 0.78rem;">
                         <span class="text-dark fw-semibold">Ref:</span> ${escaparHTML(numBoleta)}
                     </div>
                     <small class="text-muted" style="font-size: 0.72rem;">${escaparHTML(banco)}</small>
@@ -199,11 +199,11 @@ function renderizarTablaFacturas(lista) {
             metodoHTML = `
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <span class="badge px-2 py-1 rounded-pill bg-primary text-white" style="font-weight: 700; font-size: 0.72rem;">
-                            <i class="bi bi-paypal me-1"></i>PayPal Internacional
+                        <span class="badge px-2 py-1 rounded bg-primary text-white" style="font-weight: 600; font-size: 0.75rem;">
+                            <i class="bi bi-paypal me-1"></i>PayPal
                         </span>
                     </div>
-                    <div class="font-mono text-secondary small" style="font-size: 0.78rem;">
+                    <div class="text-secondary small" style="font-size: 0.78rem;">
                         <span class="text-dark fw-semibold">ID:</span> ${escaparHTML(numBoleta)}
                     </div>
                 </div>
@@ -212,11 +212,11 @@ function renderizarTablaFacturas(lista) {
             metodoHTML = `
                 <div class="d-flex flex-column gap-1">
                     <div>
-                        <span class="badge px-2 py-1 rounded-pill bg-secondary text-white" style="font-weight: 700; font-size: 0.72rem;">
+                        <span class="badge px-2 py-1 rounded bg-secondary text-white" style="font-weight: 600; font-size: 0.75rem;">
                             ${mPago}
                         </span>
                     </div>
-                    <small class="text-secondary font-mono">${escaparHTML(numBoleta)}</small>
+                    <small class="text-secondary">${escaparHTML(numBoleta)}</small>
                 </div>
             `;
         }
@@ -224,7 +224,7 @@ function renderizarTablaFacturas(lista) {
         return `
             <tr>
                 <td class="ps-4">
-                    <span class="badge px-2 py-1 rounded-2" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-family: 'Chivo Mono', monospace; font-size: 0.88rem;">
+                    <span class="badge px-2 py-1 rounded-2" style="background: #F1F5F9; color: #1E293B; border: 1px solid #CBD5E1; font-weight: 600; font-size: 0.82rem;">
                         FAC-${idFactura}
                     </span>
                 </td>
@@ -236,14 +236,14 @@ function renderizarTablaFacturas(lista) {
                     ${metodoHTML}
                 </td>
                 <td class="text-secondary small">
-                    <i class="bi bi-calendar3 me-1 text-warning opacity-75"></i>${fechaStr}
+                    <i class="bi bi-calendar3 me-1 text-secondary opacity-75"></i>${fechaStr}
                 </td>
-                <td class="text-end fw-extrabold text-success" style="font-family: 'Chivo Mono', monospace; font-size: 0.95rem;">
+                <td class="text-end fw-bold text-success" style="font-size: 0.95rem;">
                     Bs. ${totalNum}
                 </td>
                 <td class="text-center">
-                    <span class="badge rounded-pill px-3 py-1 ${esPagado ? 'bg-success-subtle text-success border border-success border-opacity-25' : 'bg-warning-subtle text-warning border border-warning border-opacity-25'}" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                        ${esPagado ? '<i class="bi bi-check-circle me-1"></i>VERIFICADO' : '<i class="bi bi-clock me-1"></i>PENDIENTE'}
+                    <span class="badge rounded px-3 py-1 ${esPagado ? 'bg-success-subtle text-success border border-success border-opacity-25' : 'bg-warning-subtle text-warning border border-warning border-opacity-25'}" style="font-size: 0.75rem;">
+                        ${esPagado ? '<i class="bi bi-check-circle me-1"></i>Verificado' : '<i class="bi bi-clock me-1"></i>Pendiente'}
                     </span>
                 </td>
                 <td class="pe-4 text-end">

@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: 719713b9-910b-4194-8d69-07fe66a7beb0
+
+cloudResources:
+  collections:
+    ../postman/collections/GOLDEN Lubricantes & Filtros - API Test Suite: 742f4603-b3c7-44b3-b677-e6af6a5f2c30
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

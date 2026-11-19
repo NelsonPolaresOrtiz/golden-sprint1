@@ -1,9 +1,17 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const db = require('./database');
 const { enviarAlertaAdmin, obtenerEstadoWhatsApp, iniciarBot } = require('./whatsapp-bot');
+const {
+    enviarCotizacionEmail,
+    enviarRespaldoComprobanteAdmin,
+    enviarComprobantePedidoEmail,
+    enviarActualizacionLogisticaEmail,
+    resolverRutaComprobante
+} = require('./services/emailService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +27,7 @@ app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(express.static(path.join(__dirname, '../public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Helper seguro para construir dinámicamente cláusulas de fecha en SQLite
 function construirCondicionFecha(rango, columna = 'fecha_compra') {
@@ -555,7 +564,14 @@ app.get('/api/productos/:id', (req, res) => {
  * CLIENTE, DESPACHO y peticiones no autenticadas son bloqueadas con HTTP 403 Forbidden.
  */
 function verificarPermisoGestorCatalogo(req, res, next) {
+    const authHeader = (req.headers['authorization'] || '').toString().trim();
+    let authBearer = '';
+    if (authHeader.toLowerCase().startsWith('bearer ')) {
+        authBearer = authHeader.slice(7).trim();
+    }
+
     const rolHeader = (
+        authBearer ||
         req.headers['x-usuario-rol'] || 
         req.headers['x-user-rol'] || 
         req.headers['x-rol'] || 
@@ -1027,7 +1043,7 @@ const registrarVentaOPedido = (req, res) => {
                 }
 
                 // 1. Validar existencia del cliente
-                db.get(`SELECT id, nombre FROM usuarios WHERE id = ?`, [cliente_id], (userErr, user) => {
+                db.get(`SELECT id, nombre, email, telefono FROM usuarios WHERE id = ?`, [cliente_id], (userErr, user) => {
                     if (userErr || !user) {
                         db.run('ROLLBACK;');
                         return res.status(404).json({ error: 'El cliente especificado no existe o no es válido.' });
@@ -1176,6 +1192,39 @@ const registrarVentaOPedido = (req, res) => {
                                             `_Consulte el panel de Cobranzas del ERP para validar el ingreso._`;
 
                                         enviarAlertaAdmin(alertaNuevoPedido).catch(() => {});
+
+                                        // Disparador Automatizado de Correo: Respaldo de Comprobante con imagen adjunta para Administración
+                                        const rutaComprobanteFisica = resolverRutaComprobante(comprobante_img, pedidoId);
+                                        if (mPago === 'QR_DIRECTO' || mPago === 'DEPOSITO_BANCARIO' || comprobante_img) {
+                                            enviarRespaldoComprobanteAdmin(
+                                                {
+                                                    id: pedidoId,
+                                                    total: totalNum,
+                                                    metodo_pago: mPago,
+                                                    comprobante_ref: compRef,
+                                                    numero_operacion: finalNumOperacion,
+                                                    banco_origen: bancoOrig,
+                                                    estado_pago: estPago,
+                                                    comprobante_img: comprobante_img
+                                                },
+                                                user,
+                                                rutaComprobanteFisica
+                                            ).catch(err => console.error('[EmailService] Error al enviar respaldo a administración:', err.message));
+                                        } else if (estPago.includes('PAGADO') && user.email) {
+                                            enviarComprobantePedidoEmail(
+                                                user,
+                                                {
+                                                    id: pedidoId,
+                                                    total: totalNum,
+                                                    metodo_pago: mPago,
+                                                    numero_operacion: finalNumOperacion,
+                                                    banco_origen: bancoOrig,
+                                                    comprobante_ref: compRef
+                                                },
+                                                carrito,
+                                                rutaComprobanteFisica
+                                            ).catch(err => console.error('[EmailService] Error al enviar confirmación al cliente:', err.message));
+                                        }
 
                                         // Disparador Proactivo 2: Alerta por WhatsApp de stock bajo detectado
                                         if (productosEnAlertaStock.length > 0) {
@@ -1381,7 +1430,7 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
         const pedidoId = req.params.id;
         const { usuario_nombre } = req.body || {};
 
-        db.get('SELECT id, total, estado_pago, metodo_pago, comprobante_ref, numero_operacion, banco_origen FROM pedidos WHERE id = ?', [pedidoId], (err, ped) => {
+        db.get('SELECT id, cliente_id, total, estado_pago, metodo_pago, comprobante_ref, numero_operacion, banco_origen, comprobante_img FROM pedidos WHERE id = ?', [pedidoId], (err, ped) => {
             if (err || !ped) return res.status(404).json({ error: 'Pedido no encontrado' });
 
             db.run(
@@ -1411,6 +1460,18 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
                         `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
                         `_Validado por: ${usuario_nombre || 'Cobranzas / Administración'}_`;
                     enviarAlertaAdmin(alertaCobroAprobado).catch(() => {});
+
+                    // Notificación Oficial por Correo Electrónico al Cliente con copia de comprobante
+                    db.get('SELECT id, nombre, email, telefono FROM usuarios WHERE id = ?', [ped.cliente_id], (cErr, cliente) => {
+                        if (!cErr && cliente && cliente.email) {
+                            db.all('SELECT * FROM pedido_detalles WHERE pedido_id = ?', [pedidoId], (dErr, detalles) => {
+                                const rutaFisica = resolverRutaComprobante(ped.comprobante_img, pedidoId);
+                                enviarComprobantePedidoEmail(cliente, ped, detalles || [], rutaFisica).catch(mErr => {
+                                    console.error('[EmailService] Error al notificar cobro aprobado al cliente:', mErr.message);
+                                });
+                            });
+                        }
+                    });
 
                     res.status(200).json({
                         ok: true,
@@ -1546,6 +1607,16 @@ app.put('/api/pedidos/:id/flujo', (req, res) => {
                     function (uErr) {
                         if (uErr) return res.status(500).json({ error: 'Error al registrar empaque: ' + uErr.message });
                         registrarAuditoria(resp, `Confirmó empaque y rotulado de Orden #${pedidoId} (${bultos} bultos, ${peso} kg en ${tipo})`, 'EMPAQUE');
+
+                        // Notificación de Empaque por Correo al Cliente
+                        db.get('SELECT id, nombre, email, telefono FROM usuarios WHERE id = ?', [ped.cliente_id], (cErr, cliente) => {
+                            if (!cErr && cliente && cliente.email) {
+                                enviarActualizacionLogisticaEmail(cliente, ped, 'EMPACADO', resp).catch(mErr => {
+                                    console.error('[EmailService] Error al notificar empaque:', mErr.message);
+                                });
+                            }
+                        });
+
                         res.json({ ok: true, mensaje: 'Orden #' + pedidoId + ' empacada y rotulada exitosamente', estado_logistica: 'EMPACADO Y ETIQUETADO' });
                     }
                 );
@@ -1572,6 +1643,16 @@ app.put('/api/pedidos/:id/flujo', (req, res) => {
                     function (uErr) {
                         if (uErr) return res.status(500).json({ error: 'Error al registrar despacho: ' + uErr.message });
                         registrarAuditoria(chofer, `Despachó y salió a ruta con Orden #${pedidoId} en móvil placa ${placa}`, 'DESPACHO');
+
+                        // Notificación de Despacho en Ruta por Correo al Cliente
+                        db.get('SELECT id, nombre, email, telefono FROM usuarios WHERE id = ?', [ped.cliente_id], (cErr, cliente) => {
+                            if (!cErr && cliente && cliente.email) {
+                                enviarActualizacionLogisticaEmail(cliente, { ...ped, despacho_chofer: chofer, despacho_placa: placa }, 'EN RUTA', chofer).catch(mErr => {
+                                    console.error('[EmailService] Error al notificar despacho:', mErr.message);
+                                });
+                            }
+                        });
+
                         res.json({ ok: true, mensaje: 'Orden #' + pedidoId + ' en ruta de entrega', estado_logistica: 'EN RUTA DE ENTREGA' });
                     }
                 );
@@ -1595,6 +1676,16 @@ app.put('/api/pedidos/:id/flujo', (req, res) => {
                     function (uErr) {
                         if (uErr) return res.status(500).json({ error: 'Error al finalizar entrega: ' + uErr.message });
                         registrarAuditoria(operario || 'Encargado de Entrega', `Completó entrega de Orden #${pedidoId} en taller receptor ${receptor} (CI: ${ci})`, 'ENTREGA');
+
+                        // Notificación de Entrega Final por Correo al Cliente
+                        db.get('SELECT id, nombre, email, telefono FROM usuarios WHERE id = ?', [ped.cliente_id], (cErr, cliente) => {
+                            if (!cErr && cliente && cliente.email) {
+                                enviarActualizacionLogisticaEmail(cliente, ped, 'ENTREGADO', receptor).catch(mErr => {
+                                    console.error('[EmailService] Error al notificar entrega:', mErr.message);
+                                });
+                            }
+                        });
+
                         res.json({ ok: true, mensaje: 'Orden #' + pedidoId + ' entregada y finalizada con éxito', estado_logistica: 'ENTREGADO Y FINALIZADO' });
                     }
                 );
@@ -1695,6 +1786,19 @@ app.put('/api/pedidos/:id/estado', (req, res) => {
                 return res.status(404).json({ error: 'Pedido no encontrado.' });
             }
             registrarAuditoria('LOGISTICA', `Actualizó el estado de despacho de la orden #00${req.params.id} a "${estado}"`, 'LOGISTICA');
+
+            // Notificación por Correo al Cliente de la actualización de despacho
+            db.get('SELECT p.*, u.nombre as cliente_nombre, u.email as cliente_email, u.telefono as cliente_telefono FROM pedidos p LEFT JOIN usuarios u ON p.cliente_id = u.id WHERE p.id = ?', [req.params.id], (pErr, ped) => {
+                if (!pErr && ped && ped.cliente_email && ped.cliente_email !== '-') {
+                    enviarActualizacionLogisticaEmail(
+                        { id: ped.cliente_id, nombre: ped.cliente_nombre, email: ped.cliente_email, telefono: ped.cliente_telefono },
+                        ped,
+                        estado,
+                        ped.despacho_chofer
+                    ).catch(mErr => console.error('[EmailService] Error al notificar actualización logística:', mErr.message));
+                }
+            });
+
             res.status(200).json({ mensaje: 'Estado de entrega actualizado correctamente.', nuevoEstado: estado });
         });
     } catch (error) {
@@ -2329,6 +2433,73 @@ app.post('/api/soporte/tickets', (req, res) => {
     } catch (err) {
         console.error('Error crítico al crear ticket:', err.message);
         res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+/**
+ * 7.3. GENERACIÓN DE COTIZACIONES MAYORISTAS Y PROFORMAS FORMALES
+ * POST /api/cotizaciones
+ */
+app.post('/api/cotizaciones', async (req, res) => {
+    try {
+        const { cliente, items, total, notas } = req.body || {};
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Debe incluir al menos un producto para generar la proforma comercial.' });
+        }
+
+        const clienteObj = cliente || {};
+        const totalNum = parseFloat(total) || items.reduce((acc, it) => acc + (parseFloat(it.subtotal || (it.precio * it.cantidad)) || 0), 0);
+        const codigoCot = `COT-${Date.now().toString().slice(-6)}`;
+        const emailCliente = clienteObj.email || clienteObj.correo || '';
+        const nombreCliente = (clienteObj.nombre || clienteObj.nombre_cliente || 'Taller Mecánico / Mayorista').trim();
+        const telefonoCliente = clienteObj.telefono || '+591 67375645';
+
+        // 1. Registrar en base de datos para trazabilidad comercial en SQLite
+        const resumenLineas = items.map(it => `• ${it.cantidad || 1}x ${it.nombre || it.descripcion} (${it.sku || 'S/SKU'}) - Bs. ${parseFloat(it.subtotal || ((it.precio || 0) * (it.cantidad || 1))).toFixed(2)}`).join('\n');
+        const mensajeTicket = `Solicitud de Cotización Formal ${codigoCot} (${items.length} ítems, Total estimado: Bs. ${totalNum.toFixed(2)}):\n${resumenLineas}${notas ? `\nObservaciones: ${notas}` : ''}`;
+
+        db.run(
+            `INSERT INTO tickets_soporte (telefono_cliente, nombre_cliente, tipo, mensaje, estado) VALUES (?, ?, 'COTIZACION', ?, 'ABIERTO')`,
+            [String(telefonoCliente).trim(), nombreCliente, mensajeTicket],
+            function (insErr) {
+                if (insErr) console.warn('[Cotizaciones] Advertencia al registrar en tickets:', insErr.message);
+            }
+        );
+
+        // 2. Registrar en Auditoría ERP
+        registrarAuditoria(
+            nombreCliente,
+            `Generó la solicitud de cotización mayorista ${codigoCot} por Bs. ${totalNum.toFixed(2)} (${items.length} repuestos). Proforma enviada a ${emailCliente || 'correo de administración'}.`,
+            'COTIZACIONES'
+        );
+
+        // 3. Envío Asíncrono de Proforma Corporativa en HTML con Nodemailer (Gmail)
+        enviarCotizacionEmail(clienteObj, items, totalNum).catch(emailErr => {
+            console.error('[EmailService] Error asíncrono al enviar cotización formal:', emailErr.message);
+        });
+
+        // 4. Notificación Proactiva por WhatsApp a Gerencia
+        const alertaCotizacionWhatsApp = `📋 *NUEVA SOLICITUD DE COTIZACIÓN MAYORISTA [${codigoCot}]*\n` +
+            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `🏢 *Cliente / Taller:* ${nombreCliente}\n` +
+            `📱 *WhatsApp / Tel:* ${telefonoCliente}\n` +
+            `✉️ *Correo Electrónico:* ${emailCliente || 'No especificado'}\n` +
+            `💰 *Monto Estimado:* *Bs. ${totalNum.toFixed(2)}*\n` +
+            `📦 *Ítems Solicitados:* ${items.length} repuesto(s)\n` +
+            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `_Se ha emitido la proforma comercial formal con validez de 7 días calendario._`;
+        enviarAlertaAdmin(alertaCotizacionWhatsApp).catch(() => {});
+
+        res.status(200).json({
+            ok: true,
+            codigo: codigoCot,
+            mensaje: 'Solicitud de cotización mayorista procesada con éxito y proforma comercial enviada por correo electrónico.',
+            total: totalNum
+        });
+    } catch (err) {
+        console.error('Error crítico en POST /api/cotizaciones:', err.message);
+        res.status(500).json({ error: 'Error del servidor al procesar la cotización.' });
     }
 });
 

@@ -230,6 +230,34 @@ async function runRegressionSuite() {
     assert(putBannerAdmin.status === 200, 'PUT /api/config/banner con ADMIN debe ser 200 OK', `Recibido: ${putBannerAdmin.status}`);
 
     // -------------------------------------------------------------
+    // PRUEBA 5: SERVICIO DE COTIZACIONES Y PROFORMAS (POST /api/cotizaciones)
+    // -------------------------------------------------------------
+    console.log('\n--- 5. SOLICITUD DE COTIZACIONES MAYORISTAS (POST /api/cotizaciones) ---');
+
+    const cotVacia = await request({
+        hostname: 'localhost', port: 3000, path: '/api/cotizaciones', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    }, { cliente: { nombre: 'Taller Sucre' }, items: [] });
+    assert(cotVacia.status === 400, 'POST /api/cotizaciones con items vacíos debe ser 400 Bad Request', `Recibido: ${cotVacia.status}`);
+
+    const cotValida = await request({
+        hostname: 'localhost', port: 3000, path: '/api/cotizaciones', method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    }, {
+        cliente: {
+            nombre: 'Taller San Cristóbal',
+            email: 'polaresn7@gmail.com',
+            telefono: '+591 67375645',
+            ciudad: 'Sucre, Bolivia'
+        },
+        items: [
+            { sku: 'LUB-SYN-5W30', nombre: 'Aceite Sintético 5W-30', cantidad: 3, precio: 250, subtotal: 750 }
+        ],
+        total: 750
+    });
+    assert(cotValida.status === 200 && cotValida.data && cotValida.data.ok === true && typeof cotValida.data.codigo === 'string', 'POST /api/cotizaciones válido debe responder 200 con código COT-XXXX', `Recibido: ${cotValida.status}`);
+
+    // -------------------------------------------------------------
     // RESUMEN FINAL
     // -------------------------------------------------------------
     console.log('\n================================================================');

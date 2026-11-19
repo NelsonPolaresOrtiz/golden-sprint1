@@ -1,0 +1,27 @@
+$kind: http-request
+name: Estado del Bot de WhatsApp (GET /api/whatsapp/estado)
+description: Verifica el estado operativo del Bot de WhatsApp (+591 67375645) ejecutado en segundo plano dentro del servidor Node.js.
+url: "{{base_url}}/api/whatsapp/estado"
+method: GET
+headers:
+  x-usuario-rol: "{{token_admin}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Estructura contiene flags de conexión y número asignado", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("conectado");
+          pm.expect(jsonData.conectado).to.be.a("boolean");
+          pm.expect(jsonData).to.have.property("numero");
+      });
+
+      pm.test("Número corporativo coincide con canal oficial (+591 67375645)", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.numero).to.include("67375645");
+      });
+    language: text/javascript
+order: 1000

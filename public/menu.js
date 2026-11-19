@@ -306,8 +306,8 @@ function renderizarMenu(paginaActiva) {
                     </svg>
                     <!-- Texto de la Marca en Dos Líneas compactas -->
                     <div style="display: flex; flex-direction: column; line-height: 1.1;">
-                        <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
-                        <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 800; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 600; color: #EF4444; letter-spacing: 0.05em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
                     </div>
                 </a>
             </div>
@@ -339,7 +339,7 @@ function renderizarMenu(paginaActiva) {
                     <span class="pulse-dot pulse-dot-emerald"></span>
                     <div class="d-flex flex-column" style="line-height: 1.15;">
                         <span class="fw-bold text-white text-nowrap" style="font-size: 0.76rem;" id="navUserName">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
-                        <span class="text-nowrap" style="font-family: 'Work Sans', sans-serif; font-size: 0.62rem; font-weight: 600; color: #D97706; letter-spacing: 0.2px;" id="navUserRol">${rolLegible}</span>
+                        <span class="text-nowrap" style="font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 600; color: #D97706; letter-spacing: 0.2px;" id="navUserRol">${rolLegible}</span>
                     </div>
                 </div>
 
@@ -362,7 +362,7 @@ function renderizarMenu(paginaActiva) {
     </nav>
 
     <!-- DRAWER OFFCANVAS ADAPTABLE (< 1024px) -->
-    <div class="offcanvas offcanvas-start text-white border-0" tabindex="-1" id="drawerNavegacionGlobal" aria-labelledby="drawerNavegacionGlobalLabel" style="width: 310px; background-color: #141619; border-right: 3px solid #B91C1C !important; z-index: 1060;">
+    <div class="offcanvas offcanvas-start text-white border-0" tabindex="-1" id="drawerNavegacionGlobal" aria-labelledby="drawerNavegacionGlobalLabel" style="width: 310px; background-color: #141619; border-right: 3px solid #B91C1C !important; z-index: 10050;">
         <div class="offcanvas-header pb-3" style="border-bottom: 1px solid #292524; background-color: #1C1917;">
             <div class="d-flex align-items-center gap-2">
                 <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -371,8 +371,8 @@ function renderizarMenu(paginaActiva) {
                     <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
                 </svg>
                 <div class="d-flex flex-column" style="line-height: 1.1;">
-                    <span style="font-family: 'Archivo', sans-serif; font-size: 1.15rem; font-weight: 900; color: #FAFAFA;">GOLDEN</span>
-                    <span style="font-family: 'Work Sans', sans-serif; font-size: 0.52rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.08em;">LUBRICANTES &amp; FILTROS</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 1.15rem; font-weight: 900; color: #FAFAFA;">GOLDEN</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 0.52rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.08em;">LUBRICANTES &amp; FILTROS</span>
                 </div>
             </div>
             <button type="button" class="btn-close btn-close-white text-reset" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
@@ -412,17 +412,20 @@ function renderizarMenu(paginaActiva) {
         </div>
     </div>`;
 
-    const contenedor = document.getElementById('menu-contenedor') || document.getElementById('menu-container') || document.querySelector('.navbar-golden');
+    const contenedor = document.getElementById('menu-contenedor') || document.getElementById('menu-container') || document.querySelector('.navbar-golden') || document.querySelector('header.topbar-golden');
     if (contenedor) {
-        contenedor.style.position = 'sticky';
+        contenedor.style.position = 'fixed';
         contenedor.style.top = '0';
-        contenedor.style.zIndex = '1000';
+        contenedor.style.left = '0';
+        contenedor.style.right = '0';
         contenedor.style.width = '100%';
         contenedor.style.minHeight = '72px';
+        contenedor.style.zIndex = '9999';
         contenedor.style.backgroundColor = '#1C1917';
         contenedor.style.borderBottom = '3px solid #C81E1E';
-        contenedor.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.28)';
+        contenedor.style.boxShadow = '0 4px 18px rgba(0, 0, 0, 0.32)';
         contenedor.innerHTML = menuHTML;
+        document.body.classList.add('has-navbar-fixed');
         if (!esCliente) {
             setTimeout(iniciarMonitorAlertasStock, 300);
         }
@@ -467,8 +470,8 @@ function renderizarSidebar(moduloActivo) {
                     <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
                 </svg>
                 <div style="display: flex; flex-direction: column; line-height: 1.1;">
-                    <span style="font-family: 'Archivo', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
-                    <span style="font-family: 'Work Sans', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 800; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
+                    <span style="font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 600; color: #EF4444; letter-spacing: 0.05em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
                 </div>
             </a>
 
@@ -1034,8 +1037,8 @@ async function generarRecibo(pedidoId, modo = 'descargar') {
                         <tr style="border-bottom: 1px solid #cbd5e1; ${idx % 2 === 1 ? 'background: #f8fafc;' : ''}">
                             <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: center; color: #1C1917;">${d.cantidad}</td>
                             <td style="border: 1px solid #e2e8f0; padding: 10px 12px; color: #1C1917;">${d.producto_nombre || 'Repuesto Automotriz'}</td>
-                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #1C1917; font-family: 'Chivo Mono', monospace;">Bs. ${parseFloat(d.precio_unitario || 0).toFixed(2)}</td>
-                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #1C1917; font-family: 'Chivo Mono', monospace;">Bs. ${parseFloat(d.subtotal || 0).toFixed(2)}</td>
+                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; color: #1C1917; font-family: 'Inter', sans-serif;">Bs. ${parseFloat(d.precio_unitario || 0).toFixed(2)}</td>
+                            <td style="border: 1px solid #e2e8f0; padding: 10px 12px; text-align: right; font-weight: 600; color: #1C1917; font-family: 'Inter', sans-serif;">Bs. ${parseFloat(d.subtotal || 0).toFixed(2)}</td>
                         </tr>
                     `).join('');
                 }

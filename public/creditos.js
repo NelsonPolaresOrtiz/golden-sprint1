@@ -159,7 +159,7 @@ function renderizarTablaCreditos(creditos) {
                     </div>
                 </td>
                 <td class="small text-secondary font-monospace">${escaparHTML(c.cliente_email)}</td>
-                <td class="text-end font-monospace text-dark fw-semibold" style="font-family: 'Chivo Mono', monospace;">Bs. ${Number(limiteCredito || 0).toFixed(2)}</td>
+                <td class="text-end font-monospace text-dark fw-semibold" style="font-family: 'Inter', sans-serif;">Bs. ${Number(limiteCredito || 0).toFixed(2)}</td>
                 <td class="text-end font-monospace ${saldoDeudor > 0 ? 'text-danger fw-bold' : 'text-secondary'}">
                     Bs. ${Number(saldoDeudor || 0).toFixed(2)}
                 </td>

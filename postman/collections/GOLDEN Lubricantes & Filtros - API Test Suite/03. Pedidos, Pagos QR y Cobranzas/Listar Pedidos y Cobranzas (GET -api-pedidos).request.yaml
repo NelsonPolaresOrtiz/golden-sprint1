@@ -1,0 +1,27 @@
+$kind: http-request
+name: Listar Pedidos y Cobranzas (GET /api/pedidos)
+description: Consulta el listado general de pedidos y cuentas por cobrar para auditar el estado financiero.
+url: "{{base_url}}/api/pedidos"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Listado de pedidos devuelto como Array no vacío", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.be.an("array");
+          pm.expect(jsonData.length > 0).to.be.true;
+      });
+
+      pm.test("El pedido conciliado figura con estado VERIFICADO", function () {
+          var jsonData = pm.response.json();
+          var targetId = parseInt(pm.environment.get("ultimo_pedido_id"));
+          var match = jsonData.find(p => p.id === targetId);
+          pm.expect(match).to.not.be.undefined;
+          pm.expect(match.estado_pago).to.eql("VERIFICADO");
+      });
+    language: text/javascript
+order: 3000

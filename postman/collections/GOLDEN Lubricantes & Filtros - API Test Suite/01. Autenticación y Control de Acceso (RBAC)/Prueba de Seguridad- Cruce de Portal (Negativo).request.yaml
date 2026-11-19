@@ -1,0 +1,29 @@
+$kind: http-request
+name: "Prueba de Seguridad: Cruce de Portal (Negativo)"
+description: Verifica que un usuario con rol CLIENTE no pueda vulnerar el sistema intentando ingresar al portal administrativo INTERNO.
+url: "{{base_url}}/api/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{cliente_email}}",
+      "password": "{{cliente_pass}}",
+      "tipo_portal": "INTERNO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Bloqueo estricto con HTTP 403 Forbidden", function () {
+          pm.response.to.have.status(403);
+      });
+
+      pm.test("Mensaje de error especifica restricción de portal para rol Cliente", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("error");
+          pm.expect(jsonData.error).to.include("Acceso denegado");
+      });
+    language: text/javascript
+order: 3000

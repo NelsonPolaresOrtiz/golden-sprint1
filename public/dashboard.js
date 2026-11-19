@@ -199,7 +199,7 @@ function renderizarTablaUltimosPedidos(pedidos) {
         tbody.innerHTML += `
             <tr>
                 <td class="ps-3 fw-bold">
-                    <span class="badge font-monospace px-2 py-1" style="background: #27272A; color: #FAFAFA; font-family: 'Chivo Mono', monospace; font-size: 0.78rem;">
+                    <span class="badge font-monospace px-2 py-1" style="background: #27272A; color: #FAFAFA; font-family: 'Inter', sans-serif; font-size: 0.78rem;">
                         #00${p.id}
                     </span>
                 </td>
@@ -210,13 +210,13 @@ function renderizarTablaUltimosPedidos(pedidos) {
                     </div>
                     ${clienteVisual.nit ? `<small class="text-secondary font-monospace d-block" style="font-size: 0.72rem; color: #78716C !important;">${clienteVisual.nit}</small>` : ''}
                 </td>
-                <td class="small font-monospace" style="color: #57534E; font-family: 'Chivo Mono', monospace; font-size: 0.8rem;">
+                <td class="small font-monospace" style="color: #57534E; font-family: 'Inter', sans-serif; font-size: 0.8rem;">
                     ${fechaFormateada}
                 </td>
                 <td>
                     ${metodoInfo}
                 </td>
-                <td class="text-end fw-bold fs-6 font-monospace" style="color: #15803D; font-family: 'Chivo Mono', monospace;">
+                <td class="text-end fw-bold fs-6 font-monospace" style="color: #15803D; font-family: 'Inter', sans-serif;">
                     Bs. ${parseFloat(p.total || 0).toFixed(2)}
                 </td>
                 <td class="text-center">
@@ -307,7 +307,7 @@ async function verDetallePedido(pedidoId) {
         }
 
         const modalHtml = `
-            <div class="text-start" style="font-family: 'Work Sans', sans-serif;">
+            <div class="text-start" style="font-family: 'Inter', sans-serif;">
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="border-color: #E6E1DA !important;">
                     <div>
                         <h6 class="fw-bold text-dark mb-0">${clienteInfo.nombre}</h6>
@@ -345,7 +345,7 @@ async function verDetallePedido(pedidoId) {
 
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: `<span style="font-family: 'Archivo', sans-serif; font-weight: 700; color: #1C1917;">Orden N° #00${p.id}</span>`,
+                title: `<span style="font-family: 'Inter', sans-serif; font-weight: 700; color: #1C1917;">Orden N° #00${p.id}</span>`,
                 html: modalHtml,
                 showCancelButton: true,
                 confirmButtonColor: '#C81E1E',
@@ -510,12 +510,12 @@ function renderizarGraficoFlujo(pedidos = [], modo = '7dias') {
                     padding: 10,
                     cornerRadius: 6,
                     titleFont: {
-                        family: "'Work Sans', sans-serif",
+                        family: "'Inter', sans-serif",
                         weight: '600',
                         size: 13
                     },
                     bodyFont: {
-                        family: "'Chivo Mono', monospace",
+                        family: "'Inter', sans-serif",
                         size: 12
                     },
                     callbacks: {
@@ -535,7 +535,7 @@ function renderizarGraficoFlujo(pedidos = [], modo = '7dias') {
                 x: {
                     grid: { display: false },
                     ticks: {
-                        font: { family: "'Work Sans', sans-serif", size: 11, weight: '500' },
+                        font: { family: "'Inter', sans-serif", size: 11, weight: '500' },
                         color: '#57534E'
                     }
                 },
@@ -543,7 +543,7 @@ function renderizarGraficoFlujo(pedidos = [], modo = '7dias') {
                     beginAtZero: true,
                     grid: { color: '#F3EFEA', drawBorder: false },
                     ticks: {
-                        font: { family: "'Chivo Mono', monospace", size: 10 },
+                        font: { family: "'Inter', sans-serif", size: 10 },
                         color: '#78716C',
                         callback: function (val) {
                             if (val >= 1000) {
@@ -629,8 +629,8 @@ function renderizarGraficoRotacion(pedidos = [], productos = []) {
                     borderWidth: 1,
                     padding: 8,
                     cornerRadius: 6,
-                    titleFont: { family: "'Work Sans', sans-serif", weight: '600', size: 12 },
-                    bodyFont: { family: "'Chivo Mono', monospace", size: 11 },
+                    titleFont: { family: "'Inter', sans-serif", weight: '600', size: 12 },
+                    bodyFont: { family: "'Inter', sans-serif", size: 11 },
                     callbacks: {
                         label: function (context) {
                             const val = context.raw || 0;
@@ -645,14 +645,14 @@ function renderizarGraficoRotacion(pedidos = [], productos = []) {
                     beginAtZero: true,
                     grid: { color: '#F3EFEA', drawBorder: false },
                     ticks: {
-                        font: { family: "'Chivo Mono', monospace", size: 10 },
+                        font: { family: "'Inter', sans-serif", size: 10 },
                         color: '#78716C'
                     }
                 },
                 y: {
                     grid: { display: false },
                     ticks: {
-                        font: { family: "'Work Sans', sans-serif", size: 11, weight: '500' },
+                        font: { family: "'Inter', sans-serif", size: 11, weight: '500' },
                         color: '#1C1917'
                     }
                 }
@@ -799,8 +799,8 @@ function dibujarGraficoCategoriasYDona(categoriasData) {
                     bodyColor: '#FFFFFF',
                     padding: 8,
                     cornerRadius: 6,
-                    titleFont: { family: "'Work Sans', sans-serif", weight: '600', size: 12 },
-                    bodyFont: { family: "'Chivo Mono', monospace", size: 11 },
+                    titleFont: { family: "'Inter', sans-serif", weight: '600', size: 12 },
+                    bodyFont: { family: "'Inter', sans-serif", size: 11 },
                     callbacks: {
                         label: function (context) {
                             const idx = context.dataIndex;
@@ -842,10 +842,10 @@ function dibujarGraficoCategoriasYDona(categoriasData) {
                             <span class="fw-bold text-dark text-truncate" style="font-size: 0.78rem;" title="${c.categoria}">${c.categoria}</span>
                         </div>
                         <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                            <span class="badge" style="background: #F3EFEA; color: #1C1917; font-family: 'Chivo Mono', monospace; font-size: 0.65rem; font-weight: 600; padding: 2px 5px;">
+                            <span class="badge" style="background: #F3EFEA; color: #1C1917; font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 600; padding: 2px 5px;">
                                 ${pct}%
                             </span>
-                            <strong class="font-monospace text-dark" style="font-family: 'Chivo Mono', monospace; font-size: 0.78rem;">
+                            <strong class="font-monospace text-dark" style="font-family: 'Inter', sans-serif; font-size: 0.78rem;">
                                 Bs. ${montoBs}
                             </strong>
                         </div>
@@ -894,7 +894,7 @@ function renderizarPanelReabastecimiento(criticos) {
         return `
             <tr>
                 <td class="ps-4">
-                    <span class="badge font-monospace px-2 py-1" style="background: #27272A; color: #FAFAFA; font-family: 'Chivo Mono', monospace; font-size: 0.76rem;">
+                    <span class="badge font-monospace px-2 py-1" style="background: #27272A; color: #FAFAFA; font-family: 'Inter', sans-serif; font-size: 0.76rem;">
                         ${p.sku}
                     </span>
                 </td>
@@ -908,16 +908,16 @@ function renderizarPanelReabastecimiento(criticos) {
                     </span>
                 </td>
                 <td class="text-center font-monospace small">
-                    <span class="badge" style="background: #FFFFFF; color: #1C1917; border: 1px solid #D6D0C7; font-family: 'Chivo Mono', monospace; font-size: 0.72rem;">
+                    <span class="badge" style="background: #FFFFFF; color: #1C1917; border: 1px solid #D6D0C7; font-family: 'Inter', sans-serif; font-size: 0.72rem;">
                         ${pres}
                     </span>
                 </td>
                 <td class="text-center">
-                    <span class="badge bg-danger text-white font-monospace px-2 py-1" style="font-family: 'Chivo Mono', monospace; font-size: 0.75rem;">
+                    <span class="badge bg-danger text-white font-monospace px-2 py-1" style="font-family: 'Inter', sans-serif; font-size: 0.75rem;">
                         ${p.stock} unid.
                     </span>
                 </td>
-                <td class="text-center font-monospace text-secondary small" style="font-family: 'Chivo Mono', monospace;">
+                <td class="text-center font-monospace text-secondary small" style="font-family: 'Inter', sans-serif;">
                     Mín: ${p.stock_minimo}
                 </td>
                 <td class="text-end pe-4">
@@ -947,17 +947,17 @@ function determinarPresentacion(nombre = '', categoria = '') {
 function solicitarReabastecimiento(sku, nombre) {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: `<span style="font-family: 'Archivo', sans-serif; font-weight: 700; color: #1C1917;">Orden de Reposición Urgente</span>`,
+            title: `<span style="font-family: 'Inter', sans-serif; font-weight: 700; color: #1C1917;">Orden de Reposición Urgente</span>`,
             html: `
-                <div class="text-start" style="font-family: 'Work Sans', sans-serif;">
+                <div class="text-start" style="font-family: 'Inter', sans-serif;">
                     <p class="small text-secondary mb-2">Se registrará una solicitud de compra prioritaria para abastecer almacén:</p>
                     <div class="p-3 mb-3" style="background: #F3EFEA; border: 1px solid #E6E1DA; border-radius: 6px;">
-                        <span class="badge font-monospace px-2 py-1 mb-1" style="background: #27272A; color: #FAFAFA; font-family: 'Chivo Mono', monospace;">${sku}</span>
+                        <span class="badge font-monospace px-2 py-1 mb-1" style="background: #27272A; color: #FAFAFA; font-family: 'Inter', sans-serif;">${sku}</span>
                         <div class="fw-bold text-dark mt-1" style="font-size: 0.95rem;">${nombre}</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Cantidad sugerida a ordenar (Unidades / Cajas):</label>
-                        <input type="number" id="swalCantidadReposicion" class="form-control" value="24" min="1" style="font-family: 'Chivo Mono', monospace;">
+                        <input type="number" id="swalCantidadReposicion" class="form-control" value="24" min="1" style="font-family: 'Inter', sans-serif;">
                     </div>
                     <div class="mb-2">
                         <label class="form-label small fw-bold text-secondary">Proveedor mayorista recomendado:</label>
@@ -1122,7 +1122,7 @@ function renderizarPanelWhatsApp(data) {
                         </div>
                         <div>
                             <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                                <h5 class="fw-bold text-dark mb-0 font-monospace" style="font-family: 'Chivo Mono', monospace;">
+                                <h5 class="fw-bold text-dark mb-0 font-monospace" style="font-family: 'Inter', sans-serif;">
                                     ${escaparHTML(data.numero || '+591 67375645')}
                                 </h5>
                                 <span class="badge" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; font-size: 0.72rem;">

@@ -1,0 +1,3 @@
+$kind: collection
+description: Flujo integral de creación de órdenes con Pago QR Interoperable, simulación de conciliación bancaria por Webhook y consulta de cobranzas.
+order: 3000

@@ -1,0 +1,42 @@
+$kind: http-request
+description: Autenticación de un Cliente/Taller en el Catálogo Comercial. Guarda 'token_cliente' y 'cliente_id' en variables de entorno.
+url: "{{base_url}}/api/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{cliente_email}}",
+      "password": "{{cliente_pass}}",
+      "tipo_portal": "CLIENTE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Estructura de respuesta contiene objeto usuario", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("usuario");
+          pm.expect(jsonData.usuario).to.have.property("id");
+      });
+
+      pm.test("Rol autenticado es CLIENTE y almacenamiento en token_cliente", function () {
+          var jsonData = pm.response.json();
+          pm.expect(["CLIENTE", "CLIENTE_B2B", "CLIENTE_B2C"]).to.include(jsonData.usuario.rol);
+          
+          // Guardar token/rol y cliente_id en variables de entorno
+          pm.environment.set("token_cliente", jsonData.usuario.rol);
+          pm.environment.set("cliente_id", jsonData.usuario.id);
+          pm.environment.set("cliente_email", jsonData.usuario.email);
+      });
+
+      pm.test("Tiempo de respuesta óptimo (< 2000ms)", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 2000

@@ -169,12 +169,12 @@
 
             filasItemsHTML += `
                 <tr style="background-color: ${bgFila}; border-bottom: 1px solid #E2E8F0;">
-                    <td style="width: 14%; padding: 7px 8px; font-family: 'Chivo Mono', monospace; font-size: 11px; text-align: center; color: #334155; font-weight: 600;">${escaparHTML(sku)}</td>
+                    <td style="width: 14%; padding: 7px 8px; font-family: 'Inter', sans-serif; font-size: 11px; text-align: center; color: #334155; font-weight: 600;">${escaparHTML(sku)}</td>
                     <td style="width: 39%; padding: 7px 8px; font-size: 11px; color: #0F172A; font-weight: 600; word-wrap: break-word; overflow-wrap: break-word;">${escaparHTML(nombre)}</td>
                     <td style="width: 15%; padding: 7px 8px; font-size: 11px; text-align: center; color: #475569;">${escaparHTML(pres)}</td>
                     <td style="width: 8%; padding: 7px 8px; font-size: 11px; text-align: center; font-weight: 700; color: #0F172A;">${cantidad}</td>
-                    <td style="width: 12%; padding: 7px 8px; font-family: 'Chivo Mono', monospace; font-size: 11px; text-align: right; color: #334155;">Bs. ${pUnit}</td>
-                    <td style="width: 12%; padding: 7px 8px; font-family: 'Chivo Mono', monospace; font-size: 11px; text-align: right; font-weight: 700; color: #B91C1C;">Bs. ${sub}</td>
+                    <td style="width: 12%; padding: 7px 8px; font-family: 'Inter', sans-serif; font-size: 11px; text-align: right; color: #334155;">Bs. ${pUnit}</td>
+                    <td style="width: 12%; padding: 7px 8px; font-family: 'Inter', sans-serif; font-size: 11px; text-align: right; font-weight: 700; color: #B91C1C;">Bs. ${sub}</td>
                 </tr>
             `;
         });
@@ -182,7 +182,7 @@
         const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`GOLDEN-ERP|NIT:${EMPRESA.nit}|FAC:${idNum}|TOT:${totalBs.toFixed(2)}|FEC:${fechaHora}`)}`;
 
         return `
-        <div class="golden-documento-contenedor" style="width: 100%; max-width: 790px; margin: 0 auto; background: #FFFFFF; color: #1C1917; font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-sizing: border-box; padding: 24px 28px; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+        <div class="golden-documento-contenedor" style="width: 100%; max-width: 790px; margin: 0 auto; background: #FFFFFF; color: #1C1917; font-family: 'Inter', sans-serif; box-sizing: border-box; padding: 24px 28px; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             
             <!-- ESTILOS INTERNOS DE IMPRESIÓN Y ALINEACIÓN EXACTA -->
             <style>
@@ -201,7 +201,7 @@
                 <div style="display: flex; align-items: flex-start; gap: 12px; max-width: 58%;">
                     ${LOGO_SVG_GOLDEN}
                     <div>
-                        <h2 style="margin: 0; font-family: 'Archivo', sans-serif; font-size: 18px; font-weight: 900; color: #141619; letter-spacing: -0.01em; line-height: 1.15;">
+                        <h2 style="margin: 0; font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900; color: #141619; letter-spacing: -0.01em; line-height: 1.15;">
                             ${EMPRESA.denominacion}
                         </h2>
                         <div style="font-size: 11px; font-weight: 700; color: #B91C1C; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -217,13 +217,13 @@
 
                 <!-- Recuadro Oficial de Documento (Derecha) -->
                 <div style="width: 38%; border: 2px solid #141619; border-radius: 6px; background: #FAF8F5; padding: 8px 12px; text-align: center; box-sizing: border-box;">
-                    <div style="background: #141619; color: #F59E0B; font-family: 'Archivo', sans-serif; font-size: 11px; font-weight: 800; padding: 4px 6px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <div style="background: #141619; color: #F59E0B; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800; padding: 4px 6px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase;">
                         FACTURA / NOTA DE ENTREGA
                     </div>
-                    <div style="font-family: 'Chivo Mono', monospace; font-size: 18px; font-weight: 900; color: #B91C1C; margin-top: 4px;">
+                    <div style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900; color: #B91C1C; margin-top: 4px;">
                         N° #00${idNum}
                     </div>
-                    <div style="font-size: 10px; color: #475569; margin-top: 3px; font-family: 'Chivo Mono', monospace;">
+                    <div style="font-size: 10px; color: #475569; margin-top: 3px; font-family: 'Inter', sans-serif;">
                         <div><strong>NIT:</strong> ${EMPRESA.nit}</div>
                         <div><strong>Autorización:</strong> ${EMPRESA.nroAutorizacion}</div>
                         <div><strong>Fecha:</strong> ${fechaHora}</div>
@@ -243,7 +243,7 @@
                             <strong style="color: #0F172A;">Razón Social:</strong> <span>${escaparHTML(clienteNombre)}</span>
                         </div>
                         <div style="margin-bottom: 2px;">
-                            <strong style="color: #0F172A;">NIT / CI:</strong> <span style="font-family: 'Chivo Mono', monospace;">${escaparHTML(clienteNit)}</span>
+                            <strong style="color: #0F172A;">NIT / CI:</strong> <span style="font-family: 'Inter', sans-serif;">${escaparHTML(clienteNit)}</span>
                         </div>
                         <div style="margin-bottom: 2px;">
                             <strong style="color: #0F172A;">Dirección:</strong> <span>${escaparHTML(clienteDir)}</span>
@@ -262,7 +262,7 @@
                             <strong style="color: #0F172A;">Forma de Pago:</strong> <span style="font-weight: 600; color: #0F172A;">${escaparHTML(metodoPagoLabel)}</span>
                         </div>
                         <div style="margin-bottom: 2px;">
-                            <strong style="color: #0F172A;">Referencia / Trx:</strong> <span style="font-family: 'Chivo Mono', monospace; font-size: 10.5px; color: #475569;">${escaparHTML(refPago)}</span>
+                            <strong style="color: #0F172A;">Referencia / Trx:</strong> <span style="font-family: 'Inter', sans-serif; font-size: 10.5px; color: #475569;">${escaparHTML(refPago)}</span>
                         </div>
                         <div style="margin-bottom: 2px;">
                             <strong style="color: #0F172A;">Estado Logístico:</strong> 
@@ -304,7 +304,7 @@
                         <img src="${qrDataUrl}" alt="QR Fiscal" style="width: 68px; height: 68px; border: 1px solid #CBD5E1; padding: 2px; background: #FFFFFF; flex-shrink: 0;" onerror="this.style.display='none';">
                         <div style="font-size: 9.5px; color: #64748B; line-height: 1.35;">
                             <div>${EMPRESA.leyendaFiscal}</div>
-                            <div style="margin-top: 3px; font-family: 'Chivo Mono', monospace;">Código de Control: <strong>4B-9F-22-AA</strong></div>
+                            <div style="margin-top: 3px; font-family: 'Inter', sans-serif;">Código de Control: <strong>4B-9F-22-AA</strong></div>
                         </div>
                     </div>
                 </div>
@@ -313,24 +313,24 @@
                 <div style="width: 38%; background: #F8FAFC; border: 1px solid #CBD5E1; border-radius: 6px; padding: 10px 14px; box-sizing: border-box; font-size: 11.5px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #475569;">
                         <span>Subtotal Neto:</span>
-                        <span style="font-family: 'Chivo Mono', monospace; font-weight: 600; color: #0F172A;">Bs. ${subtotalNeto.toFixed(2)}</span>
+                        <span style="font-family: 'Inter', sans-serif; font-weight: 600; color: #0F172A;">Bs. ${subtotalNeto.toFixed(2)}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #475569;">
                         <span>IVA Efectivo (13%):</span>
-                        <span style="font-family: 'Chivo Mono', monospace; font-weight: 600; color: #0F172A;">Bs. ${iva13.toFixed(2)}</span>
+                        <span style="font-family: 'Inter', sans-serif; font-weight: 600; color: #0F172A;">Bs. ${iva13.toFixed(2)}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: #166534; font-size: 10.5px;">
                         <span>Descuento Mayorista:</span>
-                        <span style="font-family: 'Chivo Mono', monospace; font-weight: 600;">Bs. 0.00</span>
+                        <span style="font-family: 'Inter', sans-serif; font-weight: 600;">Bs. 0.00</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #141619; padding-top: 6px; margin-top: 4px;">
-                        <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 13px; color: #141619;">TOTAL A PAGAR:</span>
-                        <span style="font-family: 'Chivo Mono', monospace; font-size: 16px; font-weight: 900; color: #B91C1C;">Bs. ${totalBs.toFixed(2)}</span>
+                        <span style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 13px; color: #141619;">TOTAL A PAGAR:</span>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 900; color: #B91C1C;">Bs. ${totalBs.toFixed(2)}</span>
                     </div>
                     ${esPayPal ? `
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #CBD5E1; padding-top: 4px; margin-top: 4px; color: #1E40AF; font-size: 11px;">
                         <span>Equivalente PayPal:</span>
-                        <span style="font-family: 'Chivo Mono', monospace; font-weight: 800;">$${totalUsd} USD</span>
+                        <span style="font-family: 'Inter', sans-serif; font-weight: 800;">$${totalUsd} USD</span>
                     </div>
                     ` : ''}
                 </div>
@@ -424,7 +424,7 @@
                 <title>${escaparHTML(titulo)}</title>
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Work+Sans:wght@400;600;700&family=Chivo+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
             </head>
             <body style="margin: 0; padding: 20px; background: #FFFFFF;" onload="window.print(); setTimeout(() => window.close(), 1500);">
                 ${htmlContenido}
@@ -743,19 +743,19 @@
 
             filasHTML += `
                 <tr style="background-color: ${bgFila}; border-bottom: 1px solid #E2E8F0;">
-                    <td style="padding: 7px 8px; font-family: 'Chivo Mono', monospace; font-size: 11px; text-align: center; color: #334155; font-weight: 600;">${escaparHTML(p.sku)}</td>
+                    <td style="padding: 7px 8px; font-family: 'Inter', sans-serif; font-size: 11px; text-align: center; color: #334155; font-weight: 600;">${escaparHTML(p.sku)}</td>
                     <td style="padding: 7px 8px; font-size: 11px; color: #0F172A; font-weight: 600; word-wrap: break-word;">${escaparHTML(p.nombre)}</td>
                     <td style="padding: 7px 8px; font-size: 10.5px; color: #475569; text-align: center;">${escaparHTML(p.categoria)}</td>
-                    <td style="padding: 7px 8px; font-family: 'Chivo Mono', monospace; font-size: 11px; text-align: right; color: #334155;">Bs. ${precio.toFixed(2)}</td>
+                    <td style="padding: 7px 8px; font-family: 'Inter', sans-serif; font-size: 11px; text-align: right; color: #334155;">Bs. ${precio.toFixed(2)}</td>
                     <td style="padding: 7px 8px; font-size: 11px; text-align: center; font-weight: 700; color: #0F172A;">${stock} unid.</td>
-                    <td style="padding: 7px 8px; font-family: 'Chivo Mono', monospace; font-size: 11px; text-align: right; font-weight: 700; color: #B91C1C;">Bs. ${sub.toFixed(2)}</td>
+                    <td style="padding: 7px 8px; font-family: 'Inter', sans-serif; font-size: 11px; text-align: right; font-weight: 700; color: #B91C1C;">Bs. ${sub.toFixed(2)}</td>
                     <td style="padding: 7px 8px; font-size: 10px; text-align: center;">${estadoBadge}</td>
                 </tr>
             `;
         });
 
         return `
-        <div class="golden-documento-contenedor" style="width: 100%; max-width: 820px; margin: 0 auto; background: #FFFFFF; color: #1C1917; font-family: 'Work Sans', sans-serif; box-sizing: border-box; padding: 24px 28px; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+        <div class="golden-documento-contenedor" style="width: 100%; max-width: 820px; margin: 0 auto; background: #FFFFFF; color: #1C1917; font-family: 'Inter', sans-serif; box-sizing: border-box; padding: 24px 28px; line-height: 1.35; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             <style>
                 @media print {
                     @page { margin: 8mm; size: A4 portrait; }
@@ -768,7 +768,7 @@
                 <div style="display: flex; align-items: flex-start; gap: 12px; max-width: 60%;">
                     ${LOGO_SVG_GOLDEN}
                     <div>
-                        <h2 style="margin: 0; font-family: 'Archivo', sans-serif; font-size: 18px; font-weight: 900; color: #141619; line-height: 1.15;">
+                        <h2 style="margin: 0; font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900; color: #141619; line-height: 1.15;">
                             ${EMPRESA.denominacion}
                         </h2>
                         <div style="font-size: 11px; font-weight: 700; color: #B91C1C; margin-top: 2px; text-transform: uppercase;">
@@ -781,13 +781,13 @@
                     </div>
                 </div>
                 <div style="width: 36%; border: 2px solid #141619; border-radius: 6px; background: #FAF8F5; padding: 8px 12px; text-align: center;">
-                    <div style="background: #141619; color: #F59E0B; font-family: 'Archivo', sans-serif; font-size: 10.5px; font-weight: 800; padding: 3px 6px; border-radius: 4px; text-transform: uppercase;">
+                    <div style="background: #141619; color: #F59E0B; font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 800; padding: 3px 6px; border-radius: 4px; text-transform: uppercase;">
                         REPORTE DE INVENTARIO
                     </div>
-                    <div style="font-family: 'Chivo Mono', monospace; font-size: 14px; font-weight: 900; color: #B91C1C; margin-top: 4px;">
+                    <div style="font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 900; color: #B91C1C; margin-top: 4px;">
                         CONTROL DE EXISTENCIAS
                     </div>
-                    <div style="font-size: 10px; color: #475569; margin-top: 2px; font-family: 'Chivo Mono', monospace;">
+                    <div style="font-size: 10px; color: #475569; margin-top: 2px; font-family: 'Inter', sans-serif;">
                         <div><strong>NIT:</strong> ${EMPRESA.nit}</div>
                         <div><strong>Fecha:</strong> ${fechaHora}</div>
                     </div>
@@ -799,7 +799,7 @@
                 <div><strong style="color: #475569;">Catálogo Activo:</strong> <span style="font-weight: 800; color: #0F172A;">${totalItems} ítems</span></div>
                 <div><strong style="color: #475569;">Unidades Físicas:</strong> <span style="font-weight: 800; color: #D97706;">${totalUnidades} unid.</span></div>
                 <div><strong style="color: #475569;">Alertas Stock:</strong> <span style="font-weight: 800; color: #B91C1C;">${bajoStock} críticas</span></div>
-                <div><strong style="color: #475569;">Valorización Total:</strong> <span style="font-family: 'Chivo Mono', monospace; font-weight: 900; color: #166534;">Bs. ${valorTotal.toFixed(2)}</span></div>
+                <div><strong style="color: #475569;">Valorización Total:</strong> <span style="font-family: 'Inter', sans-serif; font-weight: 900; color: #166534;">Bs. ${valorTotal.toFixed(2)}</span></div>
             </div>
 
             <!-- 3. TABLA DE REPUESTOS -->

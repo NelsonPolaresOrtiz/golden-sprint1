@@ -122,10 +122,10 @@ db.serialize(() => {
         if (!err && row && row.count === 0) {
             db.run(`INSERT INTO config_catalogo (id, hero_titulo, hero_subtitulo, hero_destacado, hero_badge, banner_activo) VALUES (
                 1,
-                'LUBRICANTES Y FILTROS\nDE ALTO RENDIMIENTO\nPARA TALLERES Y FLOTAS',
-                'Máxima potencia, más eficiencia y la mayor durabilidad para quien exige mucho del vehículo en ruta y ciudad.',
-                'Lotes con -15% Mayorista',
-                'Fabricación & Distribución Mayorista',
+                'Distribución de lubricantes y filtros',
+                'Ventas por mayor y menor para talleres, transporte e industria en Sucre',
+                'Lotes mayoristas',
+                'Distribución oficial en Sucre',
                 1
             )`, (insErr) => {
                 if (!insErr) console.log('[Info] Configuración inicial del catálogo registrada correctamente.');

@@ -26,7 +26,7 @@
     <!-- Tipografía Editorial Automotriz -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Estilos Comerciales Automotrices Stitch UI -->
     <link rel="stylesheet" href="styles.css">
     <style>
@@ -75,7 +75,7 @@
         <!-- Título de Sección con Filtro de Fecha Gerencial -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 mt-2 pb-3 border-bottom border-secondary border-opacity-25 gap-3">
             <div>
-                <h2 class="fw-bold text-dark mb-0" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.02em;">
+                <h2 class="fw-bold text-dark mb-0" style="font-family: 'Inter', sans-serif; letter-spacing: -0.02em;">
                     <i class="bi bi-truck text-warning me-2"></i>Despacho y logística de pedidos
                 </h2>
                 <p class="text-secondary mb-0 mt-1 small">Control de envíos a talleres, rutas de reparto y actualización de estados de entrega.</p>
@@ -99,56 +99,26 @@
         <!-- Alerta Toast Flotante para Cambios en Tiempo Real -->
         <div id="logisticaAlert" class="alert d-none py-2 px-3 small rounded-3 fw-semibold shadow mb-4" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);"></div>
 
-        <!-- TARJETAS DE RESUMEN (KPIs en Tiempo Real) -->
-        <div class="row g-4 mb-4">
+        <!-- TARJETAS DE RESUMEN -->
+        <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="kpi-card-stitch kpi-card-ruby h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
-                                <span class="pulse-dot pulse-dot-ruby me-2"></span> Por Preparar (Almacén)
-                            </span>
-                            <h1 class="fw-bold text-dark mb-0 mt-2" id="countPendientes">0</h1>
-                            <small class="text-muted mt-1 d-block">Órdenes pendientes de empaque</small>
-                        </div>
-                        <div class="kpi-icon-wrap">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
+                <div class="card p-3 h-100">
+                    <span class="text-secondary small fw-medium d-block mb-1">Por preparar (almacén)</span>
+                    <h2 class="fw-bold text-dark mb-0" id="countPendientes">0</h2>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="kpi-card-stitch kpi-card-gold h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
-                                <span class="pulse-dot pulse-dot-gold me-2"></span> En Ruta de Entrega
-                            </span>
-                            <h1 class="fw-extrabold text-warning mb-0 mt-2" id="countEnCamino">0</h1>
-                            <small class="text-muted mt-1 d-block">Despachos activos con repartidor</small>
-                        </div>
-                        <div class="kpi-icon-wrap">
-                            <i class="bi bi-truck"></i>
-                        </div>
-                    </div>
+                <div class="card p-3 h-100">
+                    <span class="text-secondary small fw-medium d-block mb-1">En ruta de entrega</span>
+                    <h2 class="fw-bold text-warning mb-0" id="countEnCamino">0</h2>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="kpi-card-stitch kpi-card-emerald h-100">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-uppercase fw-bold small text-secondary tracking-wide d-flex align-items-center">
-                                <span class="pulse-dot pulse-dot-emerald me-2"></span> Entregados con Éxito
-                            </span>
-                            <h1 class="fw-bold text-dark mb-0 mt-2" id="countEntregados">0</h1>
-                            <small class="text-muted mt-1 d-block">Cobro y recepción confirmada</small>
-                        </div>
-                        <div class="kpi-icon-wrap">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                    </div>
+                <div class="card p-3 h-100">
+                    <span class="text-secondary small fw-medium d-block mb-1">Entregados</span>
+                    <h2 class="fw-bold text-success mb-0" id="countEntregados">0</h2>
                 </div>
             </div>
         </div>
@@ -157,18 +127,18 @@
         <div class="glass-panel">
             <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <span class="fw-bold text-dark fs-6 d-flex align-items-center">
-                    <i class="bi bi-list-task text-warning me-2"></i>Manifiesto de pedidos y estado de entrega
+                    <i class="bi bi-list-task text-secondary me-2"></i>Control de despachos y entregas
                 </span>
                 <div class="d-flex align-items-center gap-2">
                     <div class="input-group" style="max-width: 320px;">
-                        <span class="input-group-text input-group-text"><i class="bi bi-search text-warning"></i></span>
-                        <input type="text" id="buscadorLogistica" class="form-control form-control border-start-0 ps-0" placeholder="Buscar cliente, taller, orden o estado..." oninput="filtrarPedidosLogistica()">
+                        <span class="input-group-text"><i class="bi bi-search text-secondary"></i></span>
+                        <input type="text" id="buscadorLogistica" class="form-control border-start-0 ps-0" placeholder="Buscar cliente, orden o estado..." oninput="filtrarPedidosLogistica()">
                     </div>
-                    <button class="btn btn-outline-success btn-sm fw-bold px-3 py-2 d-flex align-items-center gap-1 rounded-3 shadow-sm" onclick="exportarLogisticaExcel()" title="Descargar manifiesto de despachos en Excel (.xlsx)">
+                    <button class="btn btn-outline-success btn-sm fw-medium px-3 py-2 d-flex align-items-center gap-1 shadow-sm" onclick="exportarLogisticaExcel()" title="Descargar manifiesto de despachos en Excel (.xlsx)">
                         <i class="bi bi-file-earmark-excel fs-6"></i>
                         <span>Exportar Excel</span>
                     </button>
-                    <span class="badge-pill-stitch badge-pill-gold" id="badgeTotalOrdenes">0 Pedidos</span>
+                    <span class="badge bg-light text-secondary border" id="badgeTotalOrdenes">0 Pedidos</span>
                 </div>
             </div>
             <div class="table-responsive">
@@ -179,8 +149,8 @@
                             <th>Cliente / Taller</th>
                             <th>Fecha</th>
                             <th>Importe</th>
-                            <th style="min-width: 250px;">Flujo por Etapas (Stepper)</th>
-                            <th style="min-width: 280px;" class="text-end pe-4">Acciones Operativas (Empaque / Despacho)</th>
+                            <th style="min-width: 200px;">Estado del pedido</th>
+                            <th style="min-width: 180px;" class="text-end pe-4">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tablaPedidos"></tbody>

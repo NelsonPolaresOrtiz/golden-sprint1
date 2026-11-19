@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderizarMenu('tienda');
         }
     } else {
-        document.body.classList.remove('rol-gestor-catalogo', 'modo-edicion-activo');
+        document.body.classList.remove('rol-gestor-catalogo', 'modo-edicion-activo', 'has-navbar-fixed');
         modoEdicionActivo = false;
         const contenedorMenu = document.getElementById('menu-contenedor');
         if (contenedorMenu) {
@@ -1436,8 +1436,8 @@ function renderizarCarruselTecfil() {
                     <!-- Marco Industrial Amarillo Ficha Técnica Tecfil -->
                     <div class="tecfil-tech-frame">
                         <div class="tecfil-tech-frame-top">
-                            <span style="font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 0.82rem; color: #141619;">GOLDEN</span>
-                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-size: 0.65rem; font-family: 'Chivo Mono', monospace;">-15% MAYORISTA</span>
+                            <span style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.82rem; color: #141619;">GOLDEN</span>
+                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-size: 0.65rem; font-family: 'Inter', sans-serif;">-15% MAYORISTA</span>
                         </div>
                         
                         <div class="tecfil-sku-code mb-1" id="tecfil-sku-${p.id}">
@@ -1462,7 +1462,7 @@ function renderizarCarruselTecfil() {
                     <div class="d-flex flex-column flex-grow-1 justify-content-between">
                         <div>
                             <span class="text-muted text-uppercase font-mono d-block mb-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">${p.categoria}</span>
-                            <h6 class="fw-bold text-dark mb-2 text-truncate-2" style="font-size: 0.88rem; min-height: 38px; line-height: 1.25; font-family: 'Archivo', sans-serif;" title="${escaparHTML(p.nombre)}">
+                            <h6 class="fw-bold text-dark mb-2 text-truncate-2" style="font-size: 0.88rem; min-height: 38px; line-height: 1.25; font-family: 'Inter', sans-serif;" title="${escaparHTML(p.nombre)}">
                                 ${escaparHTML(p.nombre)}
                             </h6>
 
@@ -1766,7 +1766,7 @@ function generarTarjetaProductoHTML(producto, index = 0, esOfertaForzada = false
                     <img src="${rutaImg}" alt="${nombreEsc}" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;">
                     ${esOferta ? `
                         <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-family: 'Chivo Mono', monospace; font-size: 0.7rem; font-weight: 700; padding: 3px 6px; border-radius: 4px;">
+                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 700; padding: 3px 6px; border-radius: 4px;">
                                 -15% DTO
                             </span>
                         </div>
@@ -2714,7 +2714,7 @@ function procederPagoOCotizar(tipo = 'pago') {
                 icon: 'info',
                 title: 'Identificación Requerida',
                 html: `
-                    <div class="text-start" style="font-family: 'Work Sans', sans-serif;">
+                    <div class="text-start" style="font-family: 'Inter', sans-serif;">
                         <p class="mb-2">Para emitir tu factura y coordinar el despacho, ingresa o crea tu cuenta en un paso.</p>
                         <div class="p-2 bg-light border rounded small text-secondary">
                             <i class="bi bi-cart-check text-success me-1"></i> Tu pedido con <strong>${carrito.length} repuesto(s)</strong> se conservará intacto para finalizar al instante.
@@ -2749,22 +2749,58 @@ function procederPagoOCotizar(tipo = 'pago') {
 window.procederPagoOCotizar = procederPagoOCotizar;
 
 async function solicitarCotizacionDesdeCarrito(usuario) {
-    if (!carrito || carrito.length === 0) return;
+    if (!carrito || carrito.length === 0) {
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'info', title: 'Tu carrito está vacío.' });
+        return;
+    }
 
-    let resumen = `Solicitud de Cotización Mayorista para Taller:\n`;
-    carrito.forEach(it => {
-        resumen += `• ${it.cantidad}x ${it.nombre} (${it.sku || it.presentacion}) - Aprox Bs. ${(it.precio * it.cantidad).toFixed(2)}\n`;
-    });
+    let emailCliente = usuario ? (usuario.email || usuario.correo || '') : '';
+    let nombreCliente = usuario ? (usuario.nombre || 'Taller Mecánico') : 'Taller Mecánico';
+    let telefonoCliente = usuario ? (usuario.telefono || '+591 67375645') : '+591 67375645';
+
+    if (!emailCliente && typeof Swal !== 'undefined') {
+        const { value: emailIngresado, isDismissed } = await Swal.fire({
+            title: '¿A qué correo enviamos la proforma?',
+            input: 'email',
+            inputLabel: 'Ingresa tu correo para recibir la cotización mayorista formal en HTML con vigencia de 7 días:',
+            inputPlaceholder: 'taller@ejemplo.com',
+            validationMessage: 'Por favor ingresa un correo electrónico válido',
+            confirmButtonText: 'Generar y Enviar Proforma',
+            confirmButtonColor: '#B91C1C',
+            showCancelButton: true,
+            cancelButtonText: 'Cancelar'
+        });
+        if (isDismissed || !emailIngresado) return;
+        emailCliente = emailIngresado.trim();
+    }
+
+    const itemsCotizacion = carrito.map((it, idx) => ({
+        sku: it.sku || `SKU-${it.id || (idx + 1)}`,
+        nombre: it.nombre,
+        descripcion: it.nombre,
+        cantidad: parseInt(it.cantidad) || 1,
+        precio: parseFloat(it.precio) || 0,
+        precio_unitario: parseFloat(it.precio) || 0,
+        descuento: it.en_oferta ? (parseFloat(it.descuento_porcentaje) || 0) : 0,
+        subtotal: parseFloat((it.precio * it.cantidad).toFixed(2))
+    }));
+
+    const totalCotizacion = itemsCotizacion.reduce((acc, it) => acc + it.subtotal, 0);
 
     try {
-        const res = await fetch(`${API_URL}/tickets`, {
+        const res = await fetch(`${API_URL}/cotizaciones`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                telefono_cliente: usuario.telefono || '+591 67375645',
-                nombre_cliente: usuario.nombre || 'Taller Mecánico',
-                tipo: 'COTIZACION',
-                mensaje: resumen
+                cliente: {
+                    id: usuario?.id,
+                    nombre: nombreCliente,
+                    email: emailCliente,
+                    telefono: telefonoCliente,
+                    ciudad: 'Sucre, Bolivia'
+                },
+                items: itemsCotizacion,
+                total: totalCotizacion
             })
         });
 
@@ -2775,8 +2811,8 @@ async function solicitarCotizacionDesdeCarrito(usuario) {
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Cotización Solicitada con Éxito!',
-                    html: `Hemos registrado tu solicitud <strong>${data.codigo || ''}</strong>.<br>Un asesor comercial de GOLDEN se comunicará contigo al WhatsApp para remitirte la cotización formal con descuentos por lote.`,
+                    title: '¡Proforma Comercial Generada!',
+                    html: `Hemos registrado tu solicitud <strong>${data.codigo || ''}</strong> y enviado la proforma formal a <strong>${emailCliente || 'tu correo'}</strong> con vigencia de 7 días calendario.<br><br>Un asesor comercial de GOLDEN se comunicará contigo al WhatsApp para coordinar tu despacho o descuento por volumen.`,
                     confirmButtonColor: '#B91C1C'
                 });
             } else {
@@ -3329,7 +3365,7 @@ function renderizarTarjetaSeguimiento(p) {
         <div class="card mb-4 border shadow-sm" style="border-radius: 8px; overflow: hidden; background: #FFFFFF;">
             <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2 py-3 px-4" style="background: #141619; border-bottom: 2px solid #F59E0B;">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge" style="background:#F59E0B; color:#141619; font-family:'Chivo Mono', monospace; font-size:0.85rem; font-weight:800;">
+                    <span class="badge" style="background:#F59E0B; color:#141619; font-family: 'Inter', sans-serif; font-size:0.85rem; font-weight:800;">
                         ORDEN #${String(p.id).padStart(4, '0')}
                     </span>
                     <span class="text-white small font-mono">${fechaStr}</span>

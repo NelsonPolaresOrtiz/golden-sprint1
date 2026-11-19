@@ -160,7 +160,7 @@ function renderizarTablaSugerencias(sugerencias) {
         html += `
             <tr class="align-middle">
                 <td class="ps-3">
-                    <span class="badge font-monospace px-2 py-1" style="background: #27272A; color: #FAFAFA; font-family: 'Chivo Mono', monospace; font-size: 0.76rem;">
+                    <span class="badge font-monospace px-2 py-1" style="background: #27272A; color: #FAFAFA; font-family: 'Inter', sans-serif; font-size: 0.76rem;">
                         ${s.sku}
                     </span>
                 </td>
@@ -169,17 +169,17 @@ function renderizarTablaSugerencias(sugerencias) {
                     <span class="text-secondary small">${escaparHTML(s.categoria || 'Repuestos')}</span>
                 </td>
                 <td class="text-center">${stockActualBadge}</td>
-                <td class="text-center font-monospace text-secondary small" style="font-family: 'Chivo Mono', monospace;">${s.stock_minimo}</td>
-                <td class="text-center font-monospace text-secondary small" style="font-family: 'Chivo Mono', monospace;">${s.nivel_optimo}</td>
+                <td class="text-center font-monospace text-secondary small" style="font-family: 'Inter', sans-serif;">${s.stock_minimo}</td>
+                <td class="text-center font-monospace text-secondary small" style="font-family: 'Inter', sans-serif;">${s.nivel_optimo}</td>
                 <td class="text-center">
-                    <span class="badge font-monospace px-2 py-1 fw-bold" style="background: #F3EFEA; color: #18181B; border: 1px solid #DFDBD2; font-family: 'Chivo Mono', monospace; font-size: 0.85rem;">
+                    <span class="badge font-monospace px-2 py-1 fw-bold" style="background: #F3EFEA; color: #18181B; border: 1px solid #DFDBD2; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
                         +${s.cantidad_sugerida} un.
                     </span>
                 </td>
-                <td class="text-end font-monospace text-secondary text-nowrap" style="font-family: 'Chivo Mono', monospace; font-size: 0.82rem; white-space: nowrap;">
+                <td class="text-end font-monospace text-secondary text-nowrap" style="font-family: 'Inter', sans-serif; font-size: 0.82rem; white-space: nowrap;">
                     Bs. ${costoUnitFormateado}
                 </td>
-                <td class="text-end font-monospace fw-bold text-nowrap" style="font-family: 'Chivo Mono', monospace; font-size: 0.88rem; color: #15803D; white-space: nowrap;">
+                <td class="text-end font-monospace fw-bold text-nowrap" style="font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #15803D; white-space: nowrap;">
                     Bs. ${inversionFormateada}
                 </td>
                 <td class="text-center">${urgenciaBadge}</td>
@@ -253,14 +253,14 @@ function renderizarProveedores(proveedores) {
                 <div class="card h-100 p-3" style="background: #FFFFFF !important; border: 1px solid #DFDBD2 !important; border-left: 4px solid #18181B !important; border-radius: 6px; box-shadow: 0 1px 3px rgba(28, 25, 23, 0.05); transition: transform 0.15s ease, box-shadow 0.15s ease;">
                     <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
                         <div>
-                            <h6 class="fw-bold mb-1" style="color: #18181B; font-family: 'Archivo', sans-serif; font-size: 0.95rem; line-height: 1.25;">
+                            <h6 class="fw-bold mb-1" style="color: #18181B; font-family: 'Inter', sans-serif; font-size: 0.95rem; line-height: 1.25;">
                                 ${escaparHTML(p.razon_social)}
                             </h6>
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <span class="badge" style="background: #F3EFEA; color: #18181B; border: 1px solid #DFDBD2; font-size: 0.7rem; font-weight: 600;">
                                     <i class="bi bi-geo-alt-fill me-1" style="color: #B91C1C;"></i>${meta.ciudad}
                                 </span>
-                                <span class="font-monospace text-secondary" style="font-family: 'Chivo Mono', monospace; font-size: 0.72rem; color: #57534E !important;">
+                                <span class="font-monospace text-secondary" style="font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #57534E !important;">
                                     ${meta.nit}
                                 </span>
                             </div>
@@ -273,7 +273,7 @@ function renderizarProveedores(proveedores) {
                     <div class="mt-2 pt-2 border-top" style="border-color: #F3EFEA !important; font-size: 0.8rem;">
                         <div class="d-flex align-items-center gap-2 mb-1" style="color: #3F3F46;">
                             <i class="bi bi-telephone-fill" style="color: #57534E; font-size: 0.82rem;"></i>
-                            <span class="font-monospace fw-semibold" style="font-family: 'Chivo Mono', monospace;">${escaparHTML(p.telefono || '+591 70000000')}</span>
+                            <span class="font-monospace fw-semibold" style="font-family: 'Inter', sans-serif;">${escaparHTML(p.telefono || '+591 70000000')}</span>
                         </div>
                         <div class="d-flex align-items-center gap-2 mb-1" style="color: #3F3F46;">
                             <i class="bi bi-envelope-fill" style="color: #57534E; font-size: 0.82rem;"></i>
@@ -438,7 +438,7 @@ async function abrirOrdenIndividual(sku) {
     if (!item) return;
 
     const { value: cantidad } = await Swal.fire({
-        title: `<div class="d-flex align-items-center justify-content-center gap-2" style="font-family: 'Archivo', sans-serif; font-size: 1.15rem;"><i class="bi bi-box-arrow-in-down" style="color: #B91C1C;"></i><span>Reabastecer SKU</span></div>`,
+        title: `<div class="d-flex align-items-center justify-content-center gap-2" style="font-family: 'Inter', sans-serif; font-size: 1.15rem;"><i class="bi bi-box-arrow-in-down" style="color: #B91C1C;"></i><span>Reabastecer SKU</span></div>`,
         html: `
             <div class="text-start small text-secondary mb-3">
                 Repuesto: <strong class="text-dark">${escaparHTML(item.nombre)}</strong> (<span class="font-monospace">${item.sku}</span>)<br>
@@ -493,7 +493,7 @@ async function abrirOrdenIndividual(sku) {
  */
 function abrirModalProveedor(razonSocial, proveedorId) {
     Swal.fire({
-        title: `<div class="d-flex align-items-center justify-content-center gap-2" style="font-family: 'Archivo', sans-serif; font-size: 1.1rem;"><i class="bi bi-building" style="color: #18181B;"></i><span>${razonSocial}</span></div>`,
+        title: `<div class="d-flex align-items-center justify-content-center gap-2" style="font-family: 'Inter', sans-serif; font-size: 1.1rem;"><i class="bi bi-building" style="color: #18181B;"></i><span>${razonSocial}</span></div>`,
         html: `
             <p class="text-secondary small mb-3">Canal de comunicación directa con el departamento de ventas mayoristas.</p>
             <div class="d-grid gap-2 text-start">

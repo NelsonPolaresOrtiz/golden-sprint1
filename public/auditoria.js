@@ -126,7 +126,7 @@ function renderizarTabla(logs) {
 
         html += `
             <tr class="align-middle">
-                <td class="ps-3 font-monospace small text-nowrap" style="color: #57534E; font-family: 'Chivo Mono', monospace;">
+                <td class="ps-3 font-monospace small text-nowrap" style="color: #57534E; font-family: 'Inter', sans-serif;">
                     <i class="bi bi-clock me-1 text-warning"></i>${fechaFormateada}
                 </td>
                 <td class="text-nowrap">

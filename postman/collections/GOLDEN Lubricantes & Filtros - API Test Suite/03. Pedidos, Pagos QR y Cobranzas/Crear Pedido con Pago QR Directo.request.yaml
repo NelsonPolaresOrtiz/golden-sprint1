@@ -1,0 +1,48 @@
+$kind: http-request
+description: Registra una orden de compra con método QR Directo, dejando el estado inicial en PENDIENTE hasta la confirmación del pago.
+url: "{{base_url}}/api/pedidos"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "cliente_id": 38,
+      "total": 170,
+      "metodo_pago": "QR_DIRECTO",
+      "comprobante_ref": "REF-QR-TEST-{{$timestamp}}",
+      "numero_operacion": "OP-YAPE-{{$timestamp}}",
+      "banco_origen": "QR Interoperable / SIMPLE / Yape",
+      "carrito": [
+        {
+          "id": 1,
+          "sku": "LUB-SYN-5W30",
+          "nombre": "Aceite Sintético 5W-30",
+          "precio": 85,
+          "cantidad": 2
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 201 Created o 200 OK", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+      });
+
+      pm.test("Orden de compra creada y guardada en ultimo_pedido_id", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("ok", true);
+          var orderId = jsonData.pedidoId || jsonData.id;
+          pm.expect(orderId).to.be.a("number");
+          pm.environment.set("ultimo_pedido_id", orderId);
+      });
+
+      pm.test("Método de pago QR_DIRECTO y estado PENDIENTE", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.metodo_pago).to.eql("QR_DIRECTO");
+          pm.expect(jsonData.estado_pago).to.eql("PENDIENTE");
+      });
+    language: text/javascript
+order: 1000

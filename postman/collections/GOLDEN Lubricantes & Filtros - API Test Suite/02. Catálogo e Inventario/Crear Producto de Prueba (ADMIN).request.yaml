@@ -1,0 +1,40 @@
+$kind: http-request
+description: Crea un producto nuevo en el catálogo autorizado por el rol ADMIN y almacena su ID en 'ultimo_producto_id'.
+url: "{{base_url}}/api/productos"
+method: POST
+headers:
+  Content-Type: application/json
+  x-usuario-rol: "{{token_admin}}"
+  x-usuario-email: "{{admin_email}}"
+  Authorization: Bearer {{token_admin}}
+body:
+  type: json
+  content: |-
+    {
+      "sku": "POSTMAN-SKU-{{$timestamp}}",
+      "nombre": "Aceite Sintético Postman 5W-40 Pro",
+      "categoria": "Aceites de Motor",
+      "precio": 195,
+      "stock": 30,
+      "stock_minimo": 5
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 201 Created o 200 OK", function () {
+          pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+      });
+
+      pm.test("Producto creado con identificador y guardado en variable ultimo_producto_id", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("id");
+          pm.expect(jsonData.id).to.be.a("number");
+          pm.environment.set("ultimo_producto_id", jsonData.id);
+      });
+
+      pm.test("Mensaje de éxito retornado por el backend", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("mensaje");
+      });
+    language: text/javascript
+order: 3000

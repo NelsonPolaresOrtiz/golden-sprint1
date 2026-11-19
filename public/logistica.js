@@ -145,7 +145,7 @@ function renderizarTablaPedidos(lista = null) {
         let badgeEtapa = '';
         let colorPaso = '#F59E0B';
         if (paso === 1) {
-            badgeEtapa = `<span class="badge" style="background:#141619; color:#F59E0B; border:1px solid #F59E0B; font-family:'Chivo Mono'; font-size:0.75rem;"><i class="bi bi-receipt me-1"></i>1. PAGO VERIFICADO</span>`;
+            badgeEtapa = `<span class="badge" style="background:#141619; color:#F59E0B; border:1px solid #F59E0B; font-family: 'Inter', sans-serif; font-size:0.75rem;"><i class="bi bi-receipt me-1"></i>1. PAGO VERIFICADO</span>`;
         } else if (paso === 2) {
             badgeEtapa = `<span class="badge bg-warning text-dark font-mono" style="font-size:0.75rem;"><i class="bi bi-hourglass-split me-1"></i>2. EN PREPARACIÓN</span>`;
             colorPaso = '#D97706';
@@ -226,7 +226,7 @@ function renderizarTablaPedidos(lista = null) {
         html += `
             <tr>
                 <td class="ps-4 fw-bold">
-                    <span class="badge font-monospace px-2 py-1" style="background: #141619; color: #FFFFFF; font-family: 'Chivo Mono', monospace; font-size: 0.85rem;">
+                    <span class="badge font-monospace px-2 py-1" style="background: #141619; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
                         #00${p.id}
                     </span>
                     <div class="small font-mono text-muted mt-1" style="font-size: 0.7rem;">

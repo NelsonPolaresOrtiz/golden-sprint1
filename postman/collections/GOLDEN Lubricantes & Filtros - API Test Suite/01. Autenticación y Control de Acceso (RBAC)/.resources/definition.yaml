@@ -1,0 +1,3 @@
+$kind: collection
+description: Pruebas de validación de identidad, emisión de sesión y bloqueo estricto de cruce de portales entre personal administrativo y clientes.
+order: 1000

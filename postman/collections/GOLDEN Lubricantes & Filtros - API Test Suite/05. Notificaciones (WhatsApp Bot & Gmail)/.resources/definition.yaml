@@ -1,0 +1,3 @@
+$kind: collection
+description: Monitoreo del servicio WhatsApp Baileys en segundo plano y emisión formal de cotizaciones proforma enviadas por correo electrónico.
+order: 5000

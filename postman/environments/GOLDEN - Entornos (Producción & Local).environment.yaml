@@ -1,0 +1,49 @@
+name: GOLDEN - Entornos (Producción & Local)
+values:
+  - key: base_url
+    value: 'https://golden-sprint1.onrender.com'
+    description: 'URL base para producción en Render (Cambiar a http://localhost:3000 para pruebas en entorno local)'
+  - key: base_url_local
+    value: 'http://localhost:3000'
+    description: URL base del servidor local Node.js
+  - key: admin_email
+    value: admin@golden.bo
+    description: 'Credencial del Administrador General (Rol: ADMIN)'
+  - key: admin_pass
+    value: admin123
+    description: Contraseña de la cuenta de administración
+  - key: cliente_email
+    value: cliente@golden.bo
+    description: 'Credencial de Cliente Taller (Rol: CLIENTE)'
+  - key: cliente_pass
+    value: cliente123
+    description: Contraseña de la cuenta de cliente
+  - key: empaque_email
+    value: empaque@golden.bo
+    description: 'Credencial de Almacén / Empaque (Rol: EMPAQUE)'
+  - key: empaque_pass
+    value: empaque123
+    description: Contraseña de la cuenta de empaque
+  - key: despacho_email
+    value: despacho@golden.bo
+    description: 'Credencial de Chofer / Repartidor (Rol: DESPACHO)'
+  - key: despacho_pass
+    value: despacho123
+    description: Contraseña de la cuenta de despacho
+  - key: token_admin
+    value: ''
+    description: Token o rol de administrador capturado dinámicamente en el Login
+  - key: token_cliente
+    value: ''
+    description: Token o rol de cliente capturado dinámicamente en el Login
+  - key: cliente_id
+    value: '38'
+    description: ID del usuario cliente en base de datos para registrar pedidos
+  - key: ultimo_pedido_id
+    value: ''
+    description: ID del último pedido generado por la suite de pruebas
+  - key: ultimo_producto_id
+    value: ''
+    description: ID del último producto creado en el catálogo por la suite
+  - key: admin_id
+    value: ''

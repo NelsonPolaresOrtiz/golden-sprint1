@@ -1,0 +1,44 @@
+$kind: http-request
+description: Autenticación del Administrador en el Portal Interno ERP. Almacena 'token_admin' en el entorno para peticiones privilegiadas subsiguientes.
+url: "{{base_url}}/api/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "{{admin_email}}",
+      "password": "{{admin_pass}}",
+      "tipo_portal": "INTERNO"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code es 200 OK", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Estructura de respuesta contiene usuario y credenciales", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData).to.have.property("usuario");
+          pm.expect(jsonData.usuario).to.have.property("id");
+          pm.expect(jsonData.usuario).to.have.property("email");
+          pm.expect(jsonData.usuario).to.have.property("rol");
+      });
+
+      pm.test("Rol autenticado es ADMIN y almacenamiento en token_admin", function () {
+          var jsonData = pm.response.json();
+          pm.expect(jsonData.usuario.rol).to.eql("ADMIN");
+          
+          // Guardar token/rol en variables de entorno
+          pm.environment.set("token_admin", jsonData.usuario.rol);
+          pm.environment.set("admin_id", jsonData.usuario.id);
+          pm.environment.set("admin_email", jsonData.usuario.email);
+      });
+
+      pm.test("Tiempo de respuesta óptimo (< 2000ms)", function () {
+          pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript
+order: 1000
