@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderizarMenu('dashboard');
     cargarEstadisticas();
+    consultarEstadoWhatsApp();
 });
 
 // ==========================================
@@ -1000,10 +1001,226 @@ function escaparHTML(texto) {
     if (!texto) return '';
     return String(texto)
         .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+// =========================================================================
+// EXPORTACIÓN A EXCEL / CSV DE RESUMEN EJECUTIVO
+// =========================================================================
+function exportarResumenEjecutivoExcel() {
+    if (!listaPedidosGlobal || listaPedidosGlobal.length === 0) {
+        Toast.fire({ icon: 'warning', title: 'No hay pedidos registrados para exportar' });
+        return;
+    }
+
+    if (typeof window.exportarReporteExcel === 'function') {
+        window.exportarReporteExcel({
+            titulo: 'REPORTE EJECUTIVO DE VENTAS Y ESTADO DE ÓRDENES',
+            subtitulo: `Panel Gerencial ERP Golden — Sucre, Bolivia — Rango: ${rangoActual.toUpperCase()}`,
+            columnas: ['N° ORDEN', 'FECHA DE COMPRA', 'CLIENTE / TALLER', 'NIT / CI', 'MÉTODO DE PAGO', 'TOTAL FACTURADO (BS.)', 'ESTADO PAGO', 'ESTADO ENTREGA'],
+            filas: listaPedidosGlobal.map(p => [
+                `#00${p.id}`,
+                p.fecha_compra ? new Date(p.fecha_compra).toLocaleString('es-BO') : '',
+                p.cliente || 'Taller Particular',
+                p.cliente_nit || p.nit || '1029384756',
+                (p.metodo_pago || 'QR SIMPLE').toUpperCase(),
+                parseFloat(p.total || 0),
+                (p.estado || 'PAGADO').toUpperCase(),
+                (p.estado_logistica || 'PENDIENTE').toUpperCase()
+            ]),
+            anchos: [15, 22, 34, 18, 20, 22, 16, 18],
+            nombreArchivo: 'Resumen_Ejecutivo_GOLDEN'
+        });
+        return;
+    }
+
+    if (typeof exportarTablaCSV === 'function') {
+        exportarTablaCSV('tablaUltimosPedidosDashboard', 'Resumen_Ejecutivo_GOLDEN', 'Resumen Ejecutivo de Ventas');
+    }
+}
+
+// =========================================================================
+// MONITOREO Y CONTROL WEB DEL BOT DE WHATSAPP (+591 67375645)
+// =========================================================================
+let timerWhatsAppPolling = null;
+
+async function consultarEstadoWhatsApp(manual = false) {
+    const badge = document.getElementById('badgeEstadoWhatsApp');
+    const contenedor = document.getElementById('contenedorInfoWhatsApp');
+    if (!contenedor) return;
+
+    if (manual && badge) {
+        badge.innerHTML = '<span class="spinner-border spinner-border-sm me-1" style="width: 0.7rem; height: 0.7rem;"></span> Consultando...';
+    }
+
+    try {
+        const res = await fetch(`/api/whatsapp/estado?t=${Date.now()}`);
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        renderizarPanelWhatsApp(data);
+
+        // Polling adaptativo: Si está desconectado/esperando QR, consultar cada 6s; si está conectado, cada 30s
+        if (timerWhatsAppPolling) clearTimeout(timerWhatsAppPolling);
+        const intervalo = data.conectado ? 30000 : 6000;
+        timerWhatsAppPolling = setTimeout(() => consultarEstadoWhatsApp(false), intervalo);
+
+        if (manual && typeof Toast !== 'undefined' && Toast.fire) {
+            Toast.fire({
+                icon: data.conectado ? 'success' : 'info',
+                title: data.conectado ? 'Asistente WhatsApp conectado y en línea' : 'Estado de WhatsApp actualizado'
+            });
+        }
+    } catch (err) {
+        console.warn('[WhatsApp UI] Error al consultar estado:', err.message);
+        if (badge) {
+            badge.className = 'badge';
+            badge.style.cssText = 'background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; font-size: 0.72rem; font-weight: 600;';
+            badge.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> Desconectado / Error';
+        }
+        contenedor.innerHTML = `
+            <div class="alert alert-warning mb-0 d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                    <div>
+                        <strong>No se pudo conectar con el servicio local de WhatsApp.</strong>
+                        <div class="small text-secondary">El bot se está iniciando en segundo plano o el servidor se encuentra procesando solicitudes.</div>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-outline-dark" onclick="consultarEstadoWhatsApp(true)">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Reintentar
+                </button>
+            </div>
+        `;
+        if (timerWhatsAppPolling) clearTimeout(timerWhatsAppPolling);
+        timerWhatsAppPolling = setTimeout(() => consultarEstadoWhatsApp(false), 8000);
+    }
+}
+
+function renderizarPanelWhatsApp(data) {
+    const badge = document.getElementById('badgeEstadoWhatsApp');
+    const contenedor = document.getElementById('contenedorInfoWhatsApp');
+    if (!contenedor) return;
+
+    if (data.conectado) {
+        if (badge) {
+            badge.className = 'badge';
+            badge.style.cssText = 'background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; font-size: 0.74rem; font-weight: 700;';
+            badge.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> Conectado y Activo';
+        }
+
+        contenedor.innerHTML = `
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-lg-8">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="p-3 rounded-circle text-success" style="background: #F0FDF4; border: 1px solid #DCFCE7;">
+                            <i class="bi bi-shield-check fs-2 text-success"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                <h5 class="fw-bold text-dark mb-0 font-monospace" style="font-family: 'Chivo Mono', monospace;">
+                                    ${escaparHTML(data.numero || '+591 67375645')}
+                                </h5>
+                                <span class="badge" style="background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0; font-size: 0.72rem;">
+                                    Línea Corporativa Oficial
+                                </span>
+                            </div>
+                            <p class="text-secondary small mb-2">
+                                El Asistente Virtual Inteligente de <strong>GOLDEN Lubricantes & Filtros</strong> se encuentra en línea y respondiendo activamente a clientes y talleres mecánicos de Sucre y Chuquisaca.
+                            </p>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <span class="badge bg-light text-dark border py-1 px-2" style="font-size: 0.74rem;">
+                                    <i class="bi bi-search text-primary me-1"></i> Consultas de Stock y Precios
+                                </span>
+                                <span class="badge bg-light text-dark border py-1 px-2" style="font-size: 0.74rem;">
+                                    <i class="bi bi-truck text-success me-1"></i> Rastreo de Envíos
+                                </span>
+                                <span class="badge bg-light text-dark border py-1 px-2" style="font-size: 0.74rem;">
+                                    <i class="bi bi-file-earmark-text text-warning me-1"></i> Cotizaciones y Reclamos
+                                </span>
+                                <span class="badge bg-light text-dark border py-1 px-2" style="font-size: 0.74rem;">
+                                    <i class="bi bi-bell-fill text-danger me-1"></i> Alertas Gerenciales Proactivas
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="p-3 rounded border" style="background: #F8FAFC; border-color: #E2E8F0 !important;">
+                        <div class="small fw-bold text-dark mb-1 d-flex align-items-center gap-1">
+                            <i class="bi bi-cpu text-primary"></i> Canales de Alerta Activos
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0" style="font-size: 0.78rem; line-height: 1.5;">
+                            <li>• Destino Gerencial: <strong>+591 67375645</strong></li>
+                            <li>• Persistencia: <strong>SQLite (whatsapp_sesion)</strong></li>
+                            <li>• Comando Admin: Envíe <code>resumen</code> para métricas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Desconectado o Esperando Vinculación
+        const tieneQR = !!data.qrDataUrl;
+        if (badge) {
+            badge.className = 'badge';
+            badge.style.cssText = 'background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; font-size: 0.74rem; font-weight: 700;';
+            badge.innerHTML = tieneQR 
+                ? '<i class="bi bi-qr-code-scan me-1"></i> Esperando Vinculación' 
+                : '<i class="bi bi-hourglass-split me-1"></i> Generando QR...';
+        }
+
+        contenedor.innerHTML = `
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-md-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-size: 0.75rem;">
+                            PASO REQUERIDO
+                        </span>
+                        <h6 class="fw-bold text-dark mb-0">Vincular Número WhatsApp Oficial (+591 67375645)</h6>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        Para habilitar la atención automática de clientes y las notificaciones a Gerencia sin necesidad de consola de comandos, escanee el código QR con el celular corporativo:
+                    </p>
+                    <ol class="small text-secondary ps-3 mb-3" style="font-size: 0.82rem; line-height: 1.6;">
+                        <li>Abra <strong>WhatsApp</strong> en el teléfono celular corporativo (<strong>+591 67375645</strong>).</li>
+                        <li>Toque el menú de opciones (tres puntos en Android o Configuración en iPhone).</li>
+                        <li>Seleccione <strong>"Dispositivos vinculados"</strong> &gt; <strong>"Vincular un dispositivo"</strong>.</li>
+                        <li>Apunte la cámara del teléfono hacia el código QR mostrado a la derecha.</li>
+                    </ol>
+                    <div class="alert alert-light border py-2 px-3 small text-muted mb-0 d-flex align-items-center gap-2" style="background: #F9FAFB; font-size: 0.78rem;">
+                        <i class="bi bi-info-circle text-primary fs-6"></i>
+                        <span>La sesión se respaldará en la base de datos SQLite y se mantendrá activa tras reinicios del servidor en la nube (Render).</span>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-5 text-center">
+                    <div class="p-3 bg-white border rounded shadow-sm d-inline-block" style="border-color: #E6E1DA !important;">
+                        ${tieneQR ? `
+                            <img id="imgQrWhatsApp" src="${data.qrDataUrl}" alt="Código QR WhatsApp" class="img-fluid rounded" style="width: 220px; height: 220px; object-fit: contain; display: block; margin: 0 auto;" />
+                            <div class="mt-2 text-dark fw-bold small d-flex align-items-center justify-content-center gap-1">
+                                <i class="bi bi-qr-code-scan text-danger"></i> Escanear con WhatsApp
+                            </div>
+                            <div class="text-muted" style="font-size: 0.7rem;">
+                                Se actualiza automáticamente cada 20s
+                            </div>
+                        ` : `
+                            <div class="py-5 px-4 text-center text-secondary" style="width: 220px; height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <div class="spinner-border text-danger mb-2" role="status"></div>
+                                <span class="small fw-semibold">Generando código QR...</span>
+                                <span class="text-muted" style="font-size: 0.7rem;">Por favor espere unos segundos</span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 }
 
 window.cambiarRangoDashboard = cambiarRangoDashboard;
@@ -1012,3 +1229,5 @@ window.cargarEstadisticas = cargarEstadisticas;
 window.filtrarUltimosPedidos = filtrarUltimosPedidos;
 window.verDetallePedido = verDetallePedido;
 window.solicitarReabastecimiento = solicitarReabastecimiento;
+window.exportarResumenEjecutivoExcel = exportarResumenEjecutivoExcel;
+window.consultarEstadoWhatsApp = consultarEstadoWhatsApp;

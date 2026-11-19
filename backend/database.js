@@ -5,9 +5,9 @@ const bcrypt = require('bcryptjs');
 const dbPath = path.resolve(__dirname, 'golden_seguridad.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
-        console.error('❌ Error al conectar con SQLite:', err.message);
+        console.error('[Error] Error al conectar con la base de datos:', err.message);
     } else {
-        console.log('✅ Conectado exitosamente a la base de datos SQLite (golden_seguridad.db)');
+        console.log('[Info] Base de datos conectada correctamente (golden_seguridad.db)');
     }
 });
 
@@ -74,32 +74,32 @@ db.serialize(() => {
             const colNames = cols.map(c => c.name);
             if (!colNames.includes('imagen_url')) {
                 db.run("ALTER TABLE productos ADD COLUMN imagen_url TEXT", (aErr) => {
-                    if (!aErr) console.log("📸 Columna 'imagen_url' agregada a productos");
+                    if (!aErr) console.log("[Info] Columna 'imagen_url' agregada a productos");
                 });
             }
             if (!colNames.includes('especificaciones')) {
                 db.run("ALTER TABLE productos ADD COLUMN especificaciones TEXT", (sErr) => {
-                    if (!sErr) console.log("📑 Columna 'especificaciones' agregada a productos");
+                    if (!sErr) console.log("[Info] Columna 'especificaciones' agregada a productos");
                 });
             }
             if (!colNames.includes('linea')) {
                 db.run("ALTER TABLE productos ADD COLUMN linea TEXT DEFAULT 'liviana'", (lErr) => {
-                    if (!lErr) console.log("🏷️ Columna 'linea' agregada a productos");
+                    if (!lErr) console.log("[Info] Columna 'linea' agregada a productos");
                 });
             }
             if (!colNames.includes('en_oferta')) {
                 db.run("ALTER TABLE productos ADD COLUMN en_oferta INTEGER DEFAULT 0", (oErr) => {
-                    if (!oErr) console.log("🔥 Columna 'en_oferta' agregada a productos");
+                    if (!oErr) console.log("[Info] Columna 'en_oferta' agregada a productos");
                 });
             }
             if (!colNames.includes('descuento_porcentaje')) {
                 db.run("ALTER TABLE productos ADD COLUMN descuento_porcentaje INTEGER DEFAULT 15", (dErr) => {
-                    if (!dErr) console.log("🏷️ Columna 'descuento_porcentaje' agregada a productos");
+                    if (!dErr) console.log("[Info] Columna 'descuento_porcentaje' agregada a productos");
                 });
             }
             if (!colNames.includes('compatibilidad')) {
                 db.run("ALTER TABLE productos ADD COLUMN compatibilidad TEXT", (cErr) => {
-                    if (!cErr) console.log("🚗 Columna 'compatibilidad' agregada a productos");
+                    if (!cErr) console.log("[Info] Columna 'compatibilidad' agregada a productos");
                 });
             }
         }
@@ -126,7 +126,7 @@ db.serialize(() => {
                 'Fabricación & Distribución Mayorista',
                 1
             )`, (insErr) => {
-                if (!insErr) console.log('📢 Configuración inicial del catálogo sembrada exitosamente.');
+                if (!insErr) console.log('[Info] Configuración inicial del catálogo registrada correctamente.');
             });
         }
     });
@@ -191,7 +191,7 @@ db.serialize(() => {
             colsToAdd.forEach(c => {
                 if (!colNames.includes(c.name)) {
                     db.run(`ALTER TABLE pedidos ADD COLUMN ${c.name} ${c.type}`, (aErr) => {
-                        if (!aErr) console.log(`📦 Columna '${c.name}' agregada a pedidos`);
+                        if (!aErr) console.log(`[Info] Columna '${c.name}' agregada a pedidos`);
                     });
                 }
             });
@@ -284,6 +284,48 @@ db.serialize(() => {
         fecha DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // 10.1 Tabla de Tickets de Soporte, Reclamos y Cotizaciones WhatsApp
+    db.run(`CREATE TABLE IF NOT EXISTS tickets_soporte (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        telefono_cliente TEXT,
+        nombre_cliente TEXT,
+        tipo TEXT,
+        mensaje TEXT,
+        estado TEXT DEFAULT 'ABIERTO',
+        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // 10.2 Cola de Alertas Internas Proactivas WhatsApp para Gerencia (+591 67375645)
+    db.run(`CREATE TABLE IF NOT EXISTS cola_alertas_whatsapp (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mensaje TEXT NOT NULL,
+        estado TEXT DEFAULT 'PENDIENTE',
+        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+        fecha_envio DATETIME
+    )`);
+
+    // 10.3 Persistencia de Sesión de Baileys / WhatsApp en SQLite (Cloud/Render Ready)
+    db.run(`CREATE TABLE IF NOT EXISTS whatsapp_sesion (
+        clave TEXT PRIMARY KEY,
+        valor TEXT NOT NULL,
+        fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Semilla de productos clave para atención WhatsApp (15W-40 y W712)
+    db.get("SELECT id FROM productos WHERE sku = 'ACE-MIN-015' OR nombre LIKE '%15W-40%'", (err, row) => {
+        if (!err && !row) {
+            db.run(`INSERT INTO productos (sku, nombre, categoria, precio, stock, stock_minimo, especificaciones, linea)
+                    VALUES ('ACE-MIN-015', 'Aceite Mineral Diesel Pesado Golden 15W-40 CI-4 (4L)', 'ACEITES MINERALES', 165.00, 48, 10, '{"Viscosidad API":"CI-4/SL","Aplicación":"Flotas Pesadas y Diesel Ligero"}', 'pesada')`);
+        }
+    });
+
+    db.get("SELECT id FROM productos WHERE sku = 'FIL-ACE-W712' OR nombre LIKE '%W712%'", (err, row) => {
+        if (!err && !row) {
+            db.run(`INSERT INTO productos (sku, nombre, categoria, precio, stock, stock_minimo, especificaciones, linea)
+                    VALUES ('FIL-ACE-W712', 'Filtro de Aceite Blindado Spin-On Tecfil W712', 'FILTROS DE ACEITE', 38.00, 60, 15, '{"Marca":"Tecfil","Tipo":"Blindado Metálico Rosca M20x1.5"}', 'liviana')`);
+        }
+    });
+
     // 11. Semillas iniciales Enterprise (Proveedores, Créditos y Auditoría)
     db.get('SELECT COUNT(*) as count FROM proveedores', (err, row) => {
         if (!err && row && row.count === 0) {
@@ -316,7 +358,7 @@ db.serialize(() => {
     db.get('SELECT COUNT(*) as count FROM auditoria', (err, row) => {
         if (!err && row && row.count === 0) {
             db.run(`INSERT INTO auditoria (usuario_nombre, accion, modulo) VALUES
-                ('SISTEMA ERP', 'Inicialización de módulos Enterprise (SCM, Créditos B2B y Auditoría)', 'SISTEMA')
+                ('Sistema Central', 'Inicialización de módulos de gestión y control de inventario', 'SISTEMA')
             `);
         }
     });
@@ -325,33 +367,48 @@ db.serialize(() => {
     const usuariosRolesBase = [
         {
             email: 'admin@golden.bo',
-            nombre: 'Administrador General (Gerencia)',
+            nombre: 'Carlos Mendoza Miranda (Gerencia)',
             password: 'admin123',
-            rol: 'ADMIN'
+            rol: 'ADMIN',
+            nit: '1029384756',
+            telefono: '+591 4 64-52890',
+            direccion: 'Av. Jaime Mendoza #1420, Sucre'
         },
         {
             email: 'empaque@golden.bo',
-            nombre: 'Marcos Almacén (Encargado de Empaque)',
+            nombre: 'Marcos Condori (Almacén)',
             password: 'empaque123',
-            rol: 'EMPAQUE'
+            rol: 'EMPAQUE',
+            nit: '4920192018',
+            telefono: '+591 71234568',
+            direccion: 'Av. Jaime Mendoza #1420, Sucre'
         },
         {
             email: 'despacho@golden.bo',
-            nombre: 'Rodrigo Chofer (Encargado de Entrega)',
+            nombre: 'Rodrigo Mamani (Distribución)',
             password: 'despacho123',
-            rol: 'DESPACHO'
+            rol: 'DESPACHO',
+            nit: '5829102931',
+            telefono: '+591 78901235',
+            direccion: 'Av. Jaime Mendoza #1420, Sucre'
         },
         {
             email: 'cliente@golden.bo',
             nombre: 'Taller Mecánico Central',
             password: 'cliente123',
-            rol: 'CLIENTE'
+            rol: 'CLIENTE',
+            nit: '1029384756',
+            telefono: '+591 4 64-52890',
+            direccion: 'Av. Las Américas #340, Sucre'
         },
         {
             email: 'trabajador@golden.bo',
-            nombre: 'Encargado de Almacén & Ventas',
+            nombre: 'Javier Ortiz (Ventas & Almacén)',
             password: 'trabajador123',
-            rol: 'TRABAJADOR'
+            rol: 'TRABAJADOR',
+            nit: '3920194012',
+            telefono: '+591 76543210',
+            direccion: 'Av. Jaime Mendoza #1420, Sucre'
         }
     ];
 
@@ -361,18 +418,18 @@ db.serialize(() => {
             const hash = bcrypt.hashSync(u.password, 10);
             if (!row) {
                 db.run(
-                    `INSERT INTO usuarios (nombre, email, correo, password, rol, estado, metodo_auth) VALUES (?, ?, ?, ?, ?, ?, 'local')`,
-                    [u.nombre, u.email, u.email, hash, u.rol, 'ACTIVO'],
+                    `INSERT INTO usuarios (nombre, email, correo, password, rol, estado, nit, telefono, direccion, metodo_auth) VALUES (?, ?, ?, ?, ?, 'ACTIVO', ?, ?, ?, 'local')`,
+                    [u.nombre, u.email, u.email, hash, u.rol, u.nit, u.telefono, u.direccion],
                     (insErr) => {
-                        if (!insErr) console.log(`👤 Usuario inicial creado: ${u.email} (${u.rol})`);
+                        if (!insErr) console.log(`[Info] Usuario base registrado: ${u.email} (${u.rol})`);
                     }
                 );
             } else {
                 db.run(
-                    `UPDATE usuarios SET password = ?, rol = ?, correo = COALESCE(correo, email) WHERE id = ?`,
-                    [hash, u.rol, row.id],
+                    `UPDATE usuarios SET nombre = ?, password = ?, rol = ?, correo = COALESCE(correo, email), nit = COALESCE(nit, ?), telefono = COALESCE(telefono, ?), direccion = COALESCE(direccion, ?) WHERE id = ?`,
+                    [u.nombre, hash, u.rol, u.nit, u.telefono, u.direccion, row.id],
                     (updErr) => {
-                        if (!updErr) console.log(`👤 Credenciales sincronizadas para rol base: ${u.email} (${u.rol})`);
+                        if (!updErr) console.log(`[Info] Credenciales verificadas para rol: ${u.email} (${u.rol})`);
                     }
                 );
             }

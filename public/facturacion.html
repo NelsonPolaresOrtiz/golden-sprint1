@@ -50,9 +50,9 @@
                 <p class="text-secondary mb-0 mt-1 small">Control de ventas con factura (NIT), cobranzas a talleres y emisión de comprobantes certificados en PDF.</p>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
-                <button class="btn btn-outline-success btn-sm btn-sm px-3 d-flex align-items-center gap-2 fw-semibold" onclick="exportarFacturasCSV()" title="Exportar Reporte a Formato Excel / CSV">
-                    <i class="bi bi-file-earmark-spreadsheet-fill text-success"></i>
-                    <span>Exportar Excel / CSV</span>
+                <button class="btn btn-outline-success btn-sm px-3 d-flex align-items-center gap-2 fw-semibold" onclick="exportarFacturasCSV()" title="Descargar libro de ventas en Excel (.xlsx)">
+                    <i class="bi bi-file-earmark-excel fs-6"></i>
+                    <span>Exportar Excel</span>
                 </button>
                 <button class="btn btn-secondary btn-sm px-3" onclick="cargarFacturacion()" title="Recargar y sincronizar con la base de datos">
                     <i class="bi bi-arrow-clockwise me-1"></i> Sincronizar
@@ -191,16 +191,16 @@
     <div id="plantilla-factura" style="display: none; padding: 30px; background: #ffffff !important; color: #000000 !important; width: 100%; max-width: 790px; margin: 0 auto; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.4;">
         
         <!-- CABECERA -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #d4af37; padding-bottom: 20px; margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #B91C1C; padding-bottom: 20px; margin-bottom: 25px;">
             <div>
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: 0.5px;">
-                    GOLDEN ERP <span style="color: #d4af37;">- ENTERPRISE SUITE</span>
+                <h1 style="margin: 0; font-size: 22px; font-weight: 900; color: #141619; letter-spacing: -0.01em;">
+                    GOLDEN <span style="color: #B91C1C;">LUBRICANTES &amp; FILTROS</span>
                 </h1>
-                <p style="margin: 4px 0 0 0; font-size: 13px; font-weight: 700; color: #475569;">
-                    Importaciones & Distribuciones Automotrices S.R.L.
+                <p style="margin: 4px 0 0 0; font-size: 12px; font-weight: 700; color: #475569;">
+                    DISTRIBUIDORA GOLDEN S.R.L.
                 </p>
-                <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">
-                    NIT: 1029384756 | Santa Cruz de la Sierra - Bolivia
+                <p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">
+                    NIT: 1029384756 | Av. Jaime Mendoza #1420 • Sucre, Bolivia
                 </p>
             </div>
             <div style="text-align: right;">
@@ -291,11 +291,13 @@
 
     </div>
 
-    <!-- Motores JS: html2pdf, Bootstrap 5, SweetAlert2 y scripts del ERP -->
+    <!-- Motores JS: html2pdf, SheetJS Oficial, Bootstrap 5, SweetAlert2 y scripts del ERP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="menu.js?v=16"></script>
-    <script src="facturacion.js?v=2"></script>
+    <script src="documentos-golden.js?v=2"></script>
+    <script src="menu.js?v=30"></script>
+    <script src="facturacion.js?v=30"></script>
 </body>
 </html>

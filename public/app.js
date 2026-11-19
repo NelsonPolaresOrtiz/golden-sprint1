@@ -92,9 +92,31 @@ window.toggleMostrarPassword = toggleMostrarPassword;
 // INICIALIZACIÓN GENERAL DE LA VISTA
 // ==========================================
 
+// Helper de redirección contextual para Clientes (Conserva el carrito y flujo de checkout)
+function redirigirSegunContextoCliente() {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    const hayCarritoPendiente = !!localStorage.getItem('carrito_pendiente');
+
+    if (redirect === 'checkout' || redirect === 'cotizar' || hayCarritoPendiente) {
+        window.location.href = 'tienda.html?checkout=1';
+    } else {
+        window.location.href = 'tienda.html';
+    }
+}
+window.redirigirSegunContextoCliente = redirigirSegunContextoCliente;
+
 document.addEventListener('DOMContentLoaded', () => {
     // Iniciar capa superpuesta de intro animada sobre el login
     iniciarSecuenciaSplash();
+
+    // Detección automática de ?modo=cliente en la URL para abrir el portal comercial luminoso
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('modo') === 'cliente' || urlParams.get('cliente') === '1') {
+        if (typeof window.activarModoComercialCliente === 'function') {
+            window.activarModoComercialCliente();
+        }
+    }
 
     // Comprobar si hay sesión activa previa
     const usuarioGuardado = localStorage.getItem('usuario_golden');
@@ -103,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const usuario = JSON.parse(usuarioGuardado);
             // Si es cliente externo, redirigir de inmediato al catálogo de la tienda
             if (usuario.rol === 'CLIENTE' || usuario.rol === 'CLIENTE_B2B' || usuario.rol === 'CLIENTE_B2C') {
-                window.location.href = 'tienda.html';
+                redirigirSegunContextoCliente();
                 return;
             }
             if (usuario.rol === 'TRABAJADOR') {
-                window.location.href = 'tienda.html';
+                redirigirSegunContextoCliente();
                 return;
             }
             if (usuario.rol === 'EMPAQUE' || usuario.rol === 'DESPACHO' || usuario.rol === 'REPARTIDOR' || usuario.rol === 'ALMACENERO') {
@@ -184,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Redirección automática según rol oficial
                 const rol = (data.usuario.rol || '').toUpperCase().trim();
                 if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
-                    window.location.href = 'tienda.html';
+                    redirigirSegunContextoCliente();
                     return;
                 }
 
@@ -254,11 +276,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('usuario_golden', JSON.stringify(data.usuario));
                 Toast.fire({ icon: 'success', title: `Bienvenido, ${data.usuario.nombre}` });
 
-                // Redirección según rol
+                // Redirección contextual según rol
                 const rol = (data.usuario.rol || '').toUpperCase().trim();
                 setTimeout(() => {
                     if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
-                        window.location.href = 'tienda.html';
+                        redirigirSegunContextoCliente();
                         return;
                     }
                     if (rol === 'ADMIN') {
@@ -269,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = 'logistica.html';
                         return;
                     }
-                    window.location.href = 'tienda.html';
+                    redirigirSegunContextoCliente();
                 }, 350);
 
             } catch (error) {
@@ -355,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     Toast.fire({ icon: 'success', title: `Bienvenido, ${data.usuario.nombre}` });
                 }
 
-                window.location.href = 'tienda.html';
+                redirigirSegunContextoCliente();
 
             } catch (error) {
                 if (alertBox) {
@@ -654,12 +676,12 @@ window.ejecutarOAuthLogin = async function(email, nombre, picture) {
         Toast.fire({ icon: 'success', title: `Bienvenido a GOLDEN, ${data.usuario.nombre}` });
 
         setTimeout(() => {
-            window.location.href = 'tienda.html';
+            redirigirSegunContextoCliente();
         }, 500);
 
     } catch (err) {
         if (spinner) spinner.classList.add('d-none');
-        Toast.fire({ icon: 'error', title: 'Error al conectar con el servidor OAuth' });
+        Toast.fire({ icon: 'error', title: 'Error al autenticar con la cuenta seleccionada' });
     }
 };
 

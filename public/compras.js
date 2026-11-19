@@ -520,3 +520,41 @@ function escaparHTML(texto) {
     div.textContent = texto;
     return div.innerHTML;
 }
+
+// =========================================================================
+// EXPORTACIÓN A EXCEL / CSV DE COMPRAS Y REABASTECIMIENTO
+// =========================================================================
+function exportarComprasExcel() {
+    if (!sugerenciasGlobal || sugerenciasGlobal.length === 0) {
+        Toast.fire({ icon: 'warning', title: 'No hay sugerencias de compra para exportar' });
+        return;
+    }
+
+    if (typeof window.exportarReporteExcel === 'function') {
+        window.exportarReporteExcel({
+            titulo: 'REPORTE DE COMPRAS Y REABASTECIMIENTO DE ALMACÉN',
+            subtitulo: 'Análisis SCM de Stock Mínimo y Sugerencias de Reposición — Sucre, Bolivia',
+            columnas: ['SKU', 'REPUESTO / LUBRICANTE', 'CATEGORÍA', 'PROVEEDOR', 'STOCK ACTUAL', 'STOCK MÍNIMO', 'CANT. A COMPRAR', 'COSTO UNIT. (BS.)', 'INVERSIÓN TOTAL (BS.)', 'NIVEL URGENCIA'],
+            filas: sugerenciasGlobal.map(s => [
+                s.sku,
+                s.nombre,
+                s.categoria,
+                s.proveedor_nombre || 'Distribuidor Mayorista',
+                parseInt(s.stock_actual || 0),
+                parseInt(s.stock_minimo || 0),
+                parseInt(s.unidades_a_comprar || 0),
+                parseFloat(s.costo_unitario || (s.inversion_total / (s.unidades_a_comprar || 1)) || 0),
+                parseFloat(s.inversion_total || 0),
+                (s.nivel_urgencia || 'NORMAL').toUpperCase()
+            ]),
+            anchos: [16, 40, 22, 26, 16, 16, 18, 18, 22, 18],
+            nombreArchivo: 'Orden_Compras_SCM_GOLDEN'
+        });
+        return;
+    }
+
+    if (typeof exportarTablaCSV === 'function') {
+        exportarTablaCSV('tablaSugerenciasCompras', 'Compras_GOLDEN', 'Reporte de Compras y Suministros');
+    }
+}
+window.exportarComprasExcel = exportarComprasExcel;

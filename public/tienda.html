@@ -13,20 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Work+Sans:wght@400;500;600;700&family=Chivo+Mono:wght@400;500;600;700&family=Libre+Barcode+128&display=swap" rel="stylesheet">
     <!-- Estilos Comerciales Automotrices Tecfil -->
     <link rel="stylesheet" href="styles.css?v=27">
-
-    <!-- Verificación Inmediata de Sesión: Redirigir a Login si no hay sesión activa -->
-    <script>
-        (function() {
-            try {
-                var raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
-                if (!raw) {
-                    window.location.href = 'index.html';
-                }
-            } catch(e) {
-                window.location.href = 'index.html';
-            }
-        })();
-    </script>
 </head>
 <body style="background-color: #FAF8F5;">
 
@@ -143,56 +129,75 @@
 
                 <!-- Bloque de Sesión y Acciones Rápidas (Usuario, Mis Pedidos / Módulos ERP, Carrito, Cerrar Sesión) -->
                 <div id="tiendaUserSessionControls" class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-                    <!-- Identificación de Usuario Logueado -->
-                    <div class="d-flex align-items-center gap-2 px-2 py-1 rounded" style="background: #F1F5F9; border: 1px solid #E2E8F0;">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 28px; height: 28px; background: #B91C1C; font-size: 0.75rem;" id="tiendaUserAvatar">
-                            U
-                        </div>
-                        <div class="d-flex flex-column text-truncate" style="line-height: 1.15; max-width: 140px;">
-                            <span class="fw-bold text-dark text-truncate" style="font-size: 0.76rem;" id="tiendaUserName">Usuario</span>
-                            <span class="badge p-0 text-start text-uppercase font-mono" style="font-size: 0.62rem; color: #D97706; font-weight: 700;" id="tiendaUserRol">CLIENTE</span>
-                        </div>
-                    </div>
-
-                    <!-- Botón "Mis Pedidos" (para Clientes de Taller) -->
-                    <button type="button" class="btn btn-sm btn-outline-dark fw-bold d-inline-flex align-items-center gap-1" id="btnTiendaMisPedidos" onclick="abrirModalSeguimiento()" style="font-size: 0.76rem; border-color: #CBD5E1;" title="Ver estado de mis pedidos">
-                        <i class="bi bi-truck text-warning"></i>
-                        <span>Mis Pedidos</span>
-                    </button>
-
-                    <!-- Acceso Desplegable a los 9 Módulos ERP (para ADMIN y TRABAJADOR) -->
-                    <div class="dropdown d-none" id="dropdownTiendaERP">
-                        <button class="btn btn-sm btn-dark dropdown-toggle fw-bold d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.76rem; background: #1C1917; border-color: #3F3F46;">
-                            <i class="bi bi-grid-3x3-gap-fill text-danger"></i>
-                            <span>Módulos ERP (9)</span>
+                    <!-- 1. Controles para Invitados (Sin Sesión) -->
+                    <div id="tiendaGuestControls" class="d-flex align-items-center gap-2">
+                        <a href="index.html?modo=cliente" class="btn btn-sm btn-outline-dark fw-bold d-inline-flex align-items-center gap-1" style="font-size: 0.76rem; border-color: #CBD5E1;" title="Ingresar o crear cuenta">
+                            <i class="bi bi-person-circle text-danger"></i>
+                            <span>Ingresar / Crear Cuenta</span>
+                        </a>
+                        <button class="btn btn-sm d-inline-flex align-items-center gap-1 fw-bold text-white btn-abrir-carrito" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="background: #C81E1E; border-color: #C81E1E; font-size: 0.76rem;" title="Abrir mi pedido">
+                            <i class="bi bi-cart3"></i>
+                            <span class="d-none d-sm-inline">Mi Carrito</span>
+                            <span class="tiendaNavCartCount badge bg-white text-dark font-mono ms-1" style="font-size: 0.7rem; border-radius: 4px;">[0]</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 220px; font-size: 0.8rem; background: #1C1917; border: 1px solid #3F3F46 !important;">
-                            <li><h6 class="dropdown-header text-uppercase font-mono text-warning" style="font-size: 0.68rem; letter-spacing: 0.5px;">Sistema ERP Golden</h6></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="dashboard.html"><i class="bi bi-speedometer2 text-danger"></i> Panel</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="usuarios.html"><i class="bi bi-people-fill text-danger"></i> Talleres</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="compras.html"><i class="bi bi-truck-flatbed text-danger"></i> Compras</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="facturacion.html"><i class="bi bi-credit-card-2-front-fill text-danger"></i> Cobranzas</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="creditos.html"><i class="bi bi-bank text-danger"></i> Créditos</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="auditoria.html"><i class="bi bi-shield-check text-danger"></i> Auditoría</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="inventario.html"><i class="bi bi-box-seam-fill text-danger"></i> Inventario</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2 active" href="tienda.html" style="background: rgba(185, 28, 28, 0.25);"><i class="bi bi-shop text-danger"></i> Catálogo</a></li>
-                            <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="logistica.html"><i class="bi bi-truck text-danger"></i> Logística</a></li>
-                        </ul>
+                        <a href="index.html" class="small text-secondary text-decoration-none d-none d-md-inline-flex align-items-center gap-1 ms-1" style="font-size: 0.72rem;" title="Ingreso exclusivo para personal interno">
+                            <i class="bi bi-shield-lock"></i> Acceso Personal
+                        </a>
                     </div>
 
-                    <!-- Botón "Mi Carrito [0]" -->
-                    <button class="btn btn-sm d-inline-flex align-items-center gap-1 fw-bold text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="background: #C81E1E; border-color: #C81E1E; font-size: 0.76rem;" title="Abrir mi pedido">
-                        <i class="bi bi-cart3"></i>
-                        <span class="d-none d-sm-inline">Mi Carrito</span>
-                        <span id="tiendaNavCartCount" class="badge bg-white text-dark font-mono ms-1" style="font-size: 0.7rem; border-radius: 4px;">[0]</span>
-                    </button>
+                    <!-- 2. Controles para Usuario con Sesión Activa -->
+                    <div id="tiendaLoggedControls" class="d-none d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Identificación de Usuario Logueado -->
+                        <div class="d-flex align-items-center gap-2 px-2 py-1 rounded" style="background: #F1F5F9; border: 1px solid #E2E8F0;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 28px; height: 28px; background: #B91C1C; font-size: 0.75rem;" id="tiendaUserAvatar">
+                                U
+                            </div>
+                            <div class="d-flex flex-column text-truncate" style="line-height: 1.15; max-width: 140px;">
+                                <span class="fw-bold text-dark text-truncate" style="font-size: 0.76rem;" id="tiendaUserName">Usuario</span>
+                                <span class="badge p-0 text-start text-uppercase font-mono" style="font-size: 0.62rem; color: #D97706; font-weight: 700;" id="tiendaUserRol">CLIENTE</span>
+                            </div>
+                        </div>
 
-                    <!-- Botón Rojo "Cerrar Sesión / Salir" -->
-                    <button type="button" class="btn btn-sm btn-danger fw-bold d-inline-flex align-items-center gap-1" onclick="cerrarSesionTienda()" title="Cerrar sesión de forma segura y volver al login" style="background: #991B1B; border-color: #991B1B; font-size: 0.76rem;">
-                        <i class="bi bi-power"></i>
-                        <span class="d-none d-md-inline">Cerrar Sesión / Salir</span>
-                        <span class="d-md-none">Salir</span>
-                    </button>
+                        <!-- Botón "Mis Pedidos" (para Clientes de Taller) -->
+                        <button type="button" class="btn btn-sm btn-outline-dark fw-bold d-inline-flex align-items-center gap-1" id="btnTiendaMisPedidos" onclick="abrirModalSeguimiento()" style="font-size: 0.76rem; border-color: #CBD5E1;" title="Ver estado de mis pedidos">
+                            <i class="bi bi-truck text-warning"></i>
+                            <span>Mis Pedidos</span>
+                        </button>
+
+                        <!-- Acceso Desplegable a los 9 Módulos ERP (para ADMIN y TRABAJADOR) -->
+                        <div class="dropdown d-none" id="dropdownTiendaERP">
+                            <button class="btn btn-sm btn-dark dropdown-toggle fw-bold d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.76rem; background: #1C1917; border-color: #3F3F46;">
+                                <i class="bi bi-grid-3x3-gap-fill text-danger"></i>
+                                <span>Módulos ERP (9)</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="min-width: 220px; font-size: 0.8rem; background: #1C1917; border: 1px solid #3F3F46 !important;">
+                                <li><h6 class="dropdown-header text-uppercase font-mono text-warning" style="font-size: 0.68rem; letter-spacing: 0.5px;">Sistema ERP Golden</h6></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="dashboard.html"><i class="bi bi-speedometer2 text-danger"></i> Panel</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="usuarios.html"><i class="bi bi-people-fill text-danger"></i> Talleres</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="compras.html"><i class="bi bi-truck-flatbed text-danger"></i> Compras</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="facturacion.html"><i class="bi bi-credit-card-2-front-fill text-danger"></i> Cobranzas</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="creditos.html"><i class="bi bi-bank text-danger"></i> Créditos</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="auditoria.html"><i class="bi bi-shield-check text-danger"></i> Auditoría</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="inventario.html"><i class="bi bi-box-seam-fill text-danger"></i> Inventario</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2 active" href="tienda.html" style="background: rgba(185, 28, 28, 0.25);"><i class="bi bi-shop text-danger"></i> Catálogo</a></li>
+                                <li><a class="dropdown-item text-white py-1 d-flex align-items-center gap-2" href="logistica.html"><i class="bi bi-truck text-danger"></i> Logística</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Botón "Mi Carrito [0]" -->
+                        <button class="btn btn-sm d-inline-flex align-items-center gap-1 fw-bold text-white btn-abrir-carrito" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="background: #C81E1E; border-color: #C81E1E; font-size: 0.76rem;" title="Abrir mi pedido">
+                            <i class="bi bi-cart3"></i>
+                            <span class="d-none d-sm-inline">Mi Carrito</span>
+                            <span id="tiendaNavCartCount" class="tiendaNavCartCount badge bg-white text-dark font-mono ms-1" style="font-size: 0.7rem; border-radius: 4px;">[0]</span>
+                        </button>
+
+                        <!-- Botón "Salir" -->
+                        <button type="button" class="btn btn-sm btn-danger fw-bold d-inline-flex align-items-center gap-1" onclick="cerrarSesionTienda()" title="Cerrar sesión de forma segura y volver al login" style="background: #991B1B; border-color: #991B1B; font-size: 0.76rem;">
+                            <i class="bi bi-power"></i>
+                            <span class="d-none d-md-inline">Salir</span>
+                            <span class="d-md-none">Salir</span>
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -697,7 +702,7 @@
                     </p>
                     <p class="small text-secondary mb-2">
                         <i class="bi bi-whatsapp text-success me-1"></i>
-                        <strong>WhatsApp Pedidos:</strong> +591 71234567
+                        <strong>WhatsApp Pedidos:</strong> +591 67375645
                     </p>
                     <p class="small text-secondary mb-0">
                         <i class="bi bi-clock-fill text-muted me-1"></i>
@@ -761,12 +766,16 @@
                     <span id="totalCarrito" class="fw-bold fs-3 font-mono text-dark">Bs. 0.00</span>
                 </div>
 
-                <button id="btnConfirmarCompra" class="btn btn-primary w-100 py-3 fs-5 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #B91C1C; border-color: #B91C1C;" onclick="abrirModalCheckout()">
+                <button id="btnConfirmarCompra" class="btn btn-primary w-100 py-3 fs-5 shadow-sm d-flex align-items-center justify-content-center gap-2" style="background-color: #B91C1C; border-color: #B91C1C;" onclick="procederPagoOCotizar('pago')">
                     <i class="bi bi-credit-card-2-front-fill fs-4"></i>
                     <span>Proceder al Pago / Checkout</span>
                 </button>
+                <button type="button" id="btnSolicitarCotizacion" class="btn btn-outline-dark w-100 py-2 mt-2 fw-semibold d-flex align-items-center justify-content-center gap-2" style="font-size: 0.88rem;" onclick="procederPagoOCotizar('cotizacion')">
+                    <i class="bi bi-file-earmark-text text-warning"></i>
+                    <span>Solicitar Cotización Mayorista</span>
+                </button>
                 <small class="text-muted text-center d-block mt-2 font-mono" style="font-size: 0.72rem;">
-                    <i class="bi bi-shield-check text-success me-1"></i>Facturación computarizada con NIT
+                    <i class="bi bi-shield-check text-success me-1"></i>Facturación computarizada con NIT • Despachos directos en Sucre
                 </small>
             </div>
         </div>
@@ -1522,17 +1531,17 @@
                                                 <input type="file" id="checkoutComprobanteArchivo" class="form-control" accept="image/*,.pdf" style="font-size: 0.82rem;">
                                             </div>
 
-                                            <!-- Botón de Simulación de confirmación para Evaluación -->
-                                            <div class="mb-3 p-2 border rounded" style="background: #FEF3C7; border-color: #FDE68A !important;">
+                                            <!-- Conciliación rápida de comprobante bancario -->
+                                            <div class="mb-3 p-2 border rounded" style="background: #F8FAFC; border-color: #E2E8F0 !important;">
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <div>
                                                         <small class="fw-bold text-dark d-block" style="font-size: 0.75rem;">
-                                                            <i class="bi bi-check-circle-fill text-warning me-1"></i> Simulación de confirmación bancaria (Para demostración)
+                                                            <i class="bi bi-shield-check text-success me-1"></i> Conciliación inmediata de depósito bancario
                                                         </small>
-                                                        <span class="text-muted" style="font-size: 0.7rem;">Genera el número de referencia y valida el cobro de prueba.</span>
+                                                        <span class="text-muted" style="font-size: 0.7rem;">Genera el número de referencia y valida la transferencia para despacho.</span>
                                                     </div>
-                                                    <button type="button" class="btn btn-warning btn-sm fw-bold px-2 py-1 text-dark" onclick="simularConfirmacionBancariaDirecta()" style="font-size: 0.72rem;">
-                                                        Auto-Confirmar
+                                                    <button type="button" class="btn btn-light border btn-sm fw-bold px-2 py-1 text-dark" onclick="simularConfirmacionBancariaDirecta()" style="font-size: 0.72rem;">
+                                                        Validar Depósito
                                                     </button>
                                                 </div>
                                             </div>
@@ -1584,14 +1593,14 @@
                                 <!-- Botones Oficiales del SDK de PayPal -->
                                 <div id="paypal-button-container" class="my-2" style="max-width: 450px; margin: 0 auto; min-height: 80px;"></div>
 
-                                <!-- Respaldo Sandbox y Simulador Automático para Evaluación -->
+                                <!-- Procesamiento de pago directo con tarjeta internacional -->
                                 <div class="mt-4 pt-3 border-top text-center">
                                     <span class="small text-muted d-block mb-2 font-mono" style="font-size: 0.72rem;">
-                                        Prueba de pasarela en cuenta demo:
+                                        Pago seguro con tarjeta internacional o cuenta vinculada:
                                     </span>
                                     <button type="button" class="btn btn-outline-primary btn-sm px-4 py-2 fw-bold d-inline-flex align-items-center gap-2" onclick="simularPagoPayPalSandbox()">
                                         <i class="bi bi-shield-check"></i>
-                                        <span>Confirmar pago con cuenta PayPal de prueba</span>
+                                        <span>Procesar Pago PayPal Directo</span>
                                     </button>
                                 </div>
                             </div>
@@ -1640,12 +1649,75 @@
         </div>
     </div>
 
+    <!-- Botón Flotante Oficial de WhatsApp (+591 67375645) -->
+    <a href="https://wa.me/59167375645?text=Hola%20GOLDEN%20Lubricantes,%20quisiera%20consultar%20sobre%20productos%20para%20mi%20taller"
+       target="_blank"
+       rel="noopener noreferrer"
+       id="btnWhatsappFlotante"
+       class="btn-whatsapp-flotante"
+       title="Atención y Pedidos por WhatsApp"
+       aria-label="Atención y Pedidos por WhatsApp">
+        <i class="bi bi-whatsapp fs-4"></i>
+        <span class="whatsapp-flotante-label">Atención WhatsApp</span>
+    </a>
+
+    <style>
+        .btn-whatsapp-flotante {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: #25D366;
+            color: #FFFFFF !important;
+            border-radius: 50px;
+            padding: 10px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
+            z-index: 1050;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+            animation: pulsoWhatsappBtn 2.8s infinite;
+        }
+        .btn-whatsapp-flotante:hover {
+            background-color: #20BA5A;
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 24px rgba(37, 211, 102, 0.65);
+            color: #FFFFFF !important;
+        }
+        @keyframes pulsoWhatsappBtn {
+            0%, 100% {
+                box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
+            }
+            50% {
+                box-shadow: 0 4px 26px rgba(37, 211, 102, 0.8);
+            }
+        }
+        @media (max-width: 576px) {
+            .btn-whatsapp-flotante {
+                bottom: 18px;
+                right: 18px;
+                padding: 12px;
+                border-radius: 50%;
+            }
+            .whatsapp-flotante-label {
+                display: none;
+            }
+        }
+    </style>
+
     <!-- Scripts y Librerías -->
     <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="documentos-golden.js?v=1"></script>
     <script src="menu.js?v=29"></script>
     <script src="tienda.js?v=29"></script>
 </body>

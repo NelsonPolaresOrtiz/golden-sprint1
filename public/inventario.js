@@ -4,6 +4,20 @@
 const API_URL = '/api';
 let productosGlobal = [];
 
+/**
+ * Función utilitaria para sanitizar textos HTML contra ataques XSS
+ */
+function escaparHTML(texto) {
+    if (texto === null || texto === undefined) return '';
+    return String(texto)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escaparHTML = escaparHTML;
+
 // Helper Toast con SweetAlert2 para notificaciones flotantes modernas
 const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
     toast: true,
@@ -22,11 +36,14 @@ const Toast = window.Toast || (typeof Swal !== 'undefined' ? Swal.mixin({
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Control de Acceso RBAC: Solo Administradores y Trabajadores / Almaceneros
-    const usuario = protegerRuta('inventario', ['ADMIN', 'TRABAJADOR', 'ALMACENERO']);
-    if (!usuario) return;
+    // Control de Acceso RBAC: Administradores, Trabajadores, Almaceneros, Empaque
+    const usuario = (typeof protegerRuta === 'function') 
+        ? protegerRuta('inventario', ['ADMIN', 'TRABAJADOR', 'ALMACENERO', 'EMPAQUE'])
+        : (typeof obtenerUsuarioSesion === 'function' ? obtenerUsuarioSesion() : null);
 
-    renderizarMenu('inventario');
+    if (typeof renderizarMenu === 'function') {
+        renderizarMenu('inventario');
+    }
     cargarProductos();
 });
 
@@ -35,35 +52,69 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 async function cargarProductos() {
     const tbody = document.getElementById('tablaProductos');
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-secondary"><span class="spinner-border spinner-border-sm text-warning me-2"></span>Sincronizando inventario...</td></tr>';
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-secondary"><span class="spinner-border spinner-border-sm text-warning me-2"></span>Sincronizando inventario de repuestos...</td></tr>';
+    }
 
+    let data = null;
+
+    // Bloque 1: Petición HTTP al backend
     try {
         const res = await fetch(`${API_URL}/productos?t=${Date.now()}`);
-        if (!res.ok) throw new Error('Error al consultar inventario');
-        productosGlobal = await res.json();
+        if (!res.ok) throw new Error(`HTTP error ${res.status}: ${res.statusText}`);
+        data = await res.json();
+    } catch (fetchError) {
+        console.error("Error al obtener productos desde la API de inventario:", fetchError);
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-5">No se pudieron mostrar los registros de almacén en este momento. Intenta recargar la vista.</td></tr>';
+        }
+        if (typeof Toast !== 'undefined') {
+            Toast.fire({ icon: 'error', title: 'Error al conectar con el inventario' });
+        }
+        return;
+    }
+
+    // Bloque 2: Procesamiento y renderizado en DOM (aislado para no enmascarar errores de red)
+    try {
+        if (Array.isArray(data)) {
+            productosGlobal = data;
+        } else if (data && Array.isArray(data.productos)) {
+            productosGlobal = data.productos;
+        } else {
+            productosGlobal = [];
+        }
 
         actualizarMiniKPIs(productosGlobal);
         renderizarTabla(productosGlobal);
-    } catch (error) {
-        console.error("Error al cargar productos:", error);
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-5"><i class="bi bi-exclamation-triangle me-1"></i>Error al conectar con la base de datos de inventario.</td></tr>';
-        Toast.fire({ icon: 'error', title: 'Error al conectar con el inventario' });
+    } catch (renderError) {
+        console.error("Error al procesar o renderizar filas en la tabla de inventario:", renderError);
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-5">No se pudieron mostrar los registros de almacén en este momento. Intenta recargar la vista.</td></tr>';
+        }
     }
 }
 
 function actualizarMiniKPIs(lista) {
-    const totalItems = lista.length;
+    const arr = Array.isArray(lista) ? lista : [];
+    const totalItems = arr.length;
     let totalUnidades = 0;
     let bajoStock = 0;
 
-    lista.forEach(p => {
-        totalUnidades += p.stock;
-        if (p.stock <= p.stock_minimo) bajoStock++;
+    arr.forEach(p => {
+        if (!p) return;
+        const s = parseInt(p.stock, 10) || 0;
+        const sMin = parseInt(p.stock_minimo, 10) || 5;
+        totalUnidades += s;
+        if (s <= sMin) bajoStock++;
     });
 
-    document.getElementById('kpiTotalItems').innerText = totalItems;
-    document.getElementById('kpiTotalUnidades').innerText = totalUnidades;
-    document.getElementById('kpiBajoStock').innerText = bajoStock;
+    const elTotal = document.getElementById('kpiTotalItems');
+    const elUnid = document.getElementById('kpiTotalUnidades');
+    const elBajo = document.getElementById('kpiBajoStock');
+
+    if (elTotal) elTotal.innerText = totalItems;
+    if (elUnid) elUnid.innerText = totalUnidades;
+    if (elBajo) elBajo.innerText = bajoStock;
 }
 
 // ==========================================
@@ -71,54 +122,149 @@ function actualizarMiniKPIs(lista) {
 // ==========================================
 function renderizarTabla(productos, filtroBusqueda = '') {
     const tbody = document.getElementById('tablaProductos');
-    tbody.innerHTML = '';
+    if (!tbody) return;
 
-    if (!productos || productos.length === 0) {
+    const lista = Array.isArray(productos) ? productos : [];
+
+    if (lista.length === 0) {
         if (filtroBusqueda) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-search fs-3 d-block mb-2 text-warning"></i>No se encontraron registros que coincidan con la búsqueda.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-search fs-3 d-block mb-2 text-warning"></i>No se encontraron repuestos que coincidan con la búsqueda.</td></tr>`;
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>No se registran repuestos en el inventario.</td></tr>';
         }
         return;
     }
 
-    productos.forEach(p => {
-        const esBajoStock = p.stock <= p.stock_minimo;
+    const htmlFilas = lista.map(p => {
+        if (!p || typeof p !== 'object') return '';
+
+        const id = Number(p.id) || 0;
+        const sku = String(p.sku || '').trim() || 'GLD-REP';
+        const nombre = String(p.nombre || '').trim() || 'Repuesto sin descripción';
+        const categoria = String(p.categoria || '').trim() || 'General';
+        const marca = String(p.marca || '').trim() || '';
+        const imagen = String(p.imagen || p.imagen_url || '').trim() || '';
+        const precio = Number(p.precio) || 0;
+        const stockActual = Number(p.stock) || 0;
+        const stockMin = Number(p.stock_minimo) || 5;
+
+        const esBajoStock = stockActual <= stockMin;
         const stockBadge = esBajoStock ? 'badge-pill-ruby' : 'badge-pill-emerald';
         const estadoTexto = esBajoStock
             ? '<span class="badge-pill-stitch badge-pill-ruby"><span class="pulse-dot pulse-dot-ruby me-1"></span>Crítico</span>'
             : '<span class="badge-pill-stitch badge-pill-emerald"><span class="pulse-dot pulse-dot-emerald me-1"></span>Óptimo</span>';
 
-        tbody.innerHTML += `
+        const nombreEscapado = escaparHTML(nombre);
+        const skuEscapado = escaparHTML(sku);
+        const categoriaEscapada = escaparHTML(categoria);
+        const marcaEscapada = escaparHTML(marca);
+
+        // Strings seguros para atributos onclick=""
+        const nombreJsSafe = nombre.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const skuJsSafe = sku.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+        return `
             <tr>
                 <td class="ps-4">
-                    <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Chivo Mono', monospace;">${p.sku}</span>
+                    <span class="badge font-monospace px-2 py-1" style="background: #292524; color: #FFFFFF; font-family: 'Chivo Mono', monospace;">${skuEscapado}</span>
                 </td>
                 <td>
-                    <div class="fw-bold text-dark">${p.nombre}</div>
-                    <span class="badge-pill-stitch badge-pill-slate small mt-1" style="font-size: 0.72rem;">${p.categoria}</span>
+                    <div class="fw-bold text-dark">${nombreEscapado}</div>
+                    <div class="d-flex align-items-center gap-1 mt-1">
+                        <span class="badge-pill-stitch badge-pill-slate small" style="font-size: 0.72rem;">${categoriaEscapada}</span>
+                        ${marca ? `<span class="badge font-monospace px-1 text-secondary border" style="font-size: 0.68rem; background: #FAF8F5;">${marcaEscapada}</span>` : ''}
+                    </div>
                 </td>
-                <td class="fw-bold fs-6" style="color: #15803D; font-family: 'Chivo Mono', monospace;">Bs. ${parseFloat(p.precio).toFixed(2)}</td>
+                <td class="fw-bold fs-6" style="color: #15803D; font-family: 'Chivo Mono', monospace;">Bs. ${precio.toFixed(2)}</td>
                 <td>
-                    <span class="badge-pill-stitch ${stockBadge}">${p.stock} unid.</span>
-                    <small class="text-secondary d-block mt-1" style="font-size: 0.7rem;">Mínimo: ${p.stock_minimo}</small>
+                    <span class="badge-pill-stitch ${stockBadge}">${stockActual} unid.</span>
+                    <small class="text-secondary d-block mt-1" style="font-size: 0.7rem;">Mínimo: ${stockMin}</small>
                 </td>
                 <td>${estadoTexto}</td>
                 <td class="text-end pe-4 text-nowrap">
-                    <button class="btn btn-sm btn-outline-info rounded-2 me-1" onclick="abrirKardex('${p.sku}')" title="Historial Kardex (Trazabilidad)">
+                    <button type="button" class="btn btn-sm btn-outline-warning rounded-2 me-1" onclick="editarProducto(${id})" title="Editar Stock / Datos del Repuesto">
+                        <i class="bi bi-pencil-square me-1"></i><span>Editar Stock</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success rounded-2 me-1" onclick="registrarEntradaStock(${id}, '${nombreJsSafe}', ${stockActual})" title="Registrar Entrada Rápida de Stock (+)">
+                        <i class="bi bi-plus-circle me-1"></i><span>Entrada (+)</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info rounded-2 me-1" onclick="abrirKardex('${skuJsSafe}')" title="Historial Kardex Físico">
                         <i class="bi bi-clock-history"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-warning rounded-2 me-1" onclick="editarProducto(${p.id})" title="Editar Repuesto">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger rounded-2" onclick="eliminarProducto(${p.id}, '${p.nombre.replace(/'/g, "\\'")}')" title="Eliminar Repuesto">
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-2" onclick="eliminarProducto(${id}, '${nombreJsSafe}')" title="Eliminar Repuesto">
                         <i class="bi bi-trash3"></i>
                     </button>
                 </td>
             </tr>
         `;
-    });
+    }).join('');
+
+    tbody.innerHTML = htmlFilas;
 }
+
+/**
+ * Registro directo de entrada rápida (+) a depósito
+ */
+async function registrarEntradaStock(id, nombre, stockActual) {
+    if (typeof Swal === 'undefined') {
+        const cant = prompt(`Ingresar unidades adicionales para "${nombre}":`, '5');
+        if (cant && parseInt(cant) > 0) {
+            aplicarEntradaStockAPI(id, stockActual, parseInt(cant));
+        }
+        return;
+    }
+
+    const { value: cantidad } = await Swal.fire({
+        title: '<span style="font-family: \'Archivo\', sans-serif; font-weight: 800; color: #141619;">Entrada de Almacén</span>',
+        html: `
+            <div class="text-start p-2" style="font-size: 0.9rem;">
+                <p class="mb-1 text-secondary">Repuesto: <strong class="text-dark">${nombre}</strong></p>
+                <p class="mb-3 text-secondary">Stock actual en depósito: <span class="badge bg-secondary">${stockActual} unidades</span></p>
+                <label class="form-label fw-bold text-dark mb-1">Cantidad a ingresar (+):</label>
+            </div>
+        `,
+        input: 'number',
+        inputAttributes: { min: 1, step: 1 },
+        inputValue: 5,
+        showCancelButton: true,
+        confirmButtonColor: '#15803D',
+        cancelButtonColor: '#64748B',
+        confirmButtonText: '<i class="bi bi-plus-circle-fill me-1"></i> Añadir al Stock',
+        cancelButtonText: 'Cancelar',
+        background: '#FFFFFF',
+        color: '#1C1917'
+    });
+
+    if (cantidad && parseInt(cantidad, 10) > 0) {
+        await aplicarEntradaStockAPI(id, stockActual, parseInt(cantidad, 10));
+    }
+}
+
+async function aplicarEntradaStockAPI(id, stockActual, incremento) {
+    const nuevoStock = stockActual + incremento;
+    try {
+        const res = await fetch(`${API_URL}/productos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stock: nuevoStock })
+        });
+        if (res.ok) {
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'success', title: `+${incremento} unidades ingresadas con éxito` });
+            }
+            cargarProductos();
+        } else {
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'error', title: 'Error al actualizar stock' });
+            }
+        }
+    } catch (e) {
+        if (typeof Toast !== 'undefined') {
+            Toast.fire({ icon: 'error', title: 'Error de conexión con el servidor' });
+        }
+    }
+}
+window.registrarEntradaStock = registrarEntradaStock;
 
 // ==========================================
 // 3. BUSCADOR EN TIEMPO REAL (EVENTO INPUT)
@@ -164,53 +310,69 @@ if (formProductoInv) {
             btnGuardar.disabled = true;
             btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando Repuesto...`;
         }
-    }
 
-    try {
-        const res = await fetch(url, {
-            method: metodo,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        });
-        const data = await res.json();
+        try {
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+            const data = await res.json();
 
-        if (!res.ok) {
-            Toast.fire({ icon: 'error', title: data.error || 'Error al procesar el producto' });
-            mostrarAlerta(data.error || 'Error al procesar el producto.', 'danger');
-            return;
+            if (!res.ok) {
+                if (typeof Toast !== 'undefined') Toast.fire({ icon: 'error', title: data.error || 'Error al procesar el producto' });
+                mostrarAlerta(data.error || 'Error al procesar el producto.', 'danger');
+                return;
+            }
+
+            const mensajeExito = esEdicion ? 'Repuesto actualizado con éxito' : 'Repuesto registrado con éxito';
+            if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: data.mensaje || mensajeExito });
+            mostrarAlerta(data.mensaje || 'Operación completada exitosamente.', 'success');
+            resetFormularioProducto();
+            cargarProductos();
+        } catch (error) {
+            if (typeof Toast !== 'undefined') Toast.fire({ icon: 'error', title: 'Error de conexión con el servidor' });
+            mostrarAlerta('Error de conexión con el servidor.', 'danger');
+        } finally {
+            if (btnGuardar) {
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = textoOriginalBtn;
+            }
         }
-
-        const mensajeExito = esEdicion ? 'Repuesto actualizado con éxito' : 'Repuesto registrado con éxito';
-        Toast.fire({ icon: 'success', title: data.mensaje || mensajeExito });
-        mostrarAlerta(data.mensaje || 'Operación completada exitosamente.', 'success');
-        resetFormularioProducto();
-        cargarProductos();
-    } catch (error) {
-        Toast.fire({ icon: 'error', title: 'Error de conexión con el servidor' });
-        mostrarAlerta('Error de conexión con el servidor.', 'danger');
-    } finally {
-        if (btnGuardar) {
-            btnGuardar.disabled = false;
-            btnGuardar.innerHTML = textoOriginalBtn;
-        }
-    }
-});
+    });
+}
 
 function editarProducto(id) {
-    const p = productosGlobal.find(item => item.id === id);
+    const numId = Number(id);
+    const p = productosGlobal.find(item => Number(item.id) === numId);
     if (!p) return;
 
-    document.getElementById('prodId').value = p.id;
-    document.getElementById('sku').value = p.sku;
-    document.getElementById('nombre').value = p.nombre;
-    document.getElementById('categoria').value = p.categoria;
-    document.getElementById('precio').value = p.precio;
-    document.getElementById('stock').value = p.stock;
-    document.getElementById('stockMinimo').value = p.stock_minimo || 5;
+    const elId = document.getElementById('prodId');
+    const elSku = document.getElementById('sku');
+    const elNom = document.getElementById('nombre');
+    const elCat = document.getElementById('categoria');
+    const elPre = document.getElementById('precio');
+    const elStk = document.getElementById('stock');
+    const elMin = document.getElementById('stockMinimo');
 
-    document.getElementById('formTitle').innerHTML = `<i class="bi bi-pencil-square me-2 fs-5"></i> Editar Repuesto #${p.id}`;
-    document.getElementById('btnGuardarProd').innerHTML = `<i class="bi bi-check2-circle me-1"></i> Guardar Cambios`;
-    document.getElementById('btnCancelarProd').classList.remove('d-none');
+    if (elId) elId.value = p.id;
+    if (elSku) elSku.value = p.sku || '';
+    if (elNom) elNom.value = p.nombre || '';
+    if (elCat) elCat.value = p.categoria || '';
+    if (elPre) elPre.value = p.precio || '';
+    if (elStk) elStk.value = p.stock || 0;
+    if (elMin) elMin.value = p.stock_minimo || 5;
+
+    const elTitle = document.getElementById('formTitle');
+    const elBtnGuardar = document.getElementById('btnGuardarProd');
+    const elBtnCancelar = document.getElementById('btnCancelarProd');
+
+    if (elTitle) elTitle.innerHTML = `<i class="bi bi-pencil-square me-2 fs-5"></i> Editar Repuesto #${p.id}`;
+    if (elBtnGuardar) elBtnGuardar.innerHTML = `<i class="bi bi-check2-circle me-1"></i> Guardar Cambios`;
+    if (elBtnCancelar) elBtnCancelar.classList.remove('d-none');
+
+    const formCard = document.getElementById('productoForm');
+    if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ELIMINACIÓN CON DIÁLOGO MODAL SWEETALERT2
@@ -218,7 +380,7 @@ async function eliminarProducto(id, nombre) {
     const confirmacion = typeof Swal !== 'undefined'
         ? await Swal.fire({
             title: '¿Eliminar Repuesto?',
-            html: `¿Estás seguro de eliminar el repuesto <strong class="text-warning">"${nombre}"</strong> del catálogo? Esta acción no se puede revertir.`,
+            html: `¿Estás seguro de eliminar el repuesto <strong class="text-warning">"${escaparHTML(nombre)}"</strong> del catálogo? Esta acción no se puede revertir.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#ef4444',
@@ -238,26 +400,33 @@ async function eliminarProducto(id, nombre) {
         const data = await res.json();
 
         if (res.ok) {
-            Toast.fire({ icon: 'success', title: data.mensaje || 'Repuesto eliminado del catálogo' });
-            mostrarAlerta(data.mensaje, 'warning');
+            if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: data.mensaje || 'Repuesto eliminado del catálogo' });
+            mostrarAlerta(data.mensaje || 'Repuesto eliminado del catálogo.', 'warning');
             cargarProductos();
         } else {
-            Toast.fire({ icon: 'error', title: data.error || 'Error al eliminar producto' });
-            mostrarAlerta(data.error, 'danger');
+            if (typeof Toast !== 'undefined') Toast.fire({ icon: 'error', title: data.error || 'Error al eliminar producto' });
+            mostrarAlerta(data.error || 'Error al eliminar producto.', 'danger');
         }
     } catch (error) {
-        Toast.fire({ icon: 'error', title: 'Error al contactar con el servidor' });
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'error', title: 'Error al contactar con el servidor' });
         mostrarAlerta('Error al eliminar producto.', 'danger');
     }
 }
 
 function resetFormularioProducto() {
-    document.getElementById('productoForm').reset();
-    document.getElementById('prodId').value = '';
-    document.getElementById('stockMinimo').value = '5';
-    document.getElementById('formTitle').innerHTML = `<i class="bi bi-plus-circle-fill me-2 fs-5"></i> Registrar Repuesto`;
-    document.getElementById('btnGuardarProd').innerHTML = `<i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar Producto`;
-    document.getElementById('btnCancelarProd').classList.add('d-none');
+    const form = document.getElementById('productoForm');
+    if (form) form.reset();
+    const elId = document.getElementById('prodId');
+    const elMin = document.getElementById('stockMinimo');
+    const elTitle = document.getElementById('formTitle');
+    const elBtnGuardar = document.getElementById('btnGuardarProd');
+    const elBtnCancelar = document.getElementById('btnCancelarProd');
+
+    if (elId) elId.value = '';
+    if (elMin) elMin.value = '5';
+    if (elTitle) elTitle.innerHTML = `<i class="bi bi-plus-circle-fill me-2 fs-5"></i> Registrar Repuesto`;
+    if (elBtnGuardar) elBtnGuardar.innerHTML = `<i class="bi bi-cloud-arrow-up-fill me-1"></i> Guardar Producto`;
+    if (elBtnCancelar) elBtnCancelar.classList.add('d-none');
 }
 
 function mostrarAlerta(mensaje, tipo) {
@@ -270,16 +439,31 @@ function mostrarAlerta(mensaje, tipo) {
 }
 
 // ==========================================
-// 5. EXPORTACIÓN PROFESIONAL A PDF (jsPDF)
+// 5. EXPORTACIÓN PROFESIONAL A PDF
 // ==========================================
-function exportarPDF() {
+async function exportarPDF() {
     if (!productosGlobal || productosGlobal.length === 0) {
-        Toast.fire({ icon: 'warning', title: 'No hay productos en el inventario para exportar' });
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'warning', title: 'No hay productos en el inventario para exportar' });
         return;
     }
 
+    const fechaStr = new Date().toISOString().slice(0, 10);
+    const nombreArchivo = `Reporte_Inventario_GOLDEN_${fechaStr}.pdf`;
+
+    // 1. Motor editorial industrial limpio con membrete de GOLDEN
+    if (typeof window.generarReporteInventarioHTML === 'function' && typeof window.descargarDocumentoPDF === 'function') {
+        try {
+            const html = window.generarReporteInventarioHTML(productosGlobal);
+            await window.descargarDocumentoPDF(html, nombreArchivo);
+            return;
+        } catch (e) {
+            console.warn('Recurriendo a motor jsPDF:', e);
+        }
+    }
+
+    // 2. Respaldo directo con jsPDF
     if (!window.jspdf || !window.jspdf.jsPDF) {
-        Toast.fire({ icon: 'error', title: 'La librería jsPDF no está disponible en este momento' });
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'error', title: 'La librería jsPDF no está disponible en este momento' });
         return;
     }
 
@@ -290,57 +474,66 @@ function exportarPDF() {
         format: 'a4'
     });
 
-    const usuario = obtenerUsuarioSesion();
-    const fechaEmision = new Date().toLocaleString();
+    const usuario = typeof obtenerUsuarioSesion === 'function' ? obtenerUsuarioSesion() : null;
+    const fechaEmision = new Date().toLocaleString('es-BO');
 
     let valorTotalInventario = 0;
     let unidadesTotales = 0;
     productosGlobal.forEach(p => {
-        valorTotalInventario += (p.precio * p.stock);
-        unidadesTotales += p.stock;
+        const s = parseInt(p.stock) || 0;
+        const pr = parseFloat(p.precio) || 0;
+        valorTotalInventario += (pr * s);
+        unidadesTotales += s;
     });
 
     // Encabezado Corporativo
-    doc.setFillColor(15, 23, 42); // #0f172a
-    doc.rect(0, 0, 210, 28, 'F');
+    doc.setFillColor(20, 22, 25); // #141619
+    doc.rect(0, 0, 210, 30, 'F');
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(15);
     doc.setTextColor(245, 158, 11); // #f59e0b (Ámbar)
-    doc.text("DISTRIBUIDORA GOLDEN S.R.L.", 14, 12);
+    doc.text("GOLDEN LUBRICANTES & FILTROS S.R.L. — SUCRE, BOLIVIA", 14, 11);
 
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(255, 255, 255);
-    doc.text("Sistema ERP de Control de Inventario y Cadena de Suministro", 14, 18);
-    doc.text("REPORTE OFICIAL DE EXISTENCIAS Y VALORACIÓN FÍSICA", 14, 24);
+    doc.text("Casa Matriz: Av. Jaime Mendoza #1420 • Sucre, Bolivia • NIT: 1029384756", 14, 17);
+    doc.text("REPORTE OFICIAL DE EXISTENCIAS Y VALORACIÓN FÍSICA DE ALMACÉN", 14, 23);
 
     // Metadatos
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(51, 65, 85);
-    doc.text(`Fecha y Hora de Emisión: ${fechaEmision}`, 14, 35);
-    doc.text(`Generado por: ${usuario ? usuario.nombre : 'Usuario Autorizado'} (${usuario ? usuario.rol : 'SISTEMA'})`, 14, 40);
+    doc.text(`Fecha y Hora de Emisión: ${fechaEmision} | Tel: (+591) 4 64-52890`, 14, 36);
+    doc.text(`Generado por: ${usuario ? usuario.nombre : 'Usuario Autorizado'} (${usuario ? usuario.rol : 'SISTEMA'})`, 14, 41);
 
     // Resumen de Métricas en Caja
-    doc.setFillColor(241, 245, 249);
-    doc.roundedRect(14, 44, 182, 16, 2, 2, 'F');
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(14, 45, 182, 16, 2, 2, 'F');
     doc.setFont("helvetica", "bold");
     doc.setTextColor(15, 23, 42);
-    doc.text(`Total de Repuestos: ${productosGlobal.length} ítems`, 18, 51);
-    doc.text(`Unidades Físicas: ${unidadesTotales} unidades`, 80, 51);
-    doc.setTextColor(217, 119, 6);
-    doc.text(`Valorización Total: Bs. ${valorTotalInventario.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 140, 51);
+    doc.text(`Total de Repuestos: ${productosGlobal.length} ítems`, 18, 53);
+    doc.text(`Unidades Físicas: ${unidadesTotales} unidades`, 80, 53);
+    doc.setTextColor(185, 28, 28);
+    doc.text(`Valorización Total: Bs. ${valorTotalInventario.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 135, 53);
 
     // Tabla con jsPDF-AutoTable
     const columnas = ["SKU", "Descripción del Repuesto", "Categoría", "P. Unit (Bs.)", "Stock", "Valor (Bs.)"];
-    const filas = productosGlobal.map(p => [
-        p.sku,
-        p.nombre,
-        p.categoria,
-        `Bs. ${parseFloat(p.precio).toFixed(2)}`,
-        `${p.stock} unid.`,
-        `Bs. ${(p.precio * p.stock).toFixed(2)}`
-    ]);
+    const filas = productosGlobal.map(p => {
+        const sku = String(p.sku || '').trim() || 'GLD-REP';
+        const nombre = String(p.nombre || '').trim() || 'Sin descripción';
+        const categoria = String(p.categoria || '').trim() || 'General';
+        const precio = Number(p.precio) || 0;
+        const stock = Number(p.stock) || 0;
+        return [
+            sku,
+            nombre,
+            categoria,
+            `Bs. ${precio.toFixed(2)}`,
+            `${stock} unid.`,
+            `Bs. ${(precio * stock).toFixed(2)}`
+        ];
+    });
 
     doc.autoTable({
         startY: 65,
@@ -372,13 +565,13 @@ function exportarPDF() {
             const str = "Página " + doc.internal.getNumberOfPages();
             doc.setFontSize(8);
             doc.setTextColor(148, 163, 184);
-            doc.text("ERP GOLDEN - Documento confidencial para control de auditoría interna.", 14, 290);
+            doc.text("ERP GOLDEN - Documento confidencial para control de almacén.", 14, 290);
             doc.text(str, 195, 290, { align: 'right' });
         }
     });
 
-    doc.save(`Reporte_Inventario_GOLDEN_${new Date().toISOString().slice(0, 10)}.pdf`);
-    Toast.fire({ icon: 'success', title: 'Reporte PDF descargado con éxito' });
+    doc.save(nombreArchivo);
+    if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: 'Reporte PDF descargado con éxito' });
 }
 
 // ==========================================
@@ -398,7 +591,7 @@ async function abrirKardex(sku) {
     document.getElementById('kardexTotalRecaudado').innerText = '...';
 
     const tbody = document.getElementById('tablaKardexMovimientos');
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-secondary"><span class="spinner-border spinner-border-sm text-warning me-2"></span>Consultando movimientos de Kardex en SQLite...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-secondary"><span class="spinner-border spinner-border-sm text-warning me-2"></span>Consultando movimientos de Kardex en almacén...</td></tr>';
 
     modal.show();
 
@@ -483,71 +676,53 @@ async function abrirKardex(sku) {
 }
 
 // =========================================================================
-// EXPORTACIÓN GERENCIAL A EXCEL / CSV
+// EXPORTACIÓN GERENCIAL A EXCEL NATIVO REAL (.XLSX)
 // =========================================================================
-function exportarTablaCSV(tablaId, nombreArchivo = 'Inventario_GOLDEN') {
-    let tabla = document.getElementById(tablaId);
-    if (!tabla) {
-        const el = document.getElementById(tablaId);
-        if (el && el.tagName === 'TBODY') tabla = el.closest('table');
-    }
-
-    if (!tabla) {
-        Toast.fire({ icon: 'warning', title: 'Tabla no encontrada para exportar' });
+function exportarInventarioExcel() {
+    if (!productosGlobal || productosGlobal.length === 0) {
+        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'warning', title: 'No hay productos en el inventario para exportar' });
         return;
     }
 
-    const filas = Array.from(tabla.querySelectorAll('tr'));
-    if (filas.length === 0) {
-        Toast.fire({ icon: 'info', title: 'Sin datos para exportar' });
-        return;
-    }
-
-    const lineasCSV = [];
-
-    filas.forEach(fila => {
-        const colspanTd = fila.querySelector('td[colspan]');
-        if (colspanTd && parseInt(colspanTd.getAttribute('colspan')) >= 3) return;
-
-        const celdas = Array.from(fila.querySelectorAll('th, td'));
-        const datosFila = [];
-
-        celdas.forEach(celda => {
-            const textoCabecera = celda.innerText.trim().toLowerCase();
-            if (textoCabecera === 'acciones' || celda.classList.contains('col-acciones')) return;
-            if (celda.querySelector('button') && !celda.innerText.trim()) return;
-
-            let valor = celda.innerText
-                .replace(/(\r\n|\n|\r)/gm, ' ')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .replace(/"/g, '""');
-
-            datosFila.push(`"${valor}"`);
+    if (typeof window.exportarReporteExcel === 'function') {
+        window.exportarReporteExcel({
+            titulo: 'CATÁLOGO OFICIAL DE REPUESTOS Y EXISTENCIAS DE ALMACÉN',
+            subtitulo: 'Almacén Central Sucre — Av. Jaime Mendoza #1420',
+            columnas: ['SKU / CÓDIGO', 'DESCRIPCIÓN DEL REPUESTO', 'CATEGORÍA', 'P. UNITARIO (BS.)', 'STOCK DISPONIBLE', 'STOCK MÍNIMO', 'VALOR TOTAL (BS.)', 'ESTADO ALMACÉN'],
+            filas: productosGlobal.map(p => {
+                const stock = Number(p.stock) || 0;
+                const min = Number(p.stock_minimo) || 5;
+                const precio = Number(p.precio) || 0;
+                return [
+                    String(p.sku || '').trim() || 'GLD-REP',
+                    String(p.nombre || '').trim() || 'Sin descripción',
+                    String(p.categoria || '').trim() || 'General',
+                    precio,
+                    stock,
+                    min,
+                    stock * precio,
+                    (stock <= min ? 'CRÍTICO' : 'ÓPTIMO')
+                ];
+            }),
+            anchos: [16, 44, 22, 18, 18, 16, 20, 16],
+            nombreArchivo: 'Inventario_GOLDEN'
         });
-
-        if (datosFila.length > 0) {
-            lineasCSV.push(datosFila.join(';'));
-        }
-    });
-
-    if (lineasCSV.length === 0) {
-        Toast.fire({ icon: 'info', title: 'No se encontraron registros exportables' });
         return;
     }
 
-    const contenidoCSV = '\uFEFF' + lineasCSV.join('\r\n');
-    const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
-    const fechaStr = new Date().toISOString().slice(0, 10);
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${nombreArchivo}_${fechaStr}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    Toast.fire({ icon: 'success', title: `Inventario exportado a CSV con éxito` });
+    if (typeof window.exportarTablaCSV === 'function') {
+        window.exportarTablaCSV('tablaInventarioCompleta', 'Inventario_GOLDEN', 'Inventario de Repuestos');
+    }
 }
+window.exportarInventarioExcel = exportarInventarioExcel;
+window.exportarTablaCSV = exportarInventarioExcel;
+window.exportarPDF = exportarPDF;
+window.editarProducto = editarProducto;
+window.eliminarProducto = eliminarProducto;
+window.registrarEntradaStock = registrarEntradaStock;
+window.resetFormularioProducto = resetFormularioProducto;
+window.abrirKardex = abrirKardex;
+window.renderizarTabla = renderizarTabla;
+window.renderizarInventario = renderizarTabla;
+window.cargarProductos = cargarProductos;
+window.cargarInventario = cargarProductos;

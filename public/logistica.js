@@ -523,7 +523,38 @@ function mostrarToastLogistica(mensaje) {
 // =========================================================================
 // MOTOR DE FACTURACIÓN PDF (html2pdf.js) - RECIBO OFICIAL ENTERPRISE
 // =========================================================================
-async function generarRecibo(pedidoId) {
+async function generarRecibo(pedidoId, modo = 'descargar') {
+    // Si el motor centralizado oficial está cargado, usarlo directamente
+    if (typeof window.generarFacturaNotaEntregaHTML === 'function') {
+        try {
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'info', title: 'Generando comprobante oficial...' });
+            }
+            let pedido = (pedidosGlobal || []).find(p => p.id === pedidoId);
+            if (!pedido) {
+                const res = await fetch(`${API_URL}/pedidos/${pedidoId}`);
+                if (res.ok) pedido = await res.json();
+            }
+            if (!pedido) throw new Error('Pedido no encontrado en el servidor');
+
+            const htmlFactura = window.generarFacturaNotaEntregaHTML(pedido);
+            const nombreArchivo = `Factura_GOLDEN_#00${String(pedido.id).padStart(4, '0')}.pdf`;
+
+            if (modo === 'imprimir') {
+                window.imprimirDocumento(htmlFactura, nombreArchivo);
+            } else {
+                await window.descargarDocumentoPDF(htmlFactura, nombreArchivo);
+            }
+            return;
+        } catch (err) {
+            console.error('Error al generar comprobante oficial:', err);
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'error', title: 'Error al exportar comprobante' });
+            }
+            return;
+        }
+    }
+
     const elemento = document.getElementById('plantilla-factura');
     if (!elemento) {
         if (typeof Swal !== 'undefined') {
@@ -636,3 +667,34 @@ async function generarRecibo(pedidoId) {
 // Compatibilidad de nombres de función
 window.generarRecibo = generarRecibo;
 window.generarFacturaPDF = generarRecibo;
+
+function exportarLogisticaExcel() {
+    if (!pedidosGlobal || pedidosGlobal.length === 0) {
+        if (typeof Toast !== 'undefined') {
+            Toast.fire({ icon: 'warning', title: 'No hay pedidos en logística para exportar' });
+        }
+        return;
+    }
+    if (typeof window.exportarReporteExcel === 'function') {
+        window.exportarReporteExcel({
+            titulo: 'MANIFIESTO OFICIAL DE LOGÍSTICA Y DESPACHOS',
+            subtitulo: 'Control de Envíos, Empaque y Rutas de Reparto — Sucre, Bolivia',
+            columnas: ['N° ORDEN', 'FECHA COMPRA', 'CLIENTE / TALLER', 'NIT / CI', 'MÉTODO DE PAGO', 'TOTAL (BS.)', 'ESTADO ENTREGA', 'ESTADO LOGÍSTICA', 'RESPONSABLE EMPAQUE', 'CHOFER DESPACHO'],
+            filas: pedidosGlobal.map(p => [
+                `#00${p.id}`,
+                p.fecha_compra ? new Date(p.fecha_compra).toLocaleString('es-BO') : '',
+                typeof window.limpiarTextoCelda === 'function' ? window.limpiarTextoCelda(p.cliente_nombre || p.cliente || 'Taller Mecánico') : (p.cliente_nombre || p.cliente || 'Taller Mecánico'),
+                p.cliente_nit || p.nit || '1029384756',
+                (p.metodo_pago || 'QR_SIMPLE').toUpperCase(),
+                parseFloat(p.total || 0),
+                (p.estado || 'PENDIENTE').toUpperCase(),
+                (p.estado_logistica || 'ORDEN RECIBIDA').toUpperCase(),
+                p.empaque_responsable || 'Almacén Central',
+                p.despacho_chofer || 'Distribución Sucre'
+            ]),
+            anchos: [12, 22, 32, 16, 18, 16, 18, 30, 24, 24],
+            nombreArchivo: 'Manifiesto_Logistica_GOLDEN'
+        });
+    }
+}
+window.exportarLogisticaExcel = exportarLogisticaExcel;

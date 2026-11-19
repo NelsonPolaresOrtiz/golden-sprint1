@@ -1,2 +1,3 @@
 node_modules/
 #backend/golden_seguridad.db
+backend/auth_whatsapp/

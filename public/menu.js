@@ -402,6 +402,17 @@ function renderizarMenu(paginaActiva) {
 }
 window.renderizarMenu = renderizarMenu;
 
+// Auto-inicialización de contingencia del Menú ERP si el contenedor está vacío
+document.addEventListener('DOMContentLoaded', () => {
+    const contenedor = document.getElementById('menu-contenedor');
+    if (contenedor && !contenedor.classList.contains('d-none') && (!contenedor.innerHTML || !contenedor.innerHTML.trim())) {
+        const pag = window.location.pathname.split('/').pop().replace('.html', '') || 'dashboard';
+        if (pag !== 'index' && pag !== 'login') {
+            renderizarMenu(pag);
+        }
+    }
+});
+
 /**
  * Renderizador del Sidebar Maestro para vistas auxiliares
  */
@@ -565,7 +576,8 @@ function protegerRuta(paginaActual, rolesPermitidos) {
         if (rolesNormalizados.includes('CLIENTE') && !rolesNormalizados.includes('CLIENTE_B2B')) {
             rolesNormalizados.push('CLIENTE_B2B', 'CLIENTE_B2C');
         }
-        if (!rolesNormalizados.includes(usuario.rol)) {
+        const rolesMayus = rolesNormalizados.map(r => String(r).toUpperCase().trim());
+        if (!rolesMayus.includes(rol)) {
             if (esCliente) {
                 window.location.href = 'tienda.html';
             } else {
@@ -758,7 +770,49 @@ function mostrarModalAlertasStock() {
 // =========================================================================
 // EXPORTACIÓN A CSV / EXCEL
 // =========================================================================
-function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN') {
+function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN', tituloReporte = 'Reporte Oficial de Operaciones') {
+    if (typeof window.exportarReporteExcel === 'function' && window.EMPRESA_GOLDEN) {
+        let tabla = document.getElementById(tablaId);
+        if (!tabla) {
+            const el = document.getElementById(tablaId);
+            if (el && el.tagName === 'TBODY') tabla = el.closest('table');
+        }
+        if (tabla) {
+            const encabezados = [];
+            const anchos = [];
+            const ths = tabla.querySelectorAll('thead th');
+            ths.forEach(th => {
+                const txt = th.innerText.trim();
+                if (txt.toLowerCase() === 'acciones' || th.classList.contains('col-acciones')) return;
+                encabezados.push(txt.toUpperCase());
+                anchos.push(Math.max(16, txt.length + 6));
+            });
+
+            const filas = [];
+            const trs = tabla.querySelectorAll('tbody tr');
+            trs.forEach(tr => {
+                if (tr.querySelector('td[colspan]')) return;
+                const celdas = [];
+                const tds = tr.querySelectorAll('td');
+                tds.forEach((td, i) => {
+                    if (ths[i] && (ths[i].innerText.trim().toLowerCase() === 'acciones' || ths[i].classList.contains('col-acciones'))) return;
+                    let val = td.innerText.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ').trim();
+                    celdas.push(val);
+                });
+                if (celdas.length > 0) filas.push(celdas);
+            });
+
+            window.exportarReporteExcel({
+                titulo: tituloReporte,
+                columnas: encabezados,
+                filas: filas,
+                anchos: anchos,
+                nombreArchivo: nombreArchivo
+            });
+            return;
+        }
+    }
+
     let tabla = document.getElementById(tablaId);
     if (!tabla) {
         const el = document.getElementById(tablaId);
@@ -851,7 +905,34 @@ window.mostrarModalAlertasStock = mostrarModalAlertasStock;
 // =========================================================================
 // MOTOR DE FACTURACIÓN PDF (html2pdf.js) - CARTA / A4
 // =========================================================================
-async function generarRecibo(pedidoId) {
+async function generarRecibo(pedidoId, modo = 'descargar') {
+    // Si el motor centralizado oficial está cargado, usarlo directamente
+    if (typeof window.generarFacturaNotaEntregaHTML === 'function') {
+        try {
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'info', title: 'Generando comprobante oficial...' });
+            }
+            const res = await fetch(`/api/pedidos/${pedidoId}`);
+            if (!res.ok) throw new Error('Pedido no encontrado en el servidor');
+            const pedido = await res.json();
+            const htmlFactura = window.generarFacturaNotaEntregaHTML(pedido);
+            const nombreArchivo = `Factura_GOLDEN_#00${String(pedido.id).padStart(4, '0')}.pdf`;
+
+            if (modo === 'imprimir') {
+                window.imprimirDocumento(htmlFactura, nombreArchivo);
+            } else {
+                await window.descargarDocumentoPDF(htmlFactura, nombreArchivo);
+            }
+            return;
+        } catch (err) {
+            console.error('Error al generar recibo con motor central:', err);
+            if (typeof Toast !== 'undefined') {
+                Toast.fire({ icon: 'error', title: 'No se pudo generar la factura del pedido' });
+            }
+            return;
+        }
+    }
+
     const elemento = document.getElementById('plantilla-factura');
     if (!elemento) {
         if (typeof Swal !== 'undefined') {

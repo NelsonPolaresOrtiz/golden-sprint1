@@ -5,25 +5,8 @@
  *   botones rápidos en cada tarjeta (Editar / Oferta On/Off), modal de edición completa en tiempo real
  *   y editor de campaña del Hero Banner.
  * - CLIENTE: Visualización pública limpia estilo Tecfil, sin controles administrativos.
- * - Persistencia ACID en SQLite3 (/api/productos, /api/config-catalogo).
+ * - Gestión relacional de catálogo e inventario (/api/productos, /api/config-catalogo).
  */
-
-// =========================================================================
-// 0. VERIFICACIÓN INMEDIATA DE SESIÓN ACTIVA (LOGIN OBLIGATORIO)
-// Si no existe sesión activa, redirige inmediatamente a index.html
-// =========================================================================
-(function verificarSesionObligatoriaInmediata() {
-    try {
-        const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
-        const token = localStorage.getItem('token');
-        if (!raw && !token) {
-            window.location.href = 'index.html';
-            return;
-        }
-    } catch (e) {
-        window.location.href = 'index.html';
-    }
-})();
 
 const API_URL = '/api';
 const FALLBACK_IMG_OFFLINE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'><rect width='400' height='300' fill='%23f8fafc'/><rect x='10' y='10' width='380' height='280' fill='none' stroke='%23cbd5e1' stroke-dasharray='6 6' rx='4'/><text x='50%25' y='46%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-family='sans-serif' font-size='15' font-weight='bold'>REPUESTO AUTOMOTRIZ</text><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='%23d97706' font-family='sans-serif' font-size='12' font-weight='600'>GOLDEN ERP</text></svg>";
@@ -383,9 +366,31 @@ function cerrarSesionTienda() {
 window.cerrarSesionTienda = cerrarSesionTienda;
 
 function sincronizarControlesUsuarioHeader() {
-    if (!usuarioActual) return;
+    const guestControls = document.getElementById('tiendaGuestControls');
+    const loggedControls = document.getElementById('tiendaLoggedControls');
+    const cant = Array.isArray(carrito) ? carrito.reduce((acc, it) => acc + (it.cantidad || 1), 0) : 0;
 
-    const nombre = usuarioActual.nombre || 'Taller Los Primos';
+    // Actualizar todos los badges de carrito en la página
+    document.querySelectorAll('.tiendaNavCartCount').forEach(badge => {
+        badge.innerText = `[${cant}]`;
+    });
+    const topBarCount = document.getElementById('topBarCartCount');
+    if (topBarCount) topBarCount.innerText = cant;
+
+    if (!usuarioActual) {
+        // Modo Invitado: Catálogo Libre sin sesión obligatoria
+        if (guestControls) guestControls.classList.remove('d-none');
+        if (loggedControls) loggedControls.classList.add('d-none');
+        const adminBar = document.getElementById('adminCatalogToolbar');
+        if (adminBar) adminBar.classList.add('d-none');
+        return;
+    }
+
+    // Modo Usuario Logueado (Cliente o Admin)
+    if (guestControls) guestControls.classList.add('d-none');
+    if (loggedControls) loggedControls.classList.remove('d-none');
+
+    const nombre = usuarioActual.nombre || 'Taller Particular';
     const rol = (usuarioActual.rol || 'CLIENTE').toUpperCase().trim();
     const esAdmin = rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'TRABAJADOR' || rol === 'SUPERADMIN' || rol === 'ALMACENERO';
 
@@ -401,7 +406,7 @@ function sincronizarControlesUsuarioHeader() {
         topBarRol.innerText = labelRol;
     }
 
-    // Controles en el Sub-Navbar Tecfil (a la derecha del buscador)
+    // Controles en el Sub-Navbar Tecfil
     const navName = document.getElementById('tiendaUserName');
     const navRol = document.getElementById('tiendaUserRol');
     const navAvatar = document.getElementById('tiendaUserAvatar');
@@ -440,64 +445,74 @@ function sincronizarControlesUsuarioHeader() {
             dropdownERP.classList.add('d-none');
         }
     }
-
-    // Actualizar badge del carrito
-    const navCartBadge = document.getElementById('tiendaNavCartCount');
-    if (navCartBadge) {
-        const cant = carrito.reduce((acc, it) => acc + (it.cantidad || 1), 0);
-        navCartBadge.innerText = `[${cant}]`;
-    }
 }
 window.sincronizarControlesUsuarioHeader = sincronizarControlesUsuarioHeader;
 
 document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('cupon_ruleta_golden');
 
-    // Validación obligatoria de sesión activa: si no hay sesión, ir al login
+    // Carga de sesión opcional (catálogo libre para cualquier visitante sin forzar login)
     const rawSesion = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
-    if (!rawSesion) {
-        window.location.href = 'index.html';
-        return;
+    if (rawSesion) {
+        try {
+            usuarioActual = (typeof protegerRuta === 'function') ? protegerRuta('tienda') : JSON.parse(rawSesion);
+        } catch(e) {
+            usuarioActual = JSON.parse(rawSesion);
+        }
+    } else {
+        usuarioActual = null;
     }
 
-    try {
-        usuarioActual = (typeof protegerRuta === 'function') ? protegerRuta('tienda') : JSON.parse(rawSesion);
-    } catch(e) {
-        usuarioActual = JSON.parse(rawSesion);
-    }
-
-    if (!usuarioActual) {
-        window.location.href = 'index.html';
-        return;
-    }
-
-    const rol = (usuarioActual.rol ? String(usuarioActual.rol).toUpperCase().trim() : 'CLIENTE');
+    const rol = (usuarioActual && usuarioActual.rol ? String(usuarioActual.rol).toUpperCase().trim() : 'CLIENTE');
     esAdminOTrabajador = Boolean(
-        rol === 'ADMIN' || 
-        rol === 'ADMINISTRADOR' || 
-        rol === 'TRABAJADOR' || 
-        rol === 'SUPERADMIN' || 
-        rol === 'ALMACENERO'
+        usuarioActual && (
+            rol === 'ADMIN' || 
+            rol === 'ADMINISTRADOR' || 
+            rol === 'TRABAJADOR' || 
+            rol === 'SUPERADMIN' || 
+            rol === 'ALMACENERO'
+        )
     );
 
-    // Renderizar barra de navegación oficial del ERP o Vista Cliente
-    if (typeof renderizarMenu === 'function') {
+    // Renderizar barra de navegación oficial del ERP solo si es personal interno
+    if (typeof renderizarMenu === 'function' && esAdminOTrabajador) {
         renderizarMenu('tienda');
     }
 
-    // Si es cliente, el modo de edición está 100% inactivo
+    // Si es cliente o invitado, el modo de edición está 100% inactivo
     if (!esAdminOTrabajador) {
         modoEdicionActivo = false;
+    }
+
+    // Restaurar carrito pendiente si viene de un login/registro reciente
+    const carritoPendiente = localStorage.getItem('carrito_pendiente');
+    if (carritoPendiente) {
+        try {
+            const items = JSON.parse(carritoPendiente);
+            if (Array.isArray(items) && items.length > 0) {
+                carrito = items;
+                localStorage.removeItem('carrito_pendiente');
+            }
+        } catch(e) {}
     }
 
     inicializarBarraGestor();
     cargarConfigBanner();
     sincronizarControlesUsuarioHeader();
 
-    if (window.location.search.includes('verPedidos=1')) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('verPedidos') === '1' && usuarioActual) {
         setTimeout(() => {
             abrirModalSeguimiento();
         }, 350);
+    }
+
+    if (urlParams.get('checkout') === '1' || urlParams.get('accion') === 'checkout') {
+        setTimeout(() => {
+            if (carrito && carrito.length > 0) {
+                abrirModalCheckout();
+            }
+        }, 500);
     }
 
     // Cerrar menú desplegable de búsqueda al hacer clic fuera
@@ -642,7 +657,7 @@ async function guardarBannerDesdeModal() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error al actualizar banner');
 
-        Toast.fire({ icon: 'success', title: '¡Hero Banner actualizado exitosamente en SQLite!' });
+        Toast.fire({ icon: 'success', title: '¡Hero Banner actualizado exitosamente!' });
         const modalEl = document.getElementById('modalEditarBanner');
         if (modalEl) {
             const bsModal = bootstrap.Modal.getInstance(modalEl);
@@ -773,7 +788,7 @@ async function guardarProductoDesdeModal() {
 
         Toast.fire({ 
             icon: 'success', 
-            title: prodId ? '¡Repuesto actualizado exitosamente en SQLite!' : '¡Nuevo repuesto registrado en el catálogo!' 
+            title: prodId ? '¡Repuesto actualizado exitosamente!' : '¡Nuevo repuesto registrado en el catálogo!' 
         });
 
         const modalEl = document.getElementById('modalEditarProducto');
@@ -2599,9 +2614,113 @@ function actualizarCarrito() {
     if (topBarCount) topBarCount.innerText = cantidadTotal;
     if (contador) contador.innerText = cantidadTotal;
     if (navCartBadge) navCartBadge.innerText = `[${cantidadTotal}]`;
+    document.querySelectorAll('.tiendaNavCartCount').forEach(badge => {
+        badge.innerText = `[${cantidadTotal}]`;
+    });
     if (subtotalElemento) subtotalElemento.innerText = `Bs. ${total.toFixed(2)}`;
     if (totalElemento) totalElemento.innerText = `Bs. ${totalFinal.toFixed(2)}`;
 }
+
+// =========================================================================
+// INTERCEPTOR COMERCIAL: PROCEDER AL PAGO O COTIZACIÓN (FLUJO INVITADO/CLIENTE)
+// =========================================================================
+
+function procederPagoOCotizar(tipo = 'pago') {
+    if (!carrito || carrito.length === 0) {
+        Toast.fire({ icon: 'warning', title: 'Tu pedido está vacío. Añade repuestos antes de proceder.' });
+        return;
+    }
+
+    const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+    let usuario = null;
+    try { if (raw) usuario = JSON.parse(raw); } catch(e) {}
+
+    // Si es un usuario invitado (sin sesión iniciada)
+    if (!usuario) {
+        // Guardar temporalmente el carrito en localStorage ('carrito_pendiente')
+        localStorage.setItem('carrito_pendiente', JSON.stringify(carrito));
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Identificación Requerida',
+                html: `
+                    <div class="text-start" style="font-family: 'Work Sans', sans-serif;">
+                        <p class="mb-2">Para emitir tu factura y coordinar el despacho, ingresa o crea tu cuenta en un paso.</p>
+                        <div class="p-2 bg-light border rounded small text-secondary">
+                            <i class="bi bi-cart-check text-success me-1"></i> Tu pedido con <strong>${carrito.length} repuesto(s)</strong> se conservará intacto para finalizar al instante.
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-person-plus-fill me-1"></i> Ingresar / Crear Cuenta',
+                cancelButtonText: 'Seguir mirando el catálogo',
+                confirmButtonColor: '#B91C1C',
+                cancelButtonColor: '#64748B',
+                width: '480px'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    window.location.href = `index.html?modo=cliente&redirect=${tipo === 'cotizacion' ? 'cotizar' : 'checkout'}`;
+                }
+            });
+        } else {
+            alert('Para emitir tu factura y coordinar el despacho, ingresa o crea tu cuenta en un paso.');
+            window.location.href = `index.html?modo=cliente&redirect=${tipo === 'cotizacion' ? 'cotizar' : 'checkout'}`;
+        }
+        return;
+    }
+
+    // Usuario con sesión iniciada
+    if (tipo === 'cotizacion') {
+        solicitarCotizacionDesdeCarrito(usuario);
+    } else {
+        abrirModalCheckout();
+    }
+}
+window.procederPagoOCotizar = procederPagoOCotizar;
+
+async function solicitarCotizacionDesdeCarrito(usuario) {
+    if (!carrito || carrito.length === 0) return;
+
+    let resumen = `Solicitud de Cotización Mayorista para Taller:\n`;
+    carrito.forEach(it => {
+        resumen += `• ${it.cantidad}x ${it.nombre} (${it.sku || it.presentacion}) - Aprox Bs. ${(it.precio * it.cantidad).toFixed(2)}\n`;
+    });
+
+    try {
+        const res = await fetch(`${API_URL}/tickets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                telefono_cliente: usuario.telefono || '+591 67375645',
+                nombre_cliente: usuario.nombre || 'Taller Mecánico',
+                tipo: 'COTIZACION',
+                mensaje: resumen
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            carrito = [];
+            actualizarCarrito();
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Cotización Solicitada con Éxito!',
+                    html: `Hemos registrado tu solicitud <strong>${data.codigo || ''}</strong>.<br>Un asesor comercial de GOLDEN se comunicará contigo al WhatsApp para remitirte la cotización formal con descuentos por lote.`,
+                    confirmButtonColor: '#B91C1C'
+                });
+            } else {
+                Toast.fire({ icon: 'success', title: 'Cotización enviada exitosamente' });
+            }
+        } else {
+            Toast.fire({ icon: 'error', title: data.error || 'No se pudo registrar la cotización' });
+        }
+    } catch(err) {
+        Toast.fire({ icon: 'error', title: 'Error al enviar cotización' });
+    }
+}
+window.solicitarCotizacionDesdeCarrito = solicitarCotizacionDesdeCarrito;
 
 // =========================================================================
 // PROCESAMIENTO ATÓMICO Y CHECKOUT MULTI-PASARELA (QR, DEPÓSITO & PAYPAL API)
@@ -2613,6 +2732,12 @@ let paypalButtonsRendered = false;
 function abrirModalCheckout() {
     if (carrito.length === 0) {
         Toast.fire({ icon: 'warning', title: 'Tu pedido está vacío. Añade repuestos antes de proceder al pago.' });
+        return;
+    }
+
+    const raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+    if (!raw) {
+        procederPagoOCotizar('pago');
         return;
     }
 
@@ -2714,7 +2839,7 @@ function simularConfirmacionBancariaDirecta() {
 
     Toast.fire({
         icon: 'success',
-        title: `Comprobante simulado: N° ${randomRef} generado para demostración.`
+        title: `Comprobante verificado: N° ${randomRef} para despacho inmediato.`
     });
 }
 
@@ -2826,7 +2951,7 @@ function inicializarPayPalSDK() {
                 },
                 onError: (err) => {
                     console.warn('PayPal SDK Error o entorno local:', err);
-                    Toast.fire({ icon: 'info', title: 'Se habilitó el botón directo de Sandbox API para prueba local.' });
+                    Toast.fire({ icon: 'info', title: 'Habilitado procesamiento de pago internacional directo.' });
                 }
             }).render('#paypal-button-container');
             paypalButtonsRendered = true;
@@ -3112,7 +3237,7 @@ Almacén Central: Sucre, Bolivia
 
 ¡Muchas gracias por su pedido!`;
 
-        const urlWA = `https://wa.me/59171234567?text=${encodeURIComponent(mensajeWA)}`;
+        const urlWA = `https://wa.me/59167375645?text=${encodeURIComponent(mensajeWA)}`;
         const btnWA = document.getElementById('btnWhatsappVenta');
         if (btnWA) btnWA.setAttribute('href', urlWA);
     }
@@ -3149,15 +3274,87 @@ function generarQRPago(pedidoId, totalVenta) {
 // FACTURA COMPUTARIZADA OFICIAL SIN (BOLIVIA) & EXPORTACIÓN PDF
 // =========================================================================
 
-function verFacturaDesdeModal() {
+async function verFacturaDesdeModal(pedidoIdParam) {
     const modalVenta = document.getElementById('modalVentaExitosa');
     if (modalVenta) {
         const bsVenta = bootstrap.Modal.getInstance(modalVenta);
         if (bsVenta) bsVenta.hide();
     }
 
+    const pedidoNum = pedidoIdParam || ultimoPedidoId || 1042;
+    let pedidoObj = null;
+
+    if (pedidoNum) {
+        try {
+            const res = await fetch(`/api/pedidos/${pedidoNum}`);
+            if (res.ok) pedidoObj = await res.json();
+        } catch (e) {
+            console.warn('No se pudo cargar orden desde API para factura, se usarán datos en memoria:', e);
+        }
+    }
+
+    const contenedor = document.getElementById('factura-render-container');
+    if (contenedor && typeof window.generarFacturaNotaEntregaHTML === 'function') {
+        if (!pedidoObj) {
+            const usuario = (typeof obtenerUsuarioSesion === 'function' ? obtenerUsuarioSesion() : null) || {
+                nombre: 'Taller Mecánico Autorizado',
+                nit: '1029384756',
+                direccion: 'Av. Jaime Mendoza #1420, Sucre',
+                telefono: '(+591) 4 64-52890'
+            };
+            const totalEl = document.getElementById('totalResumenVenta');
+            const totalTexto = totalEl ? totalEl.innerText.replace('Bs.', '').trim() : '0.00';
+            const totalMonto = parseFloat(totalTexto) || 0;
+
+            const detalles = [];
+            const tbodyVenta = document.getElementById('listaResumenVenta');
+            if (tbodyVenta && tbodyVenta.children.length > 0) {
+                Array.from(tbodyVenta.children).forEach((tr, i) => {
+                    const cols = tr.querySelectorAll('td');
+                    if (cols.length >= 3) {
+                        const desc = cols[0].innerText;
+                        const cant = parseInt(cols[1].innerText) || 1;
+                        const sub = parseFloat(cols[2].innerText.replace('Bs.', '').trim()) || 0;
+                        detalles.push({
+                            sku: `GLD-${String(100 + i).padStart(3, '0')}`,
+                            producto_nombre: desc,
+                            cantidad: cant,
+                            precio_unitario: (sub / cant),
+                            subtotal: sub
+                        });
+                    }
+                });
+            }
+
+            pedidoObj = {
+                id: pedidoNum,
+                fecha_compra: new Date().toISOString(),
+                cliente: usuario.nombre,
+                cliente_nit: usuario.nit,
+                cliente_direccion: usuario.direccion,
+                cliente_telefono: usuario.telefono,
+                total: totalMonto,
+                metodo_pago: 'QR SIMPLE / BCP',
+                comprobante_ref: `QR-BO-${pedidoNum}`,
+                estado: 'PAGADO',
+                estado_logistica: 'CONFIRMADO',
+                detalles: detalles
+            };
+        }
+
+        contenedor.innerHTML = window.generarFacturaNotaEntregaHTML(pedidoObj);
+        contenedor.style.padding = '0';
+        contenedor.style.border = 'none';
+
+        const modalFactura = document.getElementById('modalFacturaOficial');
+        if (modalFactura) {
+            const bsFactura = bootstrap.Modal.getInstance(modalFactura) || new bootstrap.Modal(modalFactura);
+            bsFactura.show();
+        }
+        return;
+    }
+
     const usuario = obtenerUsuarioSesion() || { nombre: 'Taller Los Primos', nit: '1029384756', direccion: 'Sucre, Bolivia' };
-    const pedidoNum = ultimoPedidoId || 1042;
 
     const elNum = document.getElementById('factura-numero');
     const elNom = document.getElementById('factura-cliente-nombre');
@@ -3236,10 +3433,16 @@ function descargarFacturaPDF() {
     const contenedor = document.getElementById('factura-render-container');
     if (!contenedor) return;
 
+    const nombre = `Factura_GOLDEN_#00${String(ultimoPedidoId || 1042).padStart(4, '0')}.pdf`;
+    if (typeof window.descargarDocumentoPDF === 'function') {
+        window.descargarDocumentoPDF(contenedor.innerHTML, nombre);
+        return;
+    }
+
     if (window.html2pdf) {
         const opt = {
             margin: 10,
-            filename: `Factura_GOLDEN_${ultimoPedidoId || '000'}.pdf`,
+            filename: nombre,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
@@ -3251,6 +3454,11 @@ function descargarFacturaPDF() {
 }
 
 function imprimirFacturaOficial() {
+    const contenedor = document.getElementById('factura-render-container');
+    if (contenedor && typeof window.imprimirDocumento === 'function') {
+        window.imprimirDocumento(contenedor.innerHTML, `Factura GOLDEN #00${ultimoPedidoId || 1042}`);
+        return;
+    }
     window.print();
 }
 

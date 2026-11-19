@@ -3,6 +3,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const db = require('./database');
+const { enviarAlertaAdmin, obtenerEstadoWhatsApp, iniciarBot } = require('./whatsapp-bot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,11 +60,11 @@ async function registrarAuditoria(usuario, accion, modulo) {
         const sql = `INSERT INTO auditoria (usuario_nombre, accion, modulo, fecha) VALUES (?, ?, ?, datetime('now'))`;
         db.run(sql, [usuarioNombre, accionStr, moduloStr], function (err) {
             if (err) {
-                console.warn('⚠️ [Auditoría] No se pudo guardar log silencioso:', err.message);
+                console.warn('[Auditoría] No se pudo guardar log silencioso:', err.message);
             }
         });
     } catch (err) {
-        console.warn('⚠️ [Auditoría] Error al registrar evento:', err.message);
+        console.warn('[Auditoría] Error al registrar evento:', err.message);
     }
 }
 
@@ -193,7 +194,8 @@ app.post('/api/auth/social', (req, res) => {
                 }
 
                 if (user) {
-                    registrarAuditoria(user.nombre, `Inicio de sesión vía OAuth (${proveedor})`, 'SEGURIDAD');
+                    const proveedorNombre = proveedor === 'google' ? 'Google' : (proveedor === 'facebook' ? 'Facebook' : proveedor);
+                    registrarAuditoria(user.nombre, `Inicio de sesión con cuenta ${proveedorNombre}`, 'SEGURIDAD');
                     const correoFinal = user.correo || user.email;
                     return res.status(200).json({
                         mensaje: `Bienvenido de vuelta, ${user.nombre}`,
@@ -225,7 +227,8 @@ app.post('/api/auth/social', (req, res) => {
                             }
 
                             const nuevoId = this.lastID;
-                            registrarAuditoria(nombreFinal, `Registro nuevo de cliente vía OAuth (${proveedor})`, 'USUARIOS');
+                            const proveedorNombre = proveedor === 'google' ? 'Google' : (proveedor === 'facebook' ? 'Facebook' : proveedor);
+                            registrarAuditoria(nombreFinal, `Registro de taller con cuenta ${proveedorNombre}`, 'USUARIOS');
 
                             return res.status(201).json({
                                 mensaje: `Cuenta de cliente creada exitosamente con ${proveedor}`,
@@ -838,7 +841,7 @@ app.get('/api/kardex/:sku', (req, res) => {
                 db.all(sqlMovimientos, [producto.id], (mErr, rows) => {
                     if (mErr) {
                         console.error('Error al consultar movimientos de Kardex:', mErr.message);
-                        return res.status(500).json({ error: 'Error al consultar historial de movimientos en SQLite.' });
+                        return res.status(500).json({ error: 'Error al consultar historial de movimientos en la base de datos.' });
                     }
 
                     let totalUnidadesVendidas = 0;
@@ -943,7 +946,7 @@ const registrarVentaOPedido = (req, res) => {
                     const ids = carrito.map(item => item.id);
                     const placeholders = ids.map(() => '?').join(',');
 
-                    db.all(`SELECT id, sku, nombre, stock, precio FROM productos WHERE id IN (${placeholders})`, ids, (stockErr, rows) => {
+                    db.all(`SELECT id, sku, nombre, stock, COALESCE(stock_minimo, 5) as stock_minimo, precio FROM productos WHERE id IN (${placeholders})`, ids, (stockErr, rows) => {
                         if (stockErr) {
                             db.run('ROLLBACK;');
                             return res.status(500).json({ error: 'Error al verificar disponibilidad de stock.' });
@@ -996,12 +999,23 @@ const registrarVentaOPedido = (req, res) => {
                                 );
 
                                 let hasError = false;
+                                const productosEnAlertaStock = [];
 
                                 for (const item of carrito) {
                                     const prod = productMap.get(item.id);
                                     const subtotal = parseFloat((item.precio * item.cantidad).toFixed(2));
                                     const stockAnterior = prod.stock;
                                     const stockNuevo = prod.stock - item.cantidad;
+                                    const minStock = Number(prod.stock_minimo || 5);
+
+                                    if (stockNuevo <= minStock) {
+                                        productosEnAlertaStock.push({
+                                            sku: prod.sku,
+                                            nombre: prod.nombre,
+                                            stockRestante: stockNuevo,
+                                            stockMinimo: minStock
+                                        });
+                                    }
 
                                     stmtDetalle.run(pedidoId, item.id, item.nombre, item.cantidad, item.precio, subtotal, (dErr) => {
                                         if (dErr) hasError = true;
@@ -1043,6 +1057,40 @@ const registrarVentaOPedido = (req, res) => {
                                             `Registró la orden de compra #${pedidoId} por Bs. ${totalNum.toFixed(2)} (${carrito.length} ítems) vía ${mPago}. Ref: ${compRef}.`,
                                             'VENTAS'
                                         );
+
+                                        // Disparador Proactivo 1: Alerta por WhatsApp a Gerencia de nuevo pedido
+                                        const codPedidoFmt = `PED-${String(pedidoId).padStart(4, '0')}`;
+                                        const metodoPagoEtiqueta = mPago === 'PAYPAL' ? 'PayPal API Internacional' : (mPago === 'QR_SIMPLE' ? 'Pago QR Simple Bancario' : mPago);
+                                        const estPagoEtiqueta = estPago.includes('PAGADO') ? 'PAGADO / VERIFICADO' : 'PENDIENTE DE PAGO';
+
+                                        const alertaNuevoPedido = `🔔 *NUEVO PEDIDO REGISTRADO (#${codPedidoFmt})*\n` +
+                                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                            `🏢 *Cliente / Taller:* ${user.nombre}\n` +
+                                            `💰 *Monto Total:* *Bs. ${totalNum.toFixed(2)}*\n` +
+                                            `💳 *Método de Pago:* ${metodoPagoEtiqueta}\n` +
+                                            `📑 *Estado de Pago:* ${estPagoEtiqueta} (Ref: ${compRef})\n` +
+                                            `📦 *Ítems Solicitados:* ${carrito.length} producto(s)\n` +
+                                            `🚚 *Logística Inicial:* ${estLogistica}\n` +
+                                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                            `_Consulte el ERP administrativo para despachar este pedido._`;
+
+                                        enviarAlertaAdmin(alertaNuevoPedido).catch(() => {});
+
+                                        // Disparador Proactivo 2: Alerta por WhatsApp de stock bajo detectado
+                                        if (productosEnAlertaStock.length > 0) {
+                                            for (const critico of productosEnAlertaStock) {
+                                                const alertaStockBajo = `⚠️ *ALERTA DE STOCK BAJO EN ALMACÉN*\n` +
+                                                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                                    `📦 *Producto:* ${critico.nombre}\n` +
+                                                    `🏷️ *Código SKU:* \`${critico.sku}\`\n` +
+                                                    `📉 *Stock Restante:* *${critico.stockRestante} unids.* (Mínimo: ${critico.stockMinimo} unids.)\n` +
+                                                    `📍 *Ubicación:* Almacén Central - Sucre, Bolivia\n` +
+                                                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                                    `_Se sugiere emitir orden de reposición o compra a proveedor._`;
+
+                                                enviarAlertaAdmin(alertaStockBajo).catch(() => {});
+                                            }
+                                        }
 
                                         res.status(201).json({
                                             ok: true,
@@ -1189,7 +1237,10 @@ app.get('/api/pedidos/:id', (req, res) => {
             SELECT 
                 p.*, 
                 COALESCE(u.nombre, 'Cliente Desconocido') as cliente, 
-                COALESCE(u.email, '-') as cliente_email
+                COALESCE(u.email, '-') as cliente_email,
+                COALESCE(u.nit, '1029384756') as cliente_nit,
+                COALESCE(u.direccion, 'Sucre, Bolivia') as cliente_direccion,
+                COALESCE(u.telefono, '(+591) 4 64-52890') as cliente_telefono
             FROM pedidos p
             LEFT JOIN usuarios u ON p.cliente_id = u.id
             WHERE p.id = ?
@@ -1198,7 +1249,15 @@ app.get('/api/pedidos/:id', (req, res) => {
             if (err) return res.status(500).json({ error: 'Error al obtener pedido: ' + err.message });
             if (!pedido) return res.status(404).json({ error: 'Pedido no encontrado.' });
 
-            db.all(`SELECT * FROM pedido_detalles WHERE pedido_id = ?`, [pedidoId], (dErr, detalles) => {
+            db.all(`
+                SELECT 
+                    pd.*,
+                    COALESCE(pr.sku, 'GLD-' || pd.producto_id) as sku,
+                    COALESCE(pr.categoria, 'LUBRICANTES') as categoria
+                FROM pedido_detalles pd 
+                LEFT JOIN productos pr ON pd.producto_id = pr.id
+                WHERE pd.pedido_id = ?
+            `, [pedidoId], (dErr, detalles) => {
                 if (dErr) return res.status(500).json({ error: 'Error al obtener detalles del pedido.' });
                 pedido.detalles = detalles || [];
                 res.status(200).json(pedido);
@@ -1942,6 +2001,181 @@ app.post('/api/compras/ordenes', (req, res) => {
 });
 
 // ============================================================================
+// 7.1 MÓDULO DE ATENCIÓN AL CLIENTE Y TICKETS DE SOPORTE WHATSAPP
+// ============================================================================
+
+/**
+ * Listar tickets de soporte, reclamos y cotizaciones
+ * GET /api/soporte/tickets
+ */
+app.get('/api/soporte/tickets', (req, res) => {
+    try {
+        const { estado, tipo } = req.query;
+        let sql = `SELECT * FROM tickets_soporte WHERE 1=1`;
+        const params = [];
+
+        if (estado && estado !== 'TODOS') {
+            sql += ` AND UPPER(estado) = ?`;
+            params.push(String(estado).trim().toUpperCase());
+        }
+
+        if (tipo && tipo !== 'TODOS') {
+            sql += ` AND UPPER(tipo) = ?`;
+            params.push(String(tipo).trim().toUpperCase());
+        }
+
+        sql += ` ORDER BY id DESC`;
+
+        db.all(sql, params, (err, rows) => {
+            if (err) {
+                console.error('Error al listar tickets:', err.message);
+                return res.status(500).json({ error: 'Error al consultar tickets de soporte.' });
+            }
+            res.status(200).json(rows || []);
+        });
+    } catch (err) {
+        console.error('Error crítico al obtener tickets:', err.message);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+/**
+ * Actualizar estado de un ticket de soporte / reclamo
+ * PUT /api/soporte/tickets/:id
+ */
+app.put('/api/soporte/tickets/:id', (req, res) => {
+    try {
+        const ticketId = req.params.id;
+        const { estado, notas, usuario } = req.body;
+
+        if (!estado) {
+            return res.status(400).json({ error: 'Debe especificar el nuevo estado del ticket.' });
+        }
+
+        const nuevoEstado = String(estado).trim().toUpperCase();
+
+        db.get(`SELECT * FROM tickets_soporte WHERE id = ?`, [ticketId], (err, ticket) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error al buscar ticket de soporte.' });
+            }
+            if (!ticket) {
+                return res.status(404).json({ error: `El ticket #${ticketId} no existe.` });
+            }
+
+            db.run(
+                `UPDATE tickets_soporte SET estado = ? WHERE id = ?`,
+                [nuevoEstado, ticketId],
+                function (updErr) {
+                    if (updErr) {
+                        return res.status(500).json({ error: 'Error al actualizar ticket: ' + updErr.message });
+                    }
+
+                    registrarAuditoria(
+                        usuario || 'Carlos Mendoza (Gerencia)',
+                        `Actualizó estado del Ticket #TK-${String(ticketId).padStart(4, '0')} (${ticket.tipo}) a "${nuevoEstado}"`,
+                        'SOPORTE'
+                    );
+
+                    res.status(200).json({
+                        mensaje: `Ticket #TK-${String(ticketId).padStart(4, '0')} actualizado a estado ${nuevoEstado}.`,
+                        ticket_id: ticketId,
+                        estado: nuevoEstado
+                    });
+                }
+            );
+        });
+    } catch (err) {
+        console.error('Error crítico al actualizar ticket:', err.message);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+/**
+ * Registrar nuevo ticket de soporte (API manual o vía Bot)
+ * POST /api/soporte/tickets
+ */
+app.post('/api/soporte/tickets', (req, res) => {
+    try {
+        const { telefono_cliente, nombre_cliente, tipo, mensaje } = req.body;
+
+        if (!telefono_cliente || !mensaje) {
+            return res.status(400).json({ error: 'Teléfono del cliente y mensaje son obligatorios.' });
+        }
+
+        const tipoFinal = (tipo || 'CONSULTA').toUpperCase();
+        const nombreFinal = (nombre_cliente || 'Cliente WhatsApp').trim();
+
+        db.run(
+            `INSERT INTO tickets_soporte (telefono_cliente, nombre_cliente, tipo, mensaje, estado) VALUES (?, ?, ?, ?, 'ABIERTO')`,
+            [String(telefono_cliente).trim(), nombreFinal, tipoFinal, String(mensaje).trim()],
+            function (insErr) {
+                if (insErr) {
+                    console.error('Error al insertar ticket:', insErr.message);
+                    return res.status(500).json({ error: 'Error al registrar ticket de soporte.' });
+                }
+
+                const nuevoId = this.lastID;
+                const codigoTicket = `TK-${String(nuevoId).padStart(4, '0')}`;
+
+                registrarAuditoria(
+                    nombreFinal,
+                    `Nuevo ticket registrado vía WhatsApp (${codigoTicket} - ${tipoFinal}): "${mensaje.slice(0, 60)}"`,
+                    'SOPORTE'
+                );
+
+                // Disparador Proactivo 3: Alerta por WhatsApp a Gerencia de nuevo ticket
+                const alertaTicket = `🎫 *NUEVO TICKET DE ATENCIÓN (${codigoTicket})*\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `📌 *Tipo:* ${tipoFinal}\n` +
+                    `👤 *Cliente / Taller:* ${nombreFinal}\n` +
+                    `📱 *Teléfono de Contacto:* ${telefono_cliente}\n` +
+                    `💬 *Detalle del Requerimiento:*\n` +
+                    `"${String(mensaje).trim()}"\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `_Asignar a asesor comercial o equipo de logística en Sucre._`;
+
+                enviarAlertaAdmin(alertaTicket).catch(() => {});
+
+                res.status(201).json({
+                    mensaje: `Ticket ${codigoTicket} creado exitosamente.`,
+                    id: nuevoId,
+                    codigo: codigoTicket,
+                    tipo: tipoFinal,
+                    estado: 'ABIERTO'
+                });
+            }
+        );
+    } catch (err) {
+        console.error('Error crítico al crear ticket:', err.message);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+// ============================================================================
+// 7.4. MONITOREO DEL ASISTENTE WHATSAPP Y CONTROL ERP
+// ============================================================================
+
+app.get('/api/whatsapp/estado', (req, res) => {
+    try {
+        const estado = obtenerEstadoWhatsApp();
+        
+        // Si la petición proviene explícitamente de un rol no-admin, sanitizar payload
+        const rolHeader = String(req.headers['x-usuario-rol'] || req.query.rol || '').toUpperCase();
+        if (rolHeader && rolHeader.startsWith('CLIENTE')) {
+            return res.status(200).json({
+                conectado: estado.conectado,
+                numero: estado.numero
+            });
+        }
+
+        res.status(200).json(estado);
+    } catch (err) {
+        console.error('Error al obtener estado de WhatsApp:', err.message);
+        res.status(500).json({ conectado: false, error: 'No se pudo consultar el estado de WhatsApp.' });
+    }
+});
+
+// ============================================================================
 // 8. MANEJO GLOBAL DE RUTAS 404 Y ARRANQUE DEL SERVIDOR
 // ============================================================================
 
@@ -1956,8 +2190,18 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`====================================================`);
-    console.log(`🚀 ERP & E-COMMERCE GOLDEN INICIADO CORRECTAMENTE`);
-    console.log(`📍 Servidor Web: http://localhost:${PORT}`);
-    console.log(`🛡️  Arquitectura: Node.js + Express + SQLite3 (ACID)`);
+    console.log(`SISTEMA COMERCIAL GOLDEN LUBRICANTES & FILTROS`);
+    console.log(`Servidor iniciado en: http://localhost:${PORT}`);
+    console.log(`Distribución Automotriz Mayorista — Sucre, Bolivia`);
     console.log(`====================================================`);
+
+    // Inicialización no bloqueante del Bot de WhatsApp para despliegue en la nube (Render)
+    (async () => {
+        try {
+            console.log('[WhatsApp Bot] Inicializando servicio integrado en segundo plano...');
+            await iniciarBot();
+        } catch (botErr) {
+            console.warn('[WhatsApp Bot] Advertencia al inicializar bot en segundo plano:', botErr.message);
+        }
+    })();
 });

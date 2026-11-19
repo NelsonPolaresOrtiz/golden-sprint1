@@ -292,8 +292,28 @@ function filtrarTablaFacturacion() {
 // 5. EXPORTACIÓN A EXCEL / CSV
 // =========================================================================
 function exportarFacturasCSV() {
+    if (typeof window.exportarReporteExcel === 'function' && Array.isArray(facturasGlobal) && facturasGlobal.length > 0) {
+        window.exportarReporteExcel({
+            titulo: 'LIBRO DE VENTAS Y FACTURACIÓN FISCAL',
+            subtitulo: 'Control Oficial de Cobranzas y Comprobantes — Sucre, Bolivia',
+            columnas: ['N° FACTURA', 'FECHA EMISIÓN', 'CLIENTE / TALLER', 'NIT / CI', 'MÉTODO DE PAGO', 'TOTAL FACTURADO (BS.)', 'ESTADO'],
+            filas: facturasGlobal.map(f => [
+                `#00${String(f.id).padStart(4, '0')}`,
+                f.fecha_compra ? new Date(f.fecha_compra).toLocaleString('es-BO') : '',
+                typeof window.limpiarTextoCelda === 'function' ? window.limpiarTextoCelda(f.cliente || f.cliente_nombre || 'Consumidor Final') : (f.cliente || f.cliente_nombre || 'Consumidor Final'),
+                f.nit || f.cliente_nit || '1029384756',
+                (f.metodo_pago || 'QR SIMPLE').toUpperCase(),
+                parseFloat(f.total || 0),
+                (f.estado || 'CONFIRMADO').toUpperCase()
+            ]),
+            anchos: [16, 22, 34, 18, 20, 22, 18],
+            nombreArchivo: 'Facturacion_Cobranzas_GOLDEN'
+        });
+        return;
+    }
+
     if (typeof exportarTablaCSV === 'function') {
-        exportarTablaCSV('tablaFacturacionEl', 'Facturacion_Cobranzas_GOLDEN');
+        exportarTablaCSV('tablaFacturacionEl', 'Facturacion_Cobranzas_GOLDEN', 'Libro de Ventas y Cobranzas');
     } else {
         alert('Exportando registros a archivo CSV...');
     }
@@ -305,3 +325,6 @@ function escaparHTML(texto) {
     div.textContent = String(texto);
     return div.innerHTML;
 }
+
+window.exportarFacturasCSV = exportarFacturasCSV;
+window.exportarFacturasExcel = exportarFacturasCSV;

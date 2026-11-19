@@ -54,6 +54,10 @@
                 </p>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-outline-success btn-sm px-3 d-flex align-items-center gap-1 fw-semibold" onclick="exportarComprasExcel()" title="Exportar Reporte SCM a Excel (.xlsx)">
+                    <i class="bi bi-file-earmark-excel"></i>
+                    <span>Exportar Excel</span>
+                </button>
                 <button class="btn btn-secondary btn-sm px-3" onclick="cargarSugerenciasCompras()">
                     <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
                 </button>
@@ -265,10 +269,12 @@
 
     </div>
 
-    <!-- Scripts de Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <!-- Scripts de SheetJS Oficial, Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="menu.js?v=15"></script>
-    <script src="compras.js?v=15"></script>
+    <script src="documentos-golden.js?v=2"></script>
+    <script src="menu.js?v=30"></script>
+    <script src="compras.js?v=30"></script>
 </body>
 </html>

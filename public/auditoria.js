@@ -258,6 +258,24 @@ function exportarAuditoriaCSV() {
         return;
     }
 
+    if (typeof window.exportarReporteExcel === 'function') {
+        window.exportarReporteExcel({
+            titulo: 'REPORTE OFICIAL DE AUDITORÍA Y TRAZABILIDAD DEL SISTEMA',
+            subtitulo: 'Bitácora de Eventos, Transacciones y Modificaciones',
+            columnas: ['ID REGISTRO', 'FECHA Y HORA', 'USUARIO RESPONSABLE', 'MÓDULO ERP', 'ACCIÓN REALIZADA'],
+            filas: logsAuditoriaGlobal.map(l => [
+                l.id,
+                l.fecha || '',
+                typeof window.limpiarTextoCelda === 'function' ? window.limpiarTextoCelda(l.usuario_nombre || 'Sistema') : (l.usuario_nombre || 'Sistema'),
+                (l.modulo || '').toUpperCase(),
+                typeof window.limpiarTextoCelda === 'function' ? window.limpiarTextoCelda(l.accion || '') : (l.accion || '')
+            ]),
+            anchos: [14, 24, 28, 20, 58],
+            nombreArchivo: 'Auditoria_GOLDEN'
+        });
+        return;
+    }
+
     const encabezados = ['ID', 'Fecha y Hora', 'Usuario', 'Modulo', 'Accion'];
     const filas = logsAuditoriaGlobal.map(l => [
         l.id,
@@ -267,17 +285,17 @@ function exportarAuditoriaCSV() {
         `"${(l.accion || '').replace(/"/g, '""')}"`
     ]);
 
-    const csvContenido = '\uFEFF' + [encabezados.join(','), ...filas.map(f => f.join(','))].join('\n');
+    const csvContenido = '\uFEFF' + [encabezados.join(';'), ...filas.map(f => f.join(';'))].join('\r\n');
     const blob = new Blob([csvContenido], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `auditoria_golden_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Auditoria_GOLDEN_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    Toast.fire({ icon: 'success', title: 'Auditoría exportada exitosamente en CSV' });
+    Toast.fire({ icon: 'success', title: 'Auditoría exportada exitosamente' });
 }
 
 function escaparHTML(texto) {
@@ -287,70 +305,15 @@ function escaparHTML(texto) {
     return div.innerHTML;
 }
 
-// Exportación Directa desde la Tabla HTML
+// Exportación Directa desde la Tabla HTML (Delega a exportador nativo XLSX)
 function exportarTablaCSV(tablaId, nombreArchivo = 'Auditoria_GOLDEN') {
-    let tabla = document.getElementById(tablaId);
-    if (!tabla) {
-        const el = document.getElementById(tablaId);
-        if (el && el.tagName === 'TBODY') tabla = el.closest('table');
+    if (logsAuditoriaGlobal && logsAuditoriaGlobal.length > 0) {
+        return exportarAuditoriaCSV();
     }
-
-    if (!tabla) {
-        Toast.fire({ icon: 'warning', title: 'Tabla no encontrada para exportar' });
-        return;
+    if (typeof window.exportarTablaCSV === 'function') {
+        return window.exportarTablaCSV(tablaId, nombreArchivo, 'Reporte de Auditoría y Trazabilidad');
     }
-
-    const filas = Array.from(tabla.querySelectorAll('tr'));
-    if (filas.length === 0) {
-        Toast.fire({ icon: 'info', title: 'Sin datos para exportar' });
-        return;
-    }
-
-    const lineasCSV = [];
-
-    filas.forEach(fila => {
-        const colspanTd = fila.querySelector('td[colspan]');
-        if (colspanTd && parseInt(colspanTd.getAttribute('colspan')) >= 3) return;
-
-        const celdas = Array.from(fila.querySelectorAll('th, td'));
-        const datosFila = [];
-
-        celdas.forEach(celda => {
-            const textoCabecera = celda.innerText.trim().toLowerCase();
-            if (textoCabecera === 'acciones' || celda.classList.contains('col-acciones')) return;
-            if (celda.querySelector('button') && !celda.innerText.trim()) return;
-
-            let valor = celda.innerText
-                .replace(/(\r\n|\n|\r)/gm, ' ')
-                .replace(/\s+/g, ' ')
-                .trim()
-                .replace(/"/g, '""');
-
-            datosFila.push(`"${valor}"`);
-        });
-
-        if (datosFila.length > 0) {
-            lineasCSV.push(datosFila.join(';'));
-        }
-    });
-
-    if (lineasCSV.length === 0) {
-        Toast.fire({ icon: 'info', title: 'No se encontraron registros exportables' });
-        return;
-    }
-
-    const contenidoCSV = '\uFEFF' + lineasCSV.join('\r\n');
-    const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
-    const fechaStr = new Date().toISOString().slice(0, 10);
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${nombreArchivo}_${fechaStr}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    Toast.fire({ icon: 'success', title: `Auditoría exportada a CSV con éxito` });
 }
+window.exportarAuditoriaCSV = exportarAuditoriaCSV;
+window.exportarAuditoriaExcel = exportarAuditoriaCSV;
+window.exportarTablaCSV = exportarTablaCSV;

@@ -493,11 +493,40 @@
                         Portal Oficial de Distribución Automotriz
                     </span>
                     <h3 class="fw-bold mb-1 text-dark" style="font-family: 'Archivo', sans-serif; letter-spacing: -0.3px;">
-                        Bienvenido al portal de pedidos
+                        Bienvenido a GOLDEN Lubricantes
                     </h3>
                     <p class="text-muted small mb-0" style="font-size: 0.88rem;">
-                        Ingreso para personal de almacén, choferes y administración interna.
+                        Distribución mayorista para talleres mecánicos, flotas y personal en Sucre.
                     </p>
+                </div>
+
+                <!-- Tarjeta Destacada de Entrada Comercial: Catálogo Libre -->
+                <div class="p-3 mb-3 rounded border text-start shadow-sm" style="background: #ECFDF5; border-color: #A7F3D0 !important;">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <span class="badge mb-1" style="background: #15803D; color: #FFFFFF; font-size: 0.68rem; letter-spacing: 0.5px;">
+                                <i class="bi bi-shop me-1"></i>CATÁLOGO LIBRE
+                            </span>
+                            <div class="fw-bold text-dark" style="font-size: 0.92rem;">¿Buscas lubricantes y filtros?</div>
+                            <small class="text-secondary d-block" style="font-size: 0.76rem;">Explora precios mayoristas y añade repuestos sin necesidad de iniciar sesión.</small>
+                        </div>
+                        <a href="tienda.html" class="btn btn-success btn-sm px-3 py-2 fw-bold d-inline-flex align-items-center gap-1 shadow-sm text-nowrap" style="background: #15803D; border-color: #15803D; border-radius: 6px;">
+                            <i class="bi bi-cart3"></i>
+                            <span>Explorar Catálogo Oficial &rarr;</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Botón de Acceso Clientes / Talleres -->
+                <button type="button" class="btn btn-outline-dark btn-sm w-100 py-2 mb-3 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="activarModoComercialCliente()" style="border-radius: 6px; border-color: #CBD5E1;">
+                    <i class="bi bi-tools text-warning"></i>
+                    <span>Portal de Clientes y Registro de Talleres &rarr;</span>
+                </button>
+
+                <div class="d-flex align-items-center my-3">
+                    <hr class="flex-grow-1 my-0 text-muted opacity-25">
+                    <span class="px-2 text-muted font-mono" style="font-size: 0.72rem; letter-spacing: 0.5px;">INGRESO PERSONAL INTERNO</span>
+                    <hr class="flex-grow-1 my-0 text-muted opacity-25">
                 </div>
 
                 <!-- Alerta Dinámica de Error de Inicio de Sesión -->
@@ -560,10 +589,10 @@
                     </button>
                 </form>
 
-                <!-- Acceso Rápido de Demostración (1 Clic) -->
+                <!-- Selección rápida de perfil institucional -->
                 <div class="mt-3 pt-3 border-top text-center" style="border-color: #E6E1DA !important;">
                     <span class="text-muted small fw-bold text-uppercase d-block mb-2 font-mono" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                        Accesos de Demostración y Evaluación SIS324 (1 Clic):
+                        Selección rápida de perfil institucional:
                     </span>
                     <div class="d-flex flex-wrap justify-content-center gap-2">
                         <button type="button" 
@@ -784,10 +813,10 @@
                                 </button>
                             </form>
 
-                            <!-- Acceso rápido 1 clic para Taller Los Primos -->
+                            <!-- Acceso rápido para Taller Central -->
                             <div class="text-center pt-2">
                                 <button type="button" class="btn btn-sm btn-light border text-muted font-mono" style="font-size: 0.75rem; border-radius: 8px;" onclick="llenarPortalCliente('cliente@golden.bo', 'cliente123')">
-                                    <i class="bi bi-lightning-charge-fill text-warning me-1"></i>Acceso Demo: cliente@golden.bo
+                                    <i class="bi bi-shield-check text-success me-1"></i>Acceso Rápido: cliente@golden.bo (Taller Central)
                                 </button>
                             </div>
 
@@ -983,7 +1012,7 @@
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden; font-family: 'Work Sans', sans-serif;">
                 
-                <!-- Cabecera OAuth con Fondo Carbón y Botón ✕ Blanco Destacado -->
+                <!-- Cabecera de autenticación con fondo carbón -->
                 <div class="modal-header border-0 pb-3 pt-3 px-4 align-items-center" style="background: #1C1917; border-radius: 14px 14px 0 0;">
                     <div class="d-flex align-items-center gap-3">
                         <div id="oauthModalIconWrapper" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 1px solid #E2E8F0; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.12);">
@@ -1039,7 +1068,7 @@
                                 <div class="fw-bold text-dark text-truncate" style="font-size: 0.88rem;">Taller Mecánico Central</div>
                                 <div class="text-secondary text-truncate" style="font-size: 0.78rem;">cliente@golden.bo</div>
                             </div>
-                            <span class="badge bg-light text-secondary border fw-medium" style="font-size: 0.7rem;">Demo Oficial</span>
+                            <span class="badge bg-light text-secondary border fw-medium" style="font-size: 0.7rem;">Taller Autorizado</span>
                         </div>
                     </div>
 

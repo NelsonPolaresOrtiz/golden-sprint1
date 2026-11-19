@@ -66,6 +66,10 @@
                     <span class="label">Cuentas Sociales:</span>
                     <span class="value text-primary" id="kpiTotalSocial">0</span>
                 </div>
+                <button class="btn btn-outline-success btn-sm fw-bold px-3 py-2 d-flex align-items-center gap-1 rounded-3 shadow-sm" onclick="exportarUsuariosExcel()" title="Descargar directorio en formato Excel (.xlsx)">
+                    <i class="bi bi-file-earmark-excel fs-6"></i>
+                    <span>Exportar Excel</span>
+                </button>
                 <button class="btn btn-stitch-primary d-flex align-items-center gap-2 px-3 py-2" onclick="abrirModalNuevoUsuario()">
                     <i class="bi bi-person-plus-fill"></i>
                     <span>Nuevo Usuario / Taller</span>
@@ -99,8 +103,8 @@
                     <select id="filtroAuth" class="form-select" onchange="filtrarUsuarios()">
                         <option value="TODOS">Todos los accesos</option>
                         <option value="local">Registro Local</option>
-                        <option value="google">Google OAuth</option>
-                        <option value="facebook">Facebook OAuth</option>
+                        <option value="google">Cuenta Google</option>
+                        <option value="facebook">Cuenta Facebook</option>
                     </select>
                 </div>
                 <div class="col-12 col-lg-2 text-lg-end">
@@ -219,9 +223,11 @@
         </div>
     </div>
 
-    <!-- Scripts Esenciales -->
+    <!-- Scripts Esenciales y Exportación SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="menu.js?v=13"></script>
+    <script src="documentos-golden.js?v=3"></script>
+    <script src="menu.js?v=31"></script>
     <script>
         let usuariosGlobales = [];
         let modalUsuarioInstancia = null;
@@ -541,6 +547,35 @@
                 al.className = 'alert d-none';
             }, 4500);
         }
+
+        function exportarUsuariosExcel() {
+            if (!usuariosGlobales || usuariosGlobales.length === 0) {
+                alert('No hay registros de usuarios para exportar');
+                return;
+            }
+            if (typeof window.exportarReporteExcel === 'function') {
+                window.exportarReporteExcel({
+                    titulo: 'DIRECTORIO OFICIAL DE TALLERES Y USUARIOS',
+                    subtitulo: 'Registro Comercial y Credenciales de Acceso — Sucre, Bolivia',
+                    columnas: ['ID', 'NOMBRE / RAZÓN SOCIAL', 'CORREO ELECTRÓNICO', 'ROL', 'NIT / CI', 'TELÉFONO', 'DIRECCIÓN', 'MÉTODO ACCESO', 'ESTADO', 'FECHA REGISTRO'],
+                    filas: usuariosGlobales.map(u => [
+                        u.id,
+                        typeof window.limpiarTextoCelda === 'function' ? window.limpiarTextoCelda(u.nombre || '') : (u.nombre || ''),
+                        u.correo || u.email || '',
+                        u.rol || '',
+                        u.nit || 'S/N',
+                        u.telefono || '',
+                        u.direccion || 'Sucre',
+                        (u.metodo_auth || 'local').toUpperCase(),
+                        u.estado || 'ACTIVO',
+                        u.fecha_registro || u.fecha_creacion || ''
+                    ]),
+                    anchos: [8, 30, 28, 16, 16, 16, 28, 16, 12, 20],
+                    nombreArchivo: 'Directorio_Talleres_GOLDEN'
+                });
+            }
+        }
+        window.exportarUsuariosExcel = exportarUsuariosExcel;
     </script>
 </body>
 </html>

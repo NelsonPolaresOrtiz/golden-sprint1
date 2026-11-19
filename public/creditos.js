@@ -469,3 +469,44 @@ function escaparHTML(texto) {
     div.textContent = texto;
     return div.innerHTML;
 }
+
+function exportarCreditosExcel() {
+    if (!creditosGlobal || creditosGlobal.length === 0) {
+        if (typeof Toast !== 'undefined') {
+            Toast.fire({ icon: 'warning', title: 'No hay cuentas de crédito para exportar' });
+        }
+        return;
+    }
+    if (typeof window.exportarReporteExcel === 'function') {
+        window.exportarReporteExcel({
+            titulo: 'ESTADO GENERAL DE LÍNEAS DE CRÉDITO Y CUENTAS POR COBRAR',
+            subtitulo: 'Control de Cartera B2B a Talleres Mecánicos — Sucre, Bolivia',
+            columnas: ['ID CLIENTE', 'CLIENTE / TALLER', 'NIT / CI', 'CORREO', 'TELÉFONO', 'LÍMITE APROBADO (BS.)', 'SALDO DEUDOR (BS.)', 'DISPONIBLE (BS.)', '% UTILIZACIÓN', 'SITUACIÓN'],
+            filas: creditosGlobal.map(c => {
+                const limite = parseFloat(c.limite_credito || 0);
+                const saldo = parseFloat(c.saldo_deudor || 0);
+                const disponible = Math.max(0, limite - saldo);
+                const pct = limite > 0 ? ((saldo / limite) * 100).toFixed(1) + '%' : '0%';
+                let situacion = 'NORMAL';
+                if (saldo >= limite) situacion = 'SOBREGIRO';
+                else if (limite > 0 && (saldo / limite) >= 0.8) situacion = 'ALERTA';
+                return [
+                    c.cliente_id || c.id,
+                    typeof window.limpiarTextoCelda === 'function' ? window.limpiarTextoCelda(c.cliente_nombre || '') : (c.cliente_nombre || ''),
+                    c.cliente_nit || 'S/N',
+                    c.cliente_email || '',
+                    c.cliente_telefono || '',
+                    limite,
+                    saldo,
+                    disponible,
+                    pct,
+                    situacion
+                ];
+            }),
+            anchos: [12, 32, 16, 26, 16, 20, 20, 20, 16, 16],
+            nombreArchivo: 'Cartera_Creditos_GOLDEN'
+        });
+    }
+}
+window.exportarCreditosExcel = exportarCreditosExcel;
+window.abrirReporteCartera = abrirReporteCartera;

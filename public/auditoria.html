@@ -53,11 +53,14 @@
                 </p>
             </div>
             <div class="d-flex flex-wrap align-items-center gap-2">
+                <a href="dashboard.html#seccionWhatsAppBot" class="btn btn-outline-success btn-sm px-3 fw-bold d-flex align-items-center gap-1" title="Ver estado y control del Asistente WhatsApp (+591 67375645)">
+                    <i class="bi bi-whatsapp"></i> Asistente WhatsApp
+                </a>
                 <button class="btn btn-secondary btn-sm px-3" onclick="cargarAuditoria()">
                     <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
                 </button>
-                <button class="btn btn-stitch-primary btn-sm px-3 fw-bold" onclick="exportarAuditoriaCSV()">
-                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar CSV
+                <button class="btn btn-outline-success btn-sm px-3 fw-bold d-flex align-items-center gap-1" onclick="exportarAuditoriaCSV()" title="Descargar auditoría en formato Excel (.xlsx)">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Exportar Excel
                 </button>
             </div>
         </div>
@@ -120,7 +123,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Seguridad & Integridad</span>
-                            <h4 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">ACID / 100%</h4>
+                            <h4 class="fw-bold text-dark mb-0" style="font-size: 1.15rem;">Confiable / 100%</h4>
                         </div>
                         <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3);">
                             <i class="bi bi-check-circle-fill text-success fs-4"></i>
@@ -200,10 +203,12 @@
 
     </div>
 
-    <!-- Scripts de Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <!-- Scripts de SheetJS Oficial, Bootstrap 5.3.3, SweetAlert2 y Aplicación -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="menu.js?v=15"></script>
-    <script src="auditoria.js?v=15"></script>
+    <script src="documentos-golden.js?v=2"></script>
+    <script src="menu.js?v=30"></script>
+    <script src="auditoria.js?v=30"></script>
 </body>
 </html>
