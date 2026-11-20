@@ -498,7 +498,22 @@ function obtenerTextoMenuPrincipal(nombre) {
  */
 async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telefonoCliente) {
     const sesion = obtenerSesion(remoteJid, remitenteNombre);
-    const textoNorm = normalizarTexto(textoOriginal);
+    const textoLimpio = String(textoOriginal || '').trim();
+    const textoNorm = normalizarTexto(textoLimpio);
+
+    // =========================================================================
+    // 0. DETECCIÓN PRIORITARIA: NOTIFICACIÓN DE PEDIDO CONFIRMADO O COMPROBANTE
+    // =========================================================================
+    const esConfirmacionOComprobante =
+        textoNorm.startsWith('pedido confirmado') ||
+        textoNorm.startsWith('comprobante') ||
+        /^pedido\s+confirmado\b/i.test(textoLimpio) ||
+        /^comprobante\b/i.test(textoLimpio);
+
+    if (esConfirmacionOComprobante) {
+        reiniciarSesion(remoteJid);
+        return "Hemos recibido el detalle de su pedido. Nuestro equipo de Cobranzas y Despacho lo está procesando.";
+    }
 
     // =========================================================================
     // COMANDO EXCLUSIVO DE ADMINISTRACIÓN / GERENCIA (+591 67375645)
@@ -600,6 +615,11 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
     if (textoNorm.startsWith('2 ') || textoNorm.startsWith('pedido ') || textoNorm.startsWith('rastrear ') || textoNorm.startsWith('orden ')) {
         const idPedido = textoOriginal.replace(/^(2|pedido|rastrear|orden)\s+/i, '').trim();
         return await rastrearPedido(idPedido);
+    }
+
+    // Consulta directa de pedido por formato #ID o código PED-XXXX (ej: #24, #PED-0024, PED-0024)
+    if (/^#\s*\d+\b/i.test(textoLimpio) || /^#?\s*ped-\d+\b/i.test(textoLimpio)) {
+        return await rastrearPedido(textoLimpio);
     }
 
     // OPCIÓN 3: SOLICITUD DE COTIZACIÓN MAYORISTA
@@ -724,7 +744,57 @@ async function buscarProductos(terminoBusqueda) {
 }
 
 /**
+ * Consulta de pedido en API de producción en Render con fallback a SQLite local
+ */
+async function obtenerPedidoProduccion(idPedido) {
+    const urlDirecta = `https://golden-sprint1.onrender.com/api/pedidos/${idPedido}`;
+    const urlLista = `https://golden-sprint1.onrender.com/api/pedidos`;
+    
+    // Timeout defensivo de 3.5 segundos con AbortController nativo
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    try {
+        // 1. Intento por endpoint directo GET /api/pedidos/:id
+        const res = await fetch(urlDirecta, {
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && (data.id === idPedido || parseInt(data.id, 10) === idPedido)) {
+                console.log(`[WhatsApp Bot] Pedido #${idPedido} recuperado exitosamente desde API de Producción (Render)`);
+                return data;
+            }
+        }
+
+        // 2. Fallback a búsqueda en lista general GET /api/pedidos
+        const resLista = await fetch(urlLista, {
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json' }
+        });
+        if (resLista.ok) {
+            const lista = await resLista.json();
+            if (Array.isArray(lista)) {
+                const match = lista.find(p => p.id === idPedido || parseInt(p.id, 10) === idPedido);
+                if (match) {
+                    console.log(`[WhatsApp Bot] Pedido #${idPedido} localizado en listado general de Producción (Render)`);
+                    return match;
+                }
+            }
+        }
+        return null;
+    } catch (err) {
+        console.warn(`[WhatsApp Bot] Conexión con Render no disponible (${err.message}). Utilizando base SQLite local.`);
+        return null;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+/**
  * 2. RASTREO DE PEDIDOS EN TIEMPO REAL
+ * Soporta consulta híbrida: Consulta primero a Render en local y hace fallback a SQLite local
  */
 async function rastrearPedido(identificador) {
     const raw = String(identificador || '').trim();
@@ -737,16 +807,32 @@ async function rastrearPedido(identificador) {
     const idPedido = parseInt(matches[0], 10);
 
     try {
-        const sql = `
-            SELECT p.*,
-                   COALESCE(u.nombre, 'Cliente Mostrador') as cliente_nombre,
-                   COALESCE(u.direccion, 'Sucre, Bolivia') as cliente_direccion,
-                   COALESCE(u.telefono, '') as cliente_telefono
-            FROM pedidos p
-            LEFT JOIN usuarios u ON p.cliente_id = u.id
-            WHERE p.id = ?
-        `;
-        const pedido = await dbQuery.get(sql, [idPedido]);
+        let pedido = null;
+        const esEntornoLocal = !process.env.RENDER && !process.env.IS_RENDER;
+
+        // Si se ejecuta en local, consultar primero la API de producción en Render
+        if (esEntornoLocal) {
+            try {
+                pedido = await obtenerPedidoProduccion(idPedido);
+            } catch (prodErr) {
+                console.warn('[WhatsApp Bot] Error al consultar API de producción:', prodErr.message);
+                pedido = null;
+            }
+        }
+
+        // Si no se encontró en producción o no hay conexión (o si estamos en producción), consultar SQLite local
+        if (!pedido) {
+            const sql = `
+                SELECT p.*,
+                       COALESCE(u.nombre, 'Cliente Mostrador') as cliente_nombre,
+                       COALESCE(u.direccion, 'Sucre, Bolivia') as cliente_direccion,
+                       COALESCE(u.telefono, '') as cliente_telefono
+                FROM pedidos p
+                LEFT JOIN usuarios u ON p.cliente_id = u.id
+                WHERE p.id = ?
+            `;
+            pedido = await dbQuery.get(sql, [idPedido]);
+        }
 
         if (!pedido) {
             return `❌ No encontramos ningún pedido con el número *#${idPedido}*.\n\n` +
@@ -754,6 +840,9 @@ async function rastrearPedido(identificador) {
                 `Si tiene dudas, comuníquese con Almacén Central al ${CONFIG.telefonoFijo}.\n\n` +
                 `Escriba *MENU* para volver al inicio.`;
         }
+
+        const clienteNombre = pedido.cliente_nombre || pedido.cliente || 'Cliente Mostrador';
+        const clienteDireccion = pedido.cliente_direccion || 'Sucre, Bolivia';
 
         // Formatear estado de logística con claridad y sin tecnicismos
         const estadoLogistica = (pedido.estado_logistica || pedido.estado || 'REGISTRADO').toUpperCase();
@@ -779,11 +868,11 @@ async function rastrearPedido(identificador) {
         }
 
         return `🚚 *Estado de Pedido #PED-${String(pedido.id).padStart(4, '0')}:*\n\n` +
-            `• Cliente / Taller: *${pedido.cliente_nombre}*\n` +
+            `• Cliente / Taller: *${clienteNombre}*\n` +
             `• Estado Actual: *${estadoLegible}*\n` +
             `• Pago: *${estadoPago}* (${metodoPago})\n` +
             `• Total: *Bs. ${totalFmt}*\n` +
-            `• Destino: ${pedido.cliente_direccion}${infoDespacho}\n\n` +
+            `• Destino: ${clienteDireccion}${infoDespacho}\n\n` +
             `🌐 *Rastreo en vivo y detalle:* ${CONFIG.portalClientesWeb}\n\n` +
             `Para consultas sobre este despacho, mencione el código *PED-${String(pedido.id).padStart(4, '0')}* al contactar a soporte.\n\n` +
             `Escriba *MENU* para volver al menú principal.`;
@@ -1147,6 +1236,7 @@ module.exports = {
     responderMensaje,
     buscarProductos,
     rastrearPedido,
+    obtenerPedidoProduccion,
     registrarTicketSoporte,
     obtenerTextoMenuPrincipal,
     enviarAlertaAdmin,
