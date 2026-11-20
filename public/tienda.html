@@ -147,17 +147,67 @@
 
                     <!-- 2. Controles para Usuario con Sesión Activa -->
                     <div id="tiendaLoggedControls" class="d-none d-flex align-items-center gap-2 flex-wrap">
-                        <!-- Identificación de Usuario Logueado (Chip Compacto Futurista) -->
-                        <div class="nav-profile-chip nav-profile-chip-light" id="tiendaProfileChip">
-                            <div class="nav-avatar-wrap">
-                                <div class="nav-avatar-img" id="tiendaUserAvatar">
-                                    U
+                        <!-- Identificación de Usuario Logueado (Chip Compacto Futurista con Dropdown Anclado a la Derecha) -->
+                        <div class="dropdown position-relative flex-shrink-0 user-dropdown-container" id="tiendaProfileWrap">
+                            <div class="nav-profile-chip nav-profile-chip-light" id="tiendaProfileChip" role="button" aria-expanded="false" title="Perfil de usuario">
+                                <div class="nav-avatar-wrap">
+                                    <div class="nav-avatar-img" id="tiendaUserAvatar">
+                                        U
+                                    </div>
+                                    <span class="nav-avatar-status" title="Sesión activa"></span>
                                 </div>
-                                <span class="nav-avatar-status" title="Sesión activa"></span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="nav-profile-name text-dark" id="tiendaUserName">Usuario</span>
+                                    <span class="nav-role-badge-tech role-cliente" id="tiendaUserRol">CLIENTE</span>
+                                    <i class="bi bi-chevron-down nav-profile-chevron" style="color: #64748B !important;"></i>
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="nav-profile-name text-dark" id="tiendaUserName">Usuario</span>
-                                <span class="nav-role-badge-tech role-cliente" id="tiendaUserRol">CLIENTE</span>
+
+                            <!-- Tarjeta Flotante Desplegable en Tienda -->
+                            <div class="dropdown-menu dropdown-menu-end nav-profile-dropdown-menu user-dropdown profile-dropdown shadow-lg" id="tiendaProfileDropdown">
+                                <!-- Cabecera de Usuario -->
+                                <div class="d-flex align-items-center gap-3 pb-3 border-bottom border-secondary border-opacity-25">
+                                    <div class="nav-avatar-img" id="tiendaDropdownAvatar" style="width: 40px; height: 40px; font-size: 15px; border-radius: 50%; flex-shrink: 0; background: #B91C1C; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                        U
+                                    </div>
+                                    <div class="d-flex flex-column text-truncate" style="line-height: 1.25;">
+                                        <span class="fw-bold text-white text-truncate" id="tiendaDropdownNombre" style="font-size: 13.5px;">Usuario</span>
+                                        <div class="d-flex align-items-center gap-1 mt-1">
+                                            <span class="nav-role-badge-tech role-cliente" id="tiendaDropdownRolBadge" style="font-size: 10px; padding: 2px 6px;">CLIENTE</span>
+                                            <span class="text-secondary small text-truncate" id="tiendaDropdownRol" style="font-size: 11px;">Cuenta Taller</span>
+                                        </div>
+                                        <span class="font-mono text-muted text-truncate mt-1" id="tiendaDropdownEmail" style="font-size: 10.5px;"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Estado de Conexión Activa -->
+                                <div class="d-flex align-items-center justify-content-between py-2 px-3 my-2 rounded-2" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);">
+                                    <span class="small text-secondary" style="font-size: 11.5px;">Estado de sesión</span>
+                                    <span class="d-inline-flex align-items-center gap-1 small text-success fw-bold" style="font-size: 11px;">
+                                        <span style="width: 7px; height: 7px; background: #10B981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px rgba(16,185,129,0.5);"></span>
+                                        Activo
+                                    </span>
+                                </div>
+
+                                <!-- Enlaces Rápidos de Tienda -->
+                                <div class="d-flex flex-column gap-1 my-2" id="tiendaDropdownLinks">
+                                    <a href="tienda.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                                        <i class="bi bi-shop text-danger"></i>
+                                        <span>Catálogo de productos</span>
+                                    </a>
+                                    <button type="button" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none border-0 bg-transparent text-start w-100" onclick="abrirModalSeguimiento()">
+                                        <i class="bi bi-truck text-warning"></i>
+                                        <span>Mis pedidos</span>
+                                    </button>
+                                </div>
+
+                                <!-- Botón de Salir Integrado -->
+                                <div class="pt-2 border-top border-secondary border-opacity-25 mt-2">
+                                    <button class="btn btn-futuristic-logout w-100 d-flex align-items-center justify-content-center gap-2" onclick="cerrarSesionTienda()" title="Cerrar sesión">
+                                        <i class="bi bi-power"></i>
+                                        <span>Cerrar sesión</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

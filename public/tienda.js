@@ -395,6 +395,8 @@ function cerrarSesionTienda() {
     window.location.href = 'index.html';
 }
 window.cerrarSesionTienda = cerrarSesionTienda;
+window.cerrarSesion = cerrarSesionTienda;
+window.logout = cerrarSesionTienda;
 
 function sincronizarControlesUsuarioHeader() {
     const guestControls = document.getElementById('tiendaGuestControls');
@@ -478,6 +480,61 @@ function sincronizarControlesUsuarioHeader() {
     }
     if (navAvatar) {
         navAvatar.innerText = iniciales;
+    }
+
+    // Actualizar elementos del Dropdown de Perfil de Tienda
+    const dropAvatar = document.getElementById('tiendaDropdownAvatar');
+    const dropNombre = document.getElementById('tiendaDropdownNombre');
+    const dropRolBadge = document.getElementById('tiendaDropdownRolBadge');
+    const dropRol = document.getElementById('tiendaDropdownRol');
+    const dropEmail = document.getElementById('tiendaDropdownEmail');
+    const dropLinks = document.getElementById('tiendaDropdownLinks');
+
+    if (dropAvatar) dropAvatar.innerText = iniciales;
+    if (dropNombre) dropNombre.innerText = nombre;
+    if (dropRolBadge) {
+        dropRolBadge.innerText = labelTag;
+        dropRolBadge.className = `nav-role-badge-tech ${rolClass}`;
+    }
+    if (dropRol) {
+        let textoRol = 'Cuenta Taller';
+        if (labelTag === 'ADMIN') textoRol = 'Administración';
+        else if (labelTag === 'EMPAQUE') textoRol = 'Almacén & Empaque';
+        else if (labelTag === 'DESPACHO') textoRol = 'Logística & Despacho';
+        dropRol.innerText = textoRol;
+    }
+    if (dropEmail) {
+        dropEmail.innerText = usuarioActual.email || '';
+        dropEmail.style.display = usuarioActual.email ? 'block' : 'none';
+    }
+    if (dropLinks) {
+        if (esAdmin) {
+            dropLinks.innerHTML = `
+                <a href="dashboard.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                    <i class="bi bi-speedometer2 text-danger"></i>
+                    <span>Panel de control</span>
+                </a>
+                <a href="inventario.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                    <i class="bi bi-box-seam-fill text-danger"></i>
+                    <span>Almacén e Inventario</span>
+                </a>
+                <a href="tienda.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                    <i class="bi bi-shop text-danger"></i>
+                    <span>Catálogo de productos</span>
+                </a>
+            `;
+        } else {
+            dropLinks.innerHTML = `
+                <a href="tienda.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                    <i class="bi bi-shop text-danger"></i>
+                    <span>Catálogo de productos</span>
+                </a>
+                <button type="button" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none border-0 bg-transparent text-start w-100" onclick="abrirModalSeguimiento()">
+                    <i class="bi bi-truck text-warning"></i>
+                    <span>Mis pedidos</span>
+                </button>
+            `;
+        }
     }
 
     // Si es ADMIN o EMPAQUE autorizado: mostrar dropdown con 9 módulos ERP

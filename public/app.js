@@ -971,3 +971,21 @@ function mostrarAlerta(mensaje, tipo) {
     alertBox.classList.remove('d-none');
     setTimeout(() => alertBox.classList.add('d-none'), 4000);
 }
+
+// Cierre de sesión global unificado
+function cerrarSesion() {
+    try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('usuario_golden');
+        localStorage.removeItem('usuario_rol');
+        localStorage.removeItem('carrito');
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch (e) {
+        console.warn('Error al limpiar almacenamiento de sesión:', e);
+    }
+    window.location.href = 'index.html';
+}
+window.cerrarSesion = cerrarSesion;
+window.logout = cerrarSesion;

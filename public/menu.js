@@ -386,8 +386,8 @@ function renderizarMenu(paginaActiva) {
                 ` : ''}
 
                 <!-- Identificación de Usuario Compacta y Futurista (Estilo Linear / Vercel) -->
-                <div class="dropdown position-relative flex-shrink-0" id="userInfoBadge">
-                    <div class="nav-profile-chip" data-bs-toggle="dropdown" aria-expanded="false" role="button" title="Perfil de ${nombreCompleto}">
+                <div class="dropdown position-relative flex-shrink-0 user-dropdown-container" id="userInfoBadge">
+                    <div class="nav-profile-chip" role="button" aria-expanded="false" title="Perfil de ${nombreCompleto}">
                         <!-- Avatar Circular con Iniciales e Indicador Esmeralda -->
                         <div class="nav-avatar-wrap">
                             <div class="nav-avatar-img">
@@ -405,15 +405,18 @@ function renderizarMenu(paginaActiva) {
                     </div>
 
                     <!-- Tarjeta Flotante Oscura (Glassmorphism) -->
-                    <div class="dropdown-menu dropdown-menu-end nav-profile-dropdown-menu shadow-lg" style="margin-top: 8px;">
+                    <div class="dropdown-menu dropdown-menu-end nav-profile-dropdown-menu user-dropdown profile-dropdown shadow-lg">
                         <!-- Cabecera de Usuario -->
                         <div class="d-flex align-items-center gap-3 pb-3 border-bottom border-secondary border-opacity-25">
-                            <div class="nav-avatar-img" style="width: 40px; height: 40px; font-size: 15px; border-radius: 50%; flex-shrink: 0;">
+                            <div class="nav-avatar-img" style="width: 40px; height: 40px; font-size: 15px; border-radius: 50%; flex-shrink: 0; background: #B91C1C; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700;">
                                 ${iniciales}
                             </div>
                             <div class="d-flex flex-column text-truncate" style="line-height: 1.25;">
                                 <span class="fw-bold text-white text-truncate" style="font-size: 13.5px;">${nombreCompleto}</span>
-                                <span class="text-secondary small text-truncate" style="font-size: 11px;">${rolLegible}</span>
+                                <div class="d-flex align-items-center gap-1 mt-1">
+                                    <span class="nav-role-badge-tech ${rolTechClass}" style="font-size: 10px; padding: 2px 6px;">${rolTechTag}</span>
+                                    <span class="text-secondary small text-truncate" style="font-size: 11px;">${rolLegible}</span>
+                                </div>
                                 ${emailUsuario ? `<span class="font-mono text-muted text-truncate mt-1" style="font-size: 10.5px;">${emailUsuario}</span>` : ''}
                             </div>
                         </div>
@@ -565,26 +568,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // Manejador global del Menú Desplegable de Perfil Futurista (soporte nativo y sin dependencias)
 document.addEventListener('click', (e) => {
     const chip = e.target.closest('.nav-profile-chip');
-    const allDropdowns = document.querySelectorAll('.nav-profile-dropdown-menu');
+    const allDropdowns = document.querySelectorAll('.nav-profile-dropdown-menu, .user-dropdown');
 
     if (chip) {
-        const wrap = chip.closest('#userInfoBadge');
-        const menu = wrap ? wrap.querySelector('.nav-profile-dropdown-menu') : null;
+        const wrap = chip.closest('#userInfoBadge, #tiendaProfileWrap, .user-dropdown-container') || chip.parentElement;
+        const menu = wrap ? wrap.querySelector('.nav-profile-dropdown-menu, .user-dropdown') : null;
         if (menu) {
+            e.stopPropagation();
             const isShown = menu.classList.contains('show');
             allDropdowns.forEach(d => {
                 d.classList.remove('show');
-                const p = d.closest('#userInfoBadge');
+                const p = d.closest('#userInfoBadge, #tiendaProfileWrap, .user-dropdown-container') || d.parentElement;
                 const c = p ? p.querySelector('.nav-profile-chip') : null;
                 if (c) c.setAttribute('aria-expanded', 'false');
             });
-            chip.setAttribute('aria-expanded', String(!isShown));
-            if (!isShown) menu.classList.add('show');
+            if (!isShown) {
+                menu.classList.add('show');
+                chip.setAttribute('aria-expanded', 'true');
+            }
         }
-    } else if (!e.target.closest('.nav-profile-dropdown-menu')) {
+    } else if (!e.target.closest('.nav-profile-dropdown-menu, .user-dropdown')) {
         allDropdowns.forEach(d => {
             d.classList.remove('show');
-            const p = d.closest('#userInfoBadge');
+            const p = d.closest('#userInfoBadge, #tiendaProfileWrap, .user-dropdown-container') || d.parentElement;
             const c = p ? p.querySelector('.nav-profile-chip') : null;
             if (c) c.setAttribute('aria-expanded', 'false');
         });
@@ -814,26 +820,21 @@ if (typeof Swal !== 'undefined') {
     };
 }
 
-window.cerrarSesion = async function () {
-    if (typeof Swal !== 'undefined') {
-        const confirmacion = await Swal.fire({
-            title: '¿Cerrar sesión?',
-            text: '¿Deseas salir del sistema GOLDEN ERP?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#C81E1E',
-            cancelButtonColor: '#64748B',
-            confirmButtonText: '<i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión',
-            cancelButtonText: 'Permanecer',
-            background: '#FFFFFF',
-            color: '#1C1917',
-            reverseButtons: true
-        });
-        if (!confirmacion.isConfirmed) return;
+window.cerrarSesion = function () {
+    try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('usuario_golden');
+        localStorage.removeItem('usuario_rol');
+        localStorage.removeItem('carrito');
+        localStorage.clear();
+        sessionStorage.clear();
+    } catch (e) {
+        console.warn('Error al limpiar almacenamiento de sesión:', e);
     }
-    localStorage.removeItem('usuario_golden');
     window.location.href = 'index.html';
 };
+window.logout = window.cerrarSesion;
 
 // =========================================================================
 // MONITOREO DE STOCK EN TIEMPO REAL (SOLO PARA PERSONAL INTERNO)

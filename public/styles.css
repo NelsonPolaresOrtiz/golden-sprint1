@@ -563,17 +563,51 @@ body:has(#menu-container:not(.d-none):not([style*="display: none"])) {
     font-size: 10px !important;
 }
 
-/* Tarjeta flotante oscura (Glassmorphism) */
-.nav-profile-dropdown-menu {
-    background: rgba(20, 22, 25, 0.96) !important;
+/* Posicionamiento correcto del Dropdown de Perfil (esquina superior derecha) */
+#userInfoBadge,
+.user-dropdown-container,
+#tiendaProfileWrap {
+    position: relative !important;
+    z-index: 1100 !important;
+}
+
+/* Tarjeta flotante moderna del perfil (anclada a la derecha) */
+.nav-profile-dropdown-menu,
+.user-dropdown,
+.profile-dropdown,
+#tiendaProfileDropdown {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    left: auto !important;
+    width: 250px !important;
+    min-width: 250px !important;
+    max-width: 280px !important;
+    background: #141619 !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 14px !important;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
     padding: 14px !important;
-    min-width: 250px !important;
-    z-index: 10100 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45) !important;
+    z-index: 12000 !important;
+    transform: none !important;
+    margin: 0 !important;
+    display: none !important;
+    box-sizing: border-box !important;
+}
+
+.nav-profile-dropdown-menu.show,
+.user-dropdown.show,
+.profile-dropdown.show,
+#tiendaProfileDropdown.show {
+    display: block !important;
+}
+
+/* Evitar que backdrops o overlays oscuros de Bootstrap bloqueen los clics */
+.dropdown-backdrop {
+    display: none !important;
+    pointer-events: none !important;
 }
 
 .nav-dropdown-item {
