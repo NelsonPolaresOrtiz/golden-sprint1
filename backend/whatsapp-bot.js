@@ -39,12 +39,15 @@ const CONFIG = {
     direccion: 'Av. Jaime Mendoza #1420, Sucre, Bolivia',
     telefonoFijo: '(4) 64-52890',
     whatsappOficial: '+591 67375645',
-    catalogoWeb: 'https://golden-sprint1.onrender.com/tienda.html?vista=cliente',
+    catalogoWeb: 'https://golden-sprint1.onrender.com/tienda.html',
     portalClientesWeb: 'https://golden-sprint1.onrender.com/?modo=cliente',
     horario: 'Lunes a Sábado de 08:00 a 18:30 (Continuado)',
     pausaHumanaMs: 1200,
     tiempoExpiracionSesionMs: 15 * 60 * 1000 // 15 minutos
 };
+
+// Separador minimalista editorial para WhatsApp
+const SEPARADOR = '──────────────────────────';
 
 // Número oficial de Gerencia / Administración para Alertas Proactivas
 const ADMIN_WHATSAPP = '59167375645@s.whatsapp.net';
@@ -394,8 +397,8 @@ async function generarResumenGerencial() {
 
         let detalleStock = '';
         if (stockBajoCount > 0) {
-            detalleStock = '\n   ↳ *Críticos:* ' + productosBajoStock.slice(0, 3).map(p => 
-                `${p.sku} (${p.stock} unids)`
+            detalleStock = '\n  ↳ *Críticos:* ' + productosBajoStock.slice(0, 3).map(p => 
+                `\`${p.sku}\` (${p.stock} unids)`
             ).join(', ');
             if (stockBajoCount > 3) {
                 detalleStock += ` y ${stockBajoCount - 3} producto(s) más.`;
@@ -408,24 +411,20 @@ async function generarResumenGerencial() {
             year: 'numeric' 
         });
 
-        return `📊 *${CONFIG.empresa}* 🇧🇴\n` +
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
             `*RESUMEN GERENCIAL DEL DÍA*\n` +
-            `📅 ${fechaHoy} | Sucre, Bolivia\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-            `💰 *Ventas Registradas Hoy:*\n` +
-            `   • Monto Facturado: *Bs. ${totalVentas.toFixed(2)}*\n` +
-            `   • Pedidos Registrados: *${cantVentas} orden(es)*\n\n` +
-            `🚚 *Despachos y Logística:*\n` +
-            `   • Pendientes de Entrega: *${pendientesEntrega} pedido(s)*\n\n` +
-            `⚠️ *Alerta de Stock en Almacén:*\n` +
-            `   • Repuestos con Stock Crítico: *${stockBajoCount} producto(s)*${detalleStock}\n\n` +
-            `🎫 *Atención al Cliente:*\n` +
-            `   • Tickets / Reclamos Abiertos: *${ticketsAbiertos} caso(s)*\n\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `Fecha: ${fechaHoy}\n\n` +
+            `• *Ventas Hoy:* *Bs. ${totalVentas.toFixed(2)}* (${cantVentas} órdenes)\n` +
+            `• *Despachos Pendientes:* ${pendientesEntrega} pedido(s) en curso\n` +
+            `• *Stock Crítico:* ${stockBajoCount} repuesto(s)${detalleStock}\n` +
+            `• *Tickets Abiertos:* ${ticketsAbiertos} caso(s)\n\n` +
+            `${SEPARADOR}\n` +
             `_Escriba *MENU* para volver a la atención general._`;
     } catch (err) {
         console.error('[WhatsApp Bot] Error al generar resumen gerencial:', err);
-        return `⚠️ Ocurrió un error al consultar las métricas gerenciales: ${err.message}`;
+        return `Ocurrió un error al consultar las métricas gerenciales: ${err.message}`;
     }
 }
 
@@ -481,16 +480,58 @@ function normalizarTexto(texto) {
  * Texto del Menú Principal
  */
 function obtenerTextoMenuPrincipal(nombre) {
-    const saludo = nombre && nombre !== 'Cliente' ? `¡Hola ${nombre}!` : '¡Hola!';
-    return `🔧 *${CONFIG.empresa}* 🇧🇴\n` +
-        `Distribuidora Mayorista Automotriz - Sucre, Bolivia\n\n` +
-        `${saludo} ¿En qué podemos colaborar con su taller hoy?\n\n` +
-        `1️⃣ *Consultar Stock y Precios Mayoristas* (Envía: 1 o 'precio <código/nombre>')\n` +
-        `2️⃣ *Rastrear Estado de mi Pedido* (Envía: 2 o 'pedido <N°>')\n` +
-        `3️⃣ *Solicitar Cotización Mayorista para Taller* (Envía: 3 o 'cotizar')\n` +
-        `4️⃣ *Atención Técnica o Reclamo de Despacho* (Envía: 4 o 'reclamo')\n` +
-        `5️⃣ *Horarios, Dirección y Catálogo Web* (Envía: 5 o 'info')\n\n` +
-        `Escriba el *número de opción* o su consulta directa. Puede escribir *MENU* en cualquier momento para reiniciar.`;
+    const saludo = nombre && nombre !== 'Cliente' ? `Hola *${nombre}*.` : 'Hola.';
+    return `*${CONFIG.empresa}*\n` +
+        `_Distribución Automotriz · Sucre, Bolivia_\n` +
+        `${SEPARADOR}\n\n` +
+        `${saludo} Seleccione una opción para atenderle:\n\n` +
+        `*1* · Catálogo y precios (${CONFIG.catalogoWeb})\n` +
+        `*2* · Consultar estado de pedido (ej: \`#0024\`)\n` +
+        `*3* · Cotización mayorista para talleres\n` +
+        `*4* · Métodos de pago y QR oficial\n` +
+        `*5* · Horarios y ubicación en Sucre (${CONFIG.direccion.split(',')[0]})\n\n` +
+        `${SEPARADOR}\n` +
+        `_Responda con el número (1-5) o escriba directamente su consulta._`;
+}
+
+/**
+ * Información de Métodos de Pago y QR Oficial (Opción 4)
+ */
+function obtenerTextoMetodosPago() {
+    return `*${CONFIG.empresa}*\n` +
+        `_Distribución Automotriz · Sucre, Bolivia_\n` +
+        `${SEPARADOR}\n\n` +
+        `*Métodos de Pago Oficiales*\n\n` +
+        `• *QR Simple / Yape Bolivia:*\n` +
+        `  Disponible en la tienda web o solicitando código directo.\n` +
+        `  Titular: GOLDEN Lubricantes & Filtros\n\n` +
+        `• *Transferencia Bancaria Nacional:*\n` +
+        `  Banco Nacional de Bolivia (BNB)\n` +
+        `  Cta. Corriente M/N: \`100-0897645-3\`\n` +
+        `  NIT: \`1029384756\`\n\n` +
+        `• *Efectivo contra entrega:*\n` +
+        `  Habilitado para entregas en talleres dentro del radio urbano de Sucre.\n\n` +
+        `${SEPARADOR}\n` +
+        `_Al realizar su pago envíe su comprobante con el código de orden (ej: #0024)._`;
+}
+
+/**
+ * Información de Horarios, Ubicación y Catálogo Web (Opción 5)
+ */
+function obtenerTextoUbicacionHorarios() {
+    return `*${CONFIG.empresa}*\n` +
+        `_Distribución Automotriz · Sucre, Bolivia_\n` +
+        `${SEPARADOR}\n\n` +
+        `*Almacén Central & Ubicación*\n\n` +
+        `• *Dirección:* ${CONFIG.direccion}\n` +
+        `• *Horario:* ${CONFIG.horario}\n` +
+        `• *Teléfono Central:* ${CONFIG.telefonoFijo}\n` +
+        `• *WhatsApp Oficial:* ${CONFIG.whatsappOficial}\n` +
+        `• *Catálogo Web:* ${CONFIG.catalogoWeb}\n` +
+        `• *Portal Clientes:* ${CONFIG.portalClientesWeb}\n\n` +
+        `_Despachos diarios a talleres en Chuquisaca y envíos a Potosí y Cochabamba._\n\n` +
+        `${SEPARADOR}\n` +
+        `_Escriba *MENU* para volver a ver las opciones._`;
 }
 
 /**
@@ -512,7 +553,12 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
 
     if (esConfirmacionOComprobante) {
         reiniciarSesion(remoteJid);
-        return "Hemos recibido el detalle de su pedido. Nuestro equipo de Cobranzas y Despacho lo está procesando.";
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `Hemos recibido el respaldo de su orden. Nuestro equipo de Cobranzas y Despacho validará el movimiento en breve.\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba *MENU* para realizar otra consulta._`;
     }
 
     // =========================================================================
@@ -540,28 +586,27 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
 
     if (textoNorm === 'cancelar' || textoNorm === 'salir') {
         reiniciarSesion(remoteJid);
-        return `✅ Operación cancelada.\n\nEscriba *MENU* cuando desee realizar una nueva consulta.`;
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `Operación cancelada.\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba *MENU* cuando desee realizar una nueva consulta._`;
     }
 
     // =========================================================================
-    // ESTADO: ESPERANDO TÉRMINO DE BÚSQUEDA DE PRODUCTO
+    // ESTADOS ACTIVOS DE CONVERSACIÓN
     // =========================================================================
     if (sesion.estado === 'ESPERANDO_PRODUCTO') {
         reiniciarSesion(remoteJid);
         return await buscarProductos(textoOriginal);
     }
 
-    // =========================================================================
-    // ESTADO: ESPERANDO NÚMERO DE PEDIDO
-    // =========================================================================
     if (sesion.estado === 'ESPERANDO_PEDIDO') {
         reiniciarSesion(remoteJid);
         return await rastrearPedido(textoOriginal);
     }
 
-    // =========================================================================
-    // ESTADO: ESPERANDO DETALLES DE COTIZACIÓN
-    // =========================================================================
     if (sesion.estado === 'ESPERANDO_COTIZACION') {
         reiniciarSesion(remoteJid);
         return await registrarTicketSoporte({
@@ -572,9 +617,6 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
         });
     }
 
-    // =========================================================================
-    // ESTADO: ESPERANDO DETALLES DE RECLAMO / SOPORTE TÉCNICO
-    // =========================================================================
     if (sesion.estado === 'ESPERANDO_RECLAMO') {
         reiniciarSesion(remoteJid);
         return await registrarTicketSoporte({
@@ -586,53 +628,96 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
     }
 
     // =========================================================================
-    // RECONOCIMIENTO DE INTENCIONES DIRECTAS O NÚMEROS DE OPCIÓN
+    // CONSULTA DIRECTA DE PEDIDO POR FORMATO #ID O PED-XXXX
     // =========================================================================
-
-    // OPCIÓN 1: STOCK Y PRECIOS
-    if (textoNorm === '1' || textoNorm === 'stock' || textoNorm === 'precios') {
-        sesion.estado = 'ESPERANDO_PRODUCTO';
-        return `🔍 *Consulta de Stock y Precios Mayoristas*\n\n` +
-            `Por favor escriba el nombre o código del lubricante o filtro que busca:\n` +
-            `_(Ejemplo: 15W40, W712, Castrol, Mobil, Tecfil, Mann, 20W50)_\n\n` +
-            `O escriba *CANCELAR* para volver al menú.`;
-    }
-
-    if (textoNorm.startsWith('1 ') || textoNorm.startsWith('precio ') || textoNorm.startsWith('stock ') || textoNorm.startsWith('buscar ')) {
-        const termino = textoOriginal.replace(/^(1|precio|stock|buscar)\s+/i, '').trim();
-        return await buscarProductos(termino);
-    }
-
-    // OPCIÓN 2: RASTREO DE PEDIDOS
-    if (textoNorm === '2' || textoNorm === 'rastreo' || textoNorm === 'pedido' || textoNorm === 'pedidos') {
-        sesion.estado = 'ESPERANDO_PEDIDO';
-        return `🚚 *Rastreo de Despachos y Pedidos*\n\n` +
-            `Por favor escriba el número de su pedido:\n` +
-            `_(Ejemplo: PED-0004 o simplemente el número 4)_\n\n` +
-            `O escriba *CANCELAR* para volver al menú.`;
-    }
-
-    if (textoNorm.startsWith('2 ') || textoNorm.startsWith('pedido ') || textoNorm.startsWith('rastrear ') || textoNorm.startsWith('orden ')) {
-        const idPedido = textoOriginal.replace(/^(2|pedido|rastrear|orden)\s+/i, '').trim();
-        return await rastrearPedido(idPedido);
-    }
-
-    // Consulta directa de pedido por formato #ID o código PED-XXXX (ej: #24, #PED-0024, PED-0024)
     if (/^#\s*\d+\b/i.test(textoLimpio) || /^#?\s*ped-\d+\b/i.test(textoLimpio)) {
         return await rastrearPedido(textoLimpio);
     }
 
-    // OPCIÓN 3: SOLICITUD DE COTIZACIÓN MAYORISTA
-    if (textoNorm === '3' || textoNorm === 'cotizar' || textoNorm === 'cotizacion') {
-        sesion.estado = 'ESPERANDO_COTIZACION';
-        return `📝 *Solicitud de Cotización Mayorista para Taller*\n\n` +
-            `Por favor indíquenos los productos, marcas y cantidades estimadas que requiere su taller o negocio:\n` +
-            `_(Ejemplo: 5 cajas de 15W40 Castrol, 10 filtros W712 Tecfil, 2 baldes de Valvulina 85W140)_\n\n` +
-            `Escriba los detalles a continuación:`;
+    // =========================================================================
+    // RECONOCIMIENTO NATURAL DE PALABRAS CLAVE Y OPCIONES DEL MENÚ
+    // =========================================================================
+
+    // OPCIÓN 1: CATÁLOGO Y PRECIOS
+    if (
+        textoNorm.startsWith('1 ') ||
+        textoNorm.startsWith('precio ') ||
+        textoNorm.startsWith('precios ') ||
+        textoNorm.startsWith('stock ') ||
+        textoNorm.startsWith('buscar ') ||
+        textoNorm.startsWith('aceite ') ||
+        textoNorm.startsWith('aceites ') ||
+        textoNorm.startsWith('filtro ') ||
+        textoNorm.startsWith('filtros ')
+    ) {
+        const termino = textoOriginal.replace(/^(1|precio|precios|stock|buscar|aceite|aceites|filtro|filtros)\s+/i, '').trim();
+        return await buscarProductos(termino);
     }
 
-    if (textoNorm.startsWith('3 ') || textoNorm.startsWith('cotizar ')) {
-        const detalle = textoOriginal.replace(/^(3|cotizar)\s+/i, '').trim();
+    if (
+        textoNorm === '1' ||
+        textoNorm === 'catalogo' ||
+        textoNorm === 'precios' ||
+        textoNorm === 'precio' ||
+        textoNorm === 'stock' ||
+        textoNorm === 'aceites' ||
+        textoNorm === 'aceite' ||
+        textoNorm === 'filtros' ||
+        textoNorm === 'filtro' ||
+        textoNorm === 'lubricante' ||
+        textoNorm === 'lubricantes'
+    ) {
+        sesion.estado = 'ESPERANDO_PRODUCTO';
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `*Catálogo y Precios Mayoristas*\n\n` +
+            `Indique el código o descripción del repuesto que busca:\n` +
+            `_(Ej: \`15W-40\`, \`W712\`, \`Castrol\`, \`Mobil\`, \`Tecfil\`, \`20W50\`)_\n\n` +
+            `• Catálogo en línea: ${CONFIG.catalogoWeb}\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba el producto o envíe *CANCELAR* para regresar._`;
+    }
+
+    // OPCIÓN 2: RASTREO DE PEDIDOS
+    if (
+        textoNorm.startsWith('2 ') ||
+        textoNorm.startsWith('pedido ') ||
+        textoNorm.startsWith('rastrear ') ||
+        textoNorm.startsWith('rastreo ') ||
+        textoNorm.startsWith('orden ') ||
+        textoNorm.startsWith('estado ')
+    ) {
+        const idPedido = textoOriginal.replace(/^(2|pedido|rastrear|rastreo|orden|estado)\s+/i, '').trim();
+        return await rastrearPedido(idPedido);
+    }
+
+    if (
+        textoNorm === '2' ||
+        textoNorm === 'rastreo' ||
+        textoNorm === 'pedido' ||
+        textoNorm === 'pedidos' ||
+        textoNorm === 'orden' ||
+        textoNorm === 'estado'
+    ) {
+        sesion.estado = 'ESPERANDO_PEDIDO';
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `*Consulta de Estado de Pedido*\n\n` +
+            `Por favor indique el código o número de su orden:\n` +
+            `_(Ejemplo: \`#0024\` o simplemente \`24\`)_\n\n` +
+            `${SEPARADOR}\n` +
+            `_O escriba *CANCELAR* para volver al menú._`;
+    }
+
+    // OPCIÓN 3: COTIZACIÓN MAYORISTA PARA TALLERES
+    if (
+        textoNorm.startsWith('3 ') ||
+        textoNorm.startsWith('cotizar ') ||
+        textoNorm.startsWith('cotizacion ')
+    ) {
+        const detalle = textoOriginal.replace(/^(3|cotizar|cotizacion)\s+/i, '').trim();
         return await registrarTicketSoporte({
             telefono: telefonoCliente,
             nombre: sesion.nombre,
@@ -641,17 +726,61 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
         });
     }
 
-    // OPCIÓN 4: SOPORTE TÉCNICO Y RECLAMOS
-    if (textoNorm === '4' || textoNorm === 'reclamo' || textoNorm === 'soporte' || textoNorm === 'queja') {
-        sesion.estado = 'ESPERANDO_RECLAMO';
-        return `⚠️ *Atención Técnica y Reclamo de Despacho*\n\n` +
-            `Por favor descríbanos detalladamente el inconveniente presentado con su pedido, despacho o producto:\n` +
-            `_(Ejemplo: Faltó 1 filtro en el pedido PED-0003, o producto con precinto dañado)_\n\n` +
-            `Escriba su mensaje a continuación:`;
+    if (
+        textoNorm === '3' ||
+        textoNorm === 'cotizar' ||
+        textoNorm === 'cotizacion' ||
+        textoNorm === 'taller' ||
+        textoNorm === 'talleres' ||
+        textoNorm === 'mayorista'
+    ) {
+        sesion.estado = 'ESPERANDO_COTIZACION';
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `*Cotización Mayorista para Talleres*\n\n` +
+            `Indíquenos los productos, marcas y cantidades estimadas que requiere su taller o negocio:\n` +
+            `_(Ejemplo: 5 cajas de 15W40 Castrol, 10 filtros W712 Tecfil, 2 baldes 85W140)_\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba los detalles a continuación o envíe *CANCELAR* para volver al menú._`;
     }
 
-    if (textoNorm.startsWith('4 ') || textoNorm.startsWith('reclamo ') || textoNorm.startsWith('soporte ')) {
-        const detalle = textoOriginal.replace(/^(4|reclamo|soporte)\s+/i, '').trim();
+    // OPCIÓN 4: MÉTODOS DE PAGO Y QR OFICIAL
+    if (
+        textoNorm === '4' ||
+        textoNorm === 'qr' ||
+        textoNorm === 'pago' ||
+        textoNorm === 'pagos' ||
+        textoNorm === 'transferencia' ||
+        textoNorm === 'cuenta' ||
+        textoNorm === 'banco' ||
+        textoNorm === 'yape'
+    ) {
+        return obtenerTextoMetodosPago();
+    }
+
+    // OPCIÓN 5: HORARIOS Y UBICACIÓN EN SUCRE
+    if (
+        textoNorm === '5' ||
+        textoNorm === 'horario' ||
+        textoNorm === 'horarios' ||
+        textoNorm === 'ubicacion' ||
+        textoNorm === 'direccion' ||
+        textoNorm === 'contacto' ||
+        textoNorm === 'donde' ||
+        textoNorm === 'sucre' ||
+        textoNorm === 'info'
+    ) {
+        return obtenerTextoUbicacionHorarios();
+    }
+
+    // SOPORTE TÉCNICO Y RECLAMOS (COMPATIBILIDAD DIRECTA)
+    if (
+        textoNorm.startsWith('reclamo ') ||
+        textoNorm.startsWith('soporte ') ||
+        textoNorm.startsWith('queja ')
+    ) {
+        const detalle = textoOriginal.replace(/^(reclamo|soporte|queja)\s+/i, '').trim();
         return await registrarTicketSoporte({
             telefono: telefonoCliente,
             nombre: sesion.nombre,
@@ -660,29 +789,36 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
         });
     }
 
-    // OPCIÓN 5: INFORMACIÓN CORPORATIVA
-    if (textoNorm === '5' || textoNorm === 'info' || textoNorm === 'contacto' || textoNorm === 'direccion' || textoNorm === 'horario' || textoNorm === 'ubicacion') {
-        return `🏢 *${CONFIG.empresa}*\n` +
-            `Distribuidora Oficial Automotriz - Sucre, Bolivia\n\n` +
-            `📍 *Almacén Central:* ${CONFIG.direccion}\n` +
-            `📞 *Teléfono Central:* ${CONFIG.telefonoFijo}\n` +
-            `📱 *WhatsApp Oficial:* ${CONFIG.whatsappOficial}\n` +
-            `🕒 *Horario de Atención:* ${CONFIG.horario}\n` +
-            `🌐 *Catálogo Libre en Línea:* ${CONFIG.catalogoWeb}\n` +
-            `👤 *Portal Clientes & Registro:* ${CONFIG.portalClientesWeb}\n\n` +
-            `📦 _Despachos diarios a talleres en Chuquisaca y envíos a Potosí y Cochabamba._\n\n` +
-            `Escriba *MENU* para volver a ver las opciones.`;
+    if (
+        textoNorm === 'reclamo' ||
+        textoNorm === 'soporte' ||
+        textoNorm === 'queja' ||
+        textoNorm === 'ayuda tecnica'
+    ) {
+        sesion.estado = 'ESPERANDO_RECLAMO';
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `*Atención de Soporte Técnico y Despacho*\n\n` +
+            `Por favor describa el inconveniente presentado con su pedido, despacho o repuesto:\n` +
+            `_(Ejemplo: Faltó 1 filtro en el pedido #0024 o daño de transporte)_\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba su mensaje a continuación o envíe *CANCELAR* para regresar._`;
     }
 
     // RESPUESTA POR DEFECTO / INTENCIÓN NO RECONOCIDA
-    return `Hola *${sesion.nombre}*, gracias por comunicarse con *${CONFIG.empresa}*.\n\n` +
-        `No logramos reconocer su consulta con precisión. Para brindarle asistencia rápida, elija una opción enviando el *número* correspondiente:\n\n` +
-        `1️⃣ *Consultar Stock y Precios Mayoristas* (Envía: 1)\n` +
-        `2️⃣ *Rastrear Estado de mi Pedido* (Envía: 2)\n` +
-        `3️⃣ *Solicitar Cotización Mayorista para Taller* (Envía: 3)\n` +
-        `4️⃣ *Atención Técnica o Reclamo de Despacho* (Envía: 4)\n` +
-        `5️⃣ *Horarios, Dirección y Catálogo Web* (Envía: 5)\n\n` +
-        `O escriba directamente el producto o pedido que desea consultar.`;
+    const saludo = sesion.nombre && sesion.nombre !== 'Cliente' ? `Hola *${sesion.nombre}*.` : 'Hola.';
+    return `*${CONFIG.empresa}*\n` +
+        `_Distribución Automotriz · Sucre, Bolivia_\n` +
+        `${SEPARADOR}\n\n` +
+        `${saludo} Para atenderle rápidamente, seleccione una opción:\n\n` +
+        `*1* · Catálogo y precios (${CONFIG.catalogoWeb})\n` +
+        `*2* · Consultar estado de pedido (ej: \`#0024\`)\n` +
+        `*3* · Cotización mayorista para talleres\n` +
+        `*4* · Métodos de pago y QR oficial\n` +
+        `*5* · Horarios y ubicación en Sucre (${CONFIG.direccion.split(',')[0]})\n\n` +
+        `${SEPARADOR}\n` +
+        `_Responda con el número (1-5) o escriba directamente su consulta._`;
 }
 
 /**
@@ -691,7 +827,12 @@ async function responderMensaje(remoteJid, textoOriginal, remitenteNombre, telef
 async function buscarProductos(terminoBusqueda) {
     const terminoLimpio = String(terminoBusqueda || '').trim();
     if (!terminoLimpio) {
-        return `⚠️ Por favor indique el nombre o código del producto que busca. Escriba *MENU* para volver.`;
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `Por favor indique el nombre o código del producto que busca.\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba *MENU* para volver al inicio._`;
     }
 
     try {
@@ -712,34 +853,36 @@ async function buscarProductos(terminoBusqueda) {
         const productos = await dbQuery.all(sql, [query, query, query, query, query, querySinGuion, queryConGuion]);
 
         if (!productos || productos.length === 0) {
-            return `❌ No encontramos productos que coincidan con "*${terminoLimpio}*" en el almacén de Sucre.\n\n` +
-                `💡 _Sugerencias:_\n` +
-                `• Verifique la ortografía o use un término más general (ej: "15W40", "filtro", "Castrol").\n` +
-                `• Explore el catálogo completo en: ${CONFIG.catalogoWeb}\n` +
-                `• Consulte a nuestra central telefónica: ${CONFIG.telefonoFijo}\n\n` +
-                `Escriba *MENU* para volver al inicio.`;
+            return `*${CONFIG.empresa}*\n` +
+                `_Distribución Automotriz · Sucre, Bolivia_\n` +
+                `${SEPARADOR}\n\n` +
+                `No encontramos productos para "*${terminoLimpio}*" en Almacén Sucre.\n\n` +
+                `• Verifique la ortografía o busque por viscosidad (ej: \`15W40\`, \`Castrol\`).\n` +
+                `• Catálogo completo: ${CONFIG.catalogoWeb}\n` +
+                `• Central: ${CONFIG.telefonoFijo}\n\n` +
+                `${SEPARADOR}\n` +
+                `_Escriba *MENU* para volver al inicio._`;
         }
 
-        let respuesta = `📦 *Resultados en Almacén Sucre para "${terminoLimpio}":*\n\n`;
-        productos.forEach((p, idx) => {
+        let respuesta = `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `*Resultados en Almacén Sucre para "${terminoLimpio}":*\n\n`;
+
+        productos.forEach((p) => {
             const precioFmt = Number(p.precio || 0).toFixed(2);
-            const stockEstado = p.stock > 0 ? `✅ ${p.stock} unids.` : `⚠️ Agotado temporalmente`;
-            respuesta += `🔹 *${p.nombre}*\n` +
-                `   • SKU: \`${p.sku}\`\n` +
-                `   • Categoría: ${p.categoria || 'Lubricantes'}\n` +
-                `   • Precio Mayorista: *Bs. ${precioFmt}*\n` +
-                `   • Stock Disponible: ${stockEstado}\n\n`;
+            const stockEstado = p.stock > 0 ? `${p.stock} unids.` : `Agotado temporal`;
+            respuesta += `• *${p.nombre}*\n` +
+                `  SKU: \`${p.sku}\` | *Bs. ${precioFmt}* | Stock: ${stockEstado}\n\n`;
         });
 
-        respuesta += `👉 *¿Desea ordenar o apartar estos productos?*\n` +
-            `Puede responder con la opción *3* para cotizar formalmente o ingresar al catálogo web:\n` +
-            `${CONFIG.catalogoWeb}\n\n` +
-            `Escriba *MENU* para volver al menú principal.`;
+        respuesta += `${SEPARADOR}\n` +
+            `_Para cotizar formalmente responda *3* o ingrese a:_\n${CONFIG.catalogoWeb}`;
 
         return respuesta;
     } catch (err) {
         console.error('[WhatsApp Bot] Error al buscar productos en base de datos:', err);
-        return `⚠️ Ocurrió un inconveniente al consultar el inventario. Por favor comuníquese al ${CONFIG.telefonoFijo} o intente nuevamente escribiendo *MENU*.`;
+        return `Ocurrió un inconveniente al consultar el inventario. Comuníquese al ${CONFIG.telefonoFijo} o escriba *MENU*.`;
     }
 }
 
@@ -798,13 +941,19 @@ async function obtenerPedidoProduccion(idPedido) {
  */
 async function rastrearPedido(identificador) {
     const raw = String(identificador || '').trim();
-    // Extraer números (ej: PED-0004 -> 4)
+    // Extraer números (ej: #0024 -> 24)
     const matches = raw.match(/\d+/);
     if (!matches) {
-        return `⚠️ Por favor escriba un número de pedido válido (ejemplo: 4 o PED-0004).\n\nEscriba *MENU* para volver.`;
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `Indique un número o código de pedido válido (ej: \`#0024\` o \`24\`).\n\n` +
+            `${SEPARADOR}\n` +
+            `_Escriba *MENU* para volver._`;
     }
 
     const idPedido = parseInt(matches[0], 10);
+    const codigoFmt = `#${String(idPedido).padStart(4, '0')}`;
 
     try {
         let pedido = null;
@@ -824,7 +973,7 @@ async function rastrearPedido(identificador) {
         if (!pedido) {
             const sql = `
                 SELECT p.*,
-                       COALESCE(u.nombre, 'Cliente Mostrador') as cliente_nombre,
+                       COALESCE(p.cliente_nombre, u.nombre, 'Cliente Mostrador') as cliente_nombre,
                        COALESCE(u.direccion, 'Sucre, Bolivia') as cliente_direccion,
                        COALESCE(u.telefono, '') as cliente_telefono
                 FROM pedidos p
@@ -832,53 +981,86 @@ async function rastrearPedido(identificador) {
                 WHERE p.id = ?
             `;
             pedido = await dbQuery.get(sql, [idPedido]);
+            if (pedido) {
+                const detalles = await dbQuery.all(`
+                    SELECT pd.*, COALESCE(pr.sku, 'GLD-' || pd.producto_id) as sku
+                    FROM pedido_detalles pd
+                    LEFT JOIN productos pr ON pd.producto_id = pr.id
+                    WHERE pd.pedido_id = ?
+                `, [idPedido]);
+                pedido.detalles = detalles || [];
+            }
         }
 
         if (!pedido) {
-            return `❌ No encontramos ningún pedido con el número *#${idPedido}*.\n\n` +
-                `Por favor verifique el número en su nota de entrega o factura.\n` +
-                `Si tiene dudas, comuníquese con Almacén Central al ${CONFIG.telefonoFijo}.\n\n` +
-                `Escriba *MENU* para volver al inicio.`;
+            return `*${CONFIG.empresa}*\n` +
+                `_Distribución Automotriz · Sucre, Bolivia_\n` +
+                `${SEPARADOR}\n\n` +
+                `No se encontró ningún pedido con el número \`${codigoFmt}\`.\n\n` +
+                `• Verifique el código en su nota de entrega o factura.\n` +
+                `• Almacén Central: ${CONFIG.telefonoFijo}\n\n` +
+                `${SEPARADOR}\n` +
+                `_Escriba *MENU* para volver al inicio._`;
         }
 
         const clienteNombre = pedido.cliente_nombre || pedido.cliente || 'Cliente Mostrador';
         const clienteDireccion = pedido.cliente_direccion || 'Sucre, Bolivia';
 
-        // Formatear estado de logística con claridad y sin tecnicismos
-        const estadoLogistica = (pedido.estado_logistica || pedido.estado || 'REGISTRADO').toUpperCase();
-        let estadoLegible = 'REGISTRADO (Recibido en almacén)';
-        if (estadoLogistica.includes('EMPAQUE') || estadoLogistica.includes('PREPARACION')) {
-            estadoLegible = '📦 EN PREPARACIÓN (Almacén Central)';
-        } else if (estadoLogistica.includes('DESPACHO') || estadoLogistica.includes('CAMINO')) {
-            estadoLegible = '🚚 EN CAMINO (Móvil de reparto en Sucre)';
-        } else if (estadoLogistica.includes('ENTREGADO')) {
-            estadoLegible = '✅ ENTREGADO EN TALLER';
+        // Formatear estado logístico
+        const estadoLogRaw = (pedido.estado_logistica || pedido.estado || 'REGISTRADO').toUpperCase();
+        let estadoLogistica = '● Registrado';
+        if (estadoLogRaw.includes('ENTREG')) {
+            estadoLogistica = '● Entregado';
+        } else if (estadoLogRaw.includes('DESPACHO') || estadoLogRaw.includes('CAMINO') || estadoLogRaw.includes('RUTA')) {
+            estadoLogistica = '● En ruta';
+        } else if (estadoLogRaw.includes('EMPAQUE') || estadoLogRaw.includes('PREPAR')) {
+            estadoLogistica = '● En preparación';
         }
 
+        // Formatear estado de pago
+        const estadoPagoRaw = (pedido.estado_pago || 'PENDIENTE').toUpperCase();
+        let estadoPago = '● Pendiente';
+        if (estadoPagoRaw.includes('VERIF') || estadoPagoRaw.includes('PAG') || estadoPagoRaw.includes('COB') || estadoPagoRaw.includes('APROB')) {
+            estadoPago = '● Verificado';
+        } else if (estadoPagoRaw.includes('RECHAZ')) {
+            estadoPago = '● Rechazado';
+        }
+
+        const metodoPago = (pedido.metodo_pago || 'TRANSFERENCIA_QR').toUpperCase().replace(/_/g, ' ');
         const totalFmt = Number(pedido.total || 0).toFixed(2);
-        const estadoPago = (pedido.estado_pago || 'PENDIENTE').toUpperCase();
-        const metodoPago = (pedido.metodo_pago || 'TRANSFERENCIA_QR').toUpperCase().replace('_', ' ');
+
+        // Desglose compacto de repuestos
+        let desgloseRepuestos = '';
+        if (Array.isArray(pedido.detalles) && pedido.detalles.length > 0) {
+            desgloseRepuestos = `\n*Repuestos:*\n` + pedido.detalles.slice(0, 4).map(it => {
+                const nombreItem = it.producto_nombre || it.nombre || it.sku || 'Repuesto';
+                return `• ${it.cantidad || 1}x ${nombreItem}`;
+            }).join('\n');
+            if (pedido.detalles.length > 4) {
+                desgloseRepuestos += `\n• ...y ${pedido.detalles.length - 4} repuesto(s) más.`;
+            }
+        }
 
         let infoDespacho = '';
         if (pedido.despacho_chofer) {
-            infoDespacho += `\n• Chofer Asignado: ${pedido.despacho_chofer}`;
-        }
-        if (pedido.despacho_placa) {
-            infoDespacho += ` (Placa: ${pedido.despacho_placa})`;
+            infoDespacho = `\n• *Chofer:* ${pedido.despacho_chofer}${pedido.despacho_placa ? ` (${pedido.despacho_placa})` : ''}`;
         }
 
-        return `🚚 *Estado de Pedido #PED-${String(pedido.id).padStart(4, '0')}:*\n\n` +
-            `• Cliente / Taller: *${clienteNombre}*\n` +
-            `• Estado Actual: *${estadoLegible}*\n` +
-            `• Pago: *${estadoPago}* (${metodoPago})\n` +
-            `• Total: *Bs. ${totalFmt}*\n` +
-            `• Destino: ${clienteDireccion}${infoDespacho}\n\n` +
-            `🌐 *Rastreo en vivo y detalle:* ${CONFIG.portalClientesWeb}\n\n` +
-            `Para consultas sobre este despacho, mencione el código *PED-${String(pedido.id).padStart(4, '0')}* al contactar a soporte.\n\n` +
-            `Escriba *MENU* para volver al menú principal.`;
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `*Estado de Pedido* \`${codigoFmt}\`\n\n` +
+            `• *Cliente:* ${clienteNombre}\n` +
+            `• *Pago:* ${estadoPago} (${metodoPago})\n` +
+            `• *Logística:* ${estadoLogistica}\n` +
+            `• *Destino:* ${clienteDireccion}${infoDespacho}` +
+            `${desgloseRepuestos ? `\n${desgloseRepuestos}` : ''}\n\n` +
+            `*Total:* *Bs. ${totalFmt}*\n\n` +
+            `${SEPARADOR}\n` +
+            `_Seguimiento en línea: ${CONFIG.portalClientesWeb}_`;
     } catch (err) {
         console.error('[WhatsApp Bot] Error al rastrear pedido:', err);
-        return `⚠️ Ocurrió un error al consultar el pedido. Por favor intente más tarde o escriba *MENU*.`;
+        return `Ocurrió un error al consultar el pedido. Intente nuevamente o escriba *MENU*.`;
     }
 }
 
@@ -892,7 +1074,10 @@ async function registrarTicketSoporte({ telefono, nombre, tipo, mensaje }) {
     const msg = String(mensaje || '').trim();
 
     if (!msg) {
-        return `⚠️ El mensaje está vacío. Por favor describa su solicitud o escriba *MENU* para regresar.`;
+        return `*${CONFIG.empresa}*\n` +
+            `_Distribución Automotriz · Sucre, Bolivia_\n` +
+            `${SEPARADOR}\n\n` +
+            `El mensaje está vacío. Por favor describa su solicitud o escriba *MENU* para regresar.`;
     }
 
     try {
@@ -904,33 +1089,40 @@ async function registrarTicketSoporte({ telefono, nombre, tipo, mensaje }) {
         const ticketIdFmt = `#TK-${String(res.lastID).padStart(4, '0')}`;
 
         // Alerta proactiva interna a Gerencia (+591 67375645)
-        const alertaGerencia = `🎫 *NUEVO TICKET DE ATENCIÓN (${ticketIdFmt})*\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-            `📌 *Tipo:* ${tip}\n` +
-            `👤 *Cliente / Taller:* ${nom}\n` +
-            `📱 *Teléfono WhatsApp:* ${tel}\n` +
-            `💬 *Mensaje:* "${msg}"\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-            `_Atención registrada vía Bot WhatsApp oficial._`;
+        const alertaGerencia = `*NUEVO TICKET DE ATENCIÓN (${ticketIdFmt})*\n` +
+            `${SEPARADOR}\n` +
+            `• *Tipo:* ${tip}\n` +
+            `• *Cliente:* ${nom}\n` +
+            `• *Teléfono:* ${tel}\n` +
+            `• *Mensaje:* "${msg}"\n` +
+            `${SEPARADOR}\n` +
+            `_Registrado vía Bot WhatsApp oficial._`;
         enviarAlertaAdmin(alertaGerencia).catch(() => {});
 
         if (tip === 'COTIZACION') {
-            return `📝 *Solicitud de Cotización Registrada (${ticketIdFmt})*\n\n` +
-                `Estimado(a) *${nom}*, hemos recibido su requerimiento de compra por mayor:\n` +
-                `_"${msg}"_\n\n` +
-                `Un asesor comercial de *${CONFIG.empresa}* revisará las cantidades solicitadas y le enviará la cotización formal con descuentos por volumen a este mismo número.\n\n` +
-                `Escriba *MENU* para volver al menú de opciones.`;
+            return `*${CONFIG.empresa}*\n` +
+                `_Distribución Automotriz · Sucre, Bolivia_\n` +
+                `${SEPARADOR}\n\n` +
+                `*Cotización Registrada* \`${ticketIdFmt}\`\n\n` +
+                `Estimado(a) *${nom}*, hemos recibido su requerimiento:\n` +
+                `"${msg}"\n\n` +
+                `Un asesor comercial de *${CONFIG.empresa}* preparará la proforma formal con descuentos por volumen y se comunicará a este número.\n\n` +
+                `${SEPARADOR}\n` +
+                `_Escriba *MENU* para volver al inicio._`;
         } else {
-            return `⚠️ *Reclamo / Asistencia Técnica Registrada (${ticketIdFmt})*\n\n` +
-                `Estimado(a) *${nom}*, lamentamos cualquier eventualidad:\n` +
-                `_"${msg}"_\n\n` +
-                `Su caso ha sido asignado al equipo de Control de Calidad y Logística en Sucre.\n` +
+            return `*${CONFIG.empresa}*\n` +
+                `_Distribución Automotriz · Sucre, Bolivia_\n` +
+                `${SEPARADOR}\n\n` +
+                `*Atención de Soporte Registrada* \`${ticketIdFmt}\`\n\n` +
+                `Estimado(a) *${nom}*, su caso ha sido derivado a Control y Logística en Sucre:\n` +
+                `"${msg}"\n\n` +
                 `Nos comunicaremos al número *${tel}* a la brevedad para brindarle una solución prioritaria.\n\n` +
-                `Escriba *MENU* para volver al menú de opciones.`;
+                `${SEPARADOR}\n` +
+                `_Escriba *MENU* para volver al inicio._`;
         }
     } catch (err) {
         console.error('[WhatsApp Bot] Error al registrar ticket en SQLite:', err);
-        return `⚠️ No se pudo registrar su ticket en este momento. Por favor llame directamente al ${CONFIG.telefonoFijo} o intente de nuevo escribiendo *MENU*.`;
+        return `No se pudo registrar su ticket en este momento. Por favor llame directamente al ${CONFIG.telefonoFijo} o intente de nuevo escribiendo *MENU*.`;
     }
 }
 
@@ -1185,33 +1377,45 @@ async function ejecutarPruebaUnitaria() {
     console.log('Cotización registrada:\n' + r4b);
     if (!r4b.includes('#TK-')) throw new Error('Falló test de cotización');
 
-    // 5. Prueba Reclamo / Soporte (Opción 4)
+    // 5. Prueba Reclamo / Soporte
     console.log('\n5. Test Reclamo / Soporte');
-    const r5 = await responderMensaje(testJid, '4', testNombre, testTel);
+    const r5 = await responderMensaje(testJid, 'reclamo', testNombre, testTel);
     const r5b = await responderMensaje(testJid, 'Faltó 1 caja de aceite en la entrega de ayer', testNombre, testTel);
     console.log('Reclamo registrado:\n' + r5b);
     if (!r5b.includes('#TK-')) throw new Error('Falló test de reclamo');
 
-    // 6. Prueba Información Corporativa (Opción 5)
-    console.log('\n6. Test Información Corporativa');
+    // 6. Prueba Métodos de Pago y QR Oficial (Opción 4)
+    console.log('\n6. Test Métodos de Pago y QR Oficial');
+    const r6a = await responderMensaje(testJid, '4', testNombre, testTel);
+    console.log('Pagos y QR:\n' + r6a);
+    if (!r6a.includes('Métodos de Pago Oficiales') || !r6a.includes('Yape Bolivia')) throw new Error('Falló test métodos de pago');
+
+    // 7. Prueba Información Corporativa y Horarios (Opción 5)
+    console.log('\n7. Test Información Corporativa y Horarios');
     const r6 = await responderMensaje(testJid, '5', testNombre, testTel);
     console.log('Info:\n' + r6);
     if (!r6.includes('Av. Jaime Mendoza #1420')) throw new Error('Falló test corporativo');
 
-    // 7. Prueba Comando Exclusivo Admin (Resumen Gerencial)
-    console.log('\n7. Test Comando Exclusivo Admin ("resumen")');
+    // 8. Prueba Protección de Comprobante / Pedido Confirmado
+    console.log('\n8. Test Protección Comprobante / Pedido Confirmado');
+    const r8 = await responderMensaje(testJid, 'PEDIDO CONFIRMADO #0001 con transferencia QR', testNombre, testTel);
+    console.log('Respuesta recibida:\n' + r8);
+    if (!r8.includes('Hemos recibido el respaldo de su orden')) throw new Error('Falló test de comprobante');
+
+    // 9. Prueba Comando Exclusivo Admin (Resumen Gerencial)
+    console.log('\n9. Test Comando Exclusivo Admin ("resumen")');
     const r7 = await responderMensaje(ADMIN_WHATSAPP, 'resumen', 'Gerencia General', '+591 67375645');
     console.log('Resumen Gerencial:\n' + r7);
     if (!r7.includes('RESUMEN GERENCIAL DEL DÍA')) throw new Error('Falló test de resumen gerencial');
 
-    // 8. Prueba Función Proactiva enviarAlertaAdmin
-    console.log('\n8. Test Función Proactiva enviarAlertaAdmin');
-    const exitoAlerta = await enviarAlertaAdmin('🔔 Test de Alerta Proactiva para Gerencia (+591 67375645)');
+    // 10. Prueba Función Proactiva enviarAlertaAdmin
+    console.log('\n10. Test Función Proactiva enviarAlertaAdmin');
+    const exitoAlerta = await enviarAlertaAdmin('Test de Alerta Proactiva para Gerencia (+591 67375645)');
     console.log('Resultado encolar/enviar alerta proactiva:', exitoAlerta);
     if (!exitoAlerta) throw new Error('Falló envío de alerta proactiva');
 
-    // 9. Prueba Consulta de Estado para Panel Web
-    console.log('\n9. Test Consulta de Estado Web');
+    // 11. Prueba Consulta de Estado para Panel Web
+    console.log('\n11. Test Consulta de Estado Web');
     const estadoWA = obtenerEstadoWhatsApp();
     console.log('Estado reportado:', estadoWA);
     if (estadoWA.numero !== '+591 67375645') throw new Error('Falló test de estado');

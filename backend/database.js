@@ -189,7 +189,13 @@ db.serialize(() => {
                 { name: 'entrega_receptor_ci', type: 'TEXT' },
                 { name: 'entrega_pin', type: 'TEXT' },
                 { name: 'entrega_observaciones', type: 'TEXT' },
-                { name: 'entrega_fecha', type: 'DATETIME' }
+                { name: 'entrega_fecha', type: 'DATETIME' },
+                { name: 'canal', type: "TEXT DEFAULT 'TIENDA_ONLINE'" },
+                { name: 'cliente_nombre', type: 'TEXT' },
+                { name: 'cliente_nit_ci', type: 'TEXT' },
+                { name: 'cliente_email', type: 'TEXT' },
+                { name: 'monto_recibido', type: 'DECIMAL(10,2)' },
+                { name: 'cambio', type: 'DECIMAL(10,2)' }
             ];
 
             colsToAdd.forEach(c => {
@@ -413,6 +419,15 @@ db.serialize(() => {
             nit: '3920194012',
             telefono: '+591 76543210',
             direccion: 'Av. Jaime Mendoza #1420, Sucre'
+        },
+        {
+            email: 'consumidor.final@golden.bo',
+            nombre: 'Consumidor Final',
+            password: 'consumidor123',
+            rol: 'CLIENTE',
+            nit: '0',
+            telefono: '+591 4 64-52890',
+            direccion: 'Venta Directa - Tienda Central Sucre'
         }
     ];
 

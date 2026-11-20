@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Venta Directa en Mostrador - GOLDEN Lubricantes & Filtros</title>
+
+    <!-- Guardia de Seguridad RBAC Inmediata (Sin Parpadeo) -->
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('usuario_golden') || localStorage.getItem('usuario');
+                if (!raw) { window.location.href = 'index.html'; return; }
+                var u = JSON.parse(raw);
+                var r = (u.rol || '').toUpperCase().trim();
+                if (r === 'CLIENTE' || r === 'CLIENTE_B2B' || r === 'CLIENTE_B2C') {
+                    window.location.href = 'tienda.html';
+                    return;
+                }
+                var permitidos = ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN', 'GERENTE', 'TRABAJADOR', 'EMPAQUE', 'ALMACENERO', 'ALMACEN', 'VENDEDOR'];
+                if (!permitidos.includes(r)) {
+                    window.location.href = 'dashboard.html';
+                }
+            } catch(e) { window.location.href = 'index.html'; }
+        })();
+    </script>
+
+    <!-- Bootstrap 5.3.3 & Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Tipografía Editorial Automotriz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Estilos Comerciales Automotrices Stitch UI -->
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #141619;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding-top: 76px; /* Compensación por header fijo */
+        }
+
+        .pos-card-product {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            cursor: pointer;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            background: #FFFFFF;
+        }
+        .pos-card-product:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: #CBD5E1;
+        }
+
+        .filter-pill-btn {
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .filter-pill-btn.active {
+            background-color: #B91C1C !important;
+            color: #FFFFFF !important;
+            border-color: #B91C1C !important;
+        }
+
+        .pos-item-row {
+            transition: background-color 0.15s ease;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .pos-item-row:hover {
+            background-color: #F8FAFC;
+        }
+
+        .pago-metodo-tab {
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #FFFFFF;
+        }
+        .pago-metodo-tab:hover {
+            border-color: #CBD5E1;
+            background: #F8FAFC;
+        }
+        .pago-metodo-tab.active {
+            border-color: #B91C1C;
+            background: #FEF2F2;
+            color: #991B1B;
+            font-weight: 700;
+        }
+
+        .shortcut-billete-btn {
+            font-size: 0.78rem;
+            font-weight: 700;
+            border-radius: 8px;
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: #334155;
+            padding: 4px 8px;
+            transition: all 0.12s ease;
+        }
+        .shortcut-billete-btn:hover {
+            background: #F1F5F9;
+            border-color: #94A3B8;
+            color: #0F172A;
+        }
+
+        .sticky-cart-summary {
+            position: sticky;
+            top: 86px;
+            z-index: 20;
+        }
+
+        @media (max-width: 991px) {
+            .sticky-cart-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ COMPARTIDO SUPERIOR -->
+    <div id="menu-contenedor"></div>
+
+    <!-- CONTENEDOR PRINCIPAL FLUIDO -->
+    <div class="container-fluid px-3 px-lg-4 py-3">
+
+        <!-- CABECERA DEL MÓDULO -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; font-size: 0.75rem; font-weight: 700;">
+                        <i class="bi bi-shop me-1"></i>Mostrador Tienda Física
+                    </span>
+                    <span class="text-secondary small">Sucre, Bolivia</span>
+                </div>
+                <h4 class="fw-bold text-dark mb-0 mt-1" style="letter-spacing: -0.3px;">
+                    Venta Directa en Tienda (Caja & Mostrador)
+                </h4>
+            </div>
+
+            <!-- Datos de Vendedor y Atajo Rápido -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-end d-none d-sm-block">
+                    <span class="text-secondary small d-block" style="font-size: 0.72rem;">Atendido por:</span>
+                    <span class="fw-bold text-dark" id="txtVendedorNombre" style="font-size: 0.88rem;">Carlos Mendoza (Gerencia)</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="limpiarVentaDirecta(true)" title="Limpiar venta actual (Esc)">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    <span class="d-none d-md-inline">Nueva Venta</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- LAYOUT DE 2 COLUMNAS ERGONÓMICAS -->
+        <div class="row g-3">
+
+            <!-- ========================================================================= -->
+            <!-- COLUMNA IZQUIERDA: CATÁLOGO Y SELECCIÓN RÁPIDA DE REPUESTOS              -->
+            <!-- ========================================================================= -->
+            <div class="col-lg-7 col-xl-7">
+                <div class="p-3 bg-white border rounded shadow-sm mb-3" style="border-radius: 16px !important; border-color: #E2E8F0;">
+                    
+                    <!-- Barra de Búsqueda Instantánea -->
+                    <div class="position-relative mb-3">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                        <input type="text" id="inputBuscarRepuesto" class="form-control ps-5 py-2" placeholder="Buscar por nombre, viscosidad (ej. 5W-30, 20W-50), aplicación o SKU..." style="border-radius: 10px; font-size: 0.9rem;">
+                        <button type="button" id="btnLimpiarBusqueda" class="btn btn-sm position-absolute top-50 end-0 translate-middle-y me-2 text-secondary d-none" onclick="limpiarBusqueda()">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Filtros Rápidos por Categoría -->
+                    <div class="d-flex align-items-center gap-2 overflow-auto pb-2 mb-2" id="contenedorFiltrosCategoria" style="scrollbar-width: thin;">
+                        <button type="button" class="btn filter-pill-btn active" data-cat="TODOS" onclick="filtrarPorCategoria('TODOS', this)">
+                            Todos los repuestos
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary filter-pill-btn" data-cat="ACEITES SINTÉTICOS" onclick="filtrarPorCategoria('ACEITES SINTÉTICOS', this)">
+                            Aceites Sintéticos
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary filter-pill-btn" data-cat="ACEITES MINERALES" onclick="filtrarPorCategoria('ACEITES MINERALES', this)">
+                            Aceites Minerales
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary filter-pill-btn" data-cat="FILTROS DE ACEITE" onclick="filtrarPorCategoria('FILTROS DE ACEITE', this)">
+                            Filtros de Aceite
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary filter-pill-btn" data-cat="FILTROS DE AIRE" onclick="filtrarPorCategoria('FILTROS DE AIRE', this)">
+                            Filtros de Aire
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary filter-pill-btn" data-cat="REFRIGERANTES Y LÍQUIDOS" onclick="filtrarPorCategoria('REFRIGERANTES Y LÍQUIDOS', this)">
+                            Refrigerantes y Líquidos
+                        </button>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center text-secondary small px-1 mb-2">
+                        <span id="txtContadorResultados">Cargando repuestos de almacén...</span>
+                        <span class="font-mono text-muted" style="font-size: 0.72rem;">Precios en Bolivianos (Bs.)</span>
+                    </div>
+
+                    <!-- Grid de Tarjetas de Repuestos -->
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-2" id="gridProductosVenta" style="max-height: calc(100vh - 280px); overflow-y: auto; padding-right: 4px;">
+                        <!-- Inyectado dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- COLUMNA DERECHA: DETALLE DE VENTA, CAJA POS Y REGISTRO                   -->
+            <!-- ========================================================================= -->
+            <div class="col-lg-5 col-xl-5">
+                <div class="bg-white border rounded shadow-sm p-3 sticky-cart-summary" style="border-radius: 16px !important; border-color: #E2E8F0;">
+                    
+                    <!-- Encabezado de la Orden Presencial -->
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 28px; height: 28px; background: #FEF2F2; color: #B91C1C;">
+                                <i class="bi bi-receipt"></i>
+                            </span>
+                            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem;">Nota de Venta Actual</h6>
+                        </div>
+                        <span class="badge" style="background: #ECFDF5; color: #15803D; border: 1px solid #A7F3D0; font-size: 0.72rem;">
+                            <i class="bi bi-clock-history me-1"></i>En Vivo
+                        </span>
+                    </div>
+
+                    <!-- Selector de Tipo de Cliente: Consumidor Final vs Taller Registrado -->
+                    <div class="mb-3 p-2 rounded" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <input type="radio" class="btn-check" name="tipoClienteRadio" id="radioConsumidorFinal" value="CONSUMIDOR_FINAL" checked onchange="cambiarModoCliente('CONSUMIDOR_FINAL')">
+                            <label class="btn btn-sm btn-outline-danger fw-semibold" for="radioConsumidorFinal">
+                                <i class="bi bi-person me-1"></i>Consumidor Final (S/N)
+                            </label>
+
+                            <input type="radio" class="btn-check" name="tipoClienteRadio" id="radioTallerRegistrado" value="TALLER_REGISTRADO" onchange="cambiarModoCliente('TALLER_REGISTRADO')">
+                            <label class="btn btn-sm btn-outline-danger fw-semibold" for="radioTallerRegistrado">
+                                <i class="bi bi-building me-1"></i>Taller / Cliente Registrado
+                            </label>
+                        </div>
+
+                        <!-- Campos Consumidor Final -->
+                        <div id="seccionConsumidorFinal">
+                            <div class="row g-2">
+                                <div class="col-7">
+                                    <label class="form-label small text-secondary fw-semibold mb-1" style="font-size: 0.72rem;">Nombre / Razón Social:</label>
+                                    <input type="text" id="inputClienteNombre" class="form-control form-control-sm" value="Consumidor Final" placeholder="Ej. Juan Pérez / Taller">
+                                </div>
+                                <div class="col-5">
+                                    <label class="form-label small text-secondary fw-semibold mb-1" style="font-size: 0.72rem;">NIT / CI (Opcional):</label>
+                                    <input type="text" id="inputClienteNit" class="form-control form-control-sm font-mono" value="0" placeholder="0 o S/N">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small text-secondary fw-semibold mb-1" style="font-size: 0.72rem;">Correo electrónico (Para comprobante automático):</label>
+                                    <input type="email" id="inputClienteEmail" class="form-control form-control-sm" placeholder="cliente@correo.bo (opcional)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos Taller Registrado -->
+                        <div id="seccionTallerRegistrado" class="d-none">
+                            <label class="form-label small text-secondary fw-semibold mb-1" style="font-size: 0.72rem;">Seleccionar Taller o Mecánico:</label>
+                            <select id="selectClienteRegistrado" class="form-select form-select-sm" onchange="seleccionarClienteRegistrado(this.value)">
+                                <option value="">-- Buscar taller de la base de datos --</option>
+                            </select>
+                            <div class="d-flex justify-content-between align-items-center mt-1 text-muted" style="font-size: 0.72rem;">
+                                <span id="infoClienteNit">NIT: -</span>
+                                <span id="infoClienteEmail">Email: -</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Ítems en Carrito de Venta Directa -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center px-1 mb-1">
+                            <span class="text-secondary small fw-bold text-uppercase" style="font-size: 0.72rem;">Artículos Agregados:</span>
+                            <span class="badge bg-secondary" id="badgeTotalItemsCount">0 repuestos</span>
+                        </div>
+
+                        <div id="contenedorItemsVenta" class="border rounded p-1" style="max-height: 200px; min-height: 120px; overflow-y: auto; background: #FFFFFF;">
+                            <!-- Inyectado dinámicamente -->
+                            <div class="text-center py-4 text-muted small" id="estadoVentaVacia">
+                                <i class="bi bi-cart-x fs-3 d-block mb-1 text-secondary opacity-50"></i>
+                                Aún no has agregado repuestos a esta venta.<br>
+                                Selecciona del catálogo de la izquierda para comenzar.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen de Totales -->
+                    <div class="p-2 mb-3 rounded" style="background: #FEF2F2; border: 1px solid #FECACA;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-secondary small">Subtotal de repuestos:</span>
+                            <span class="fw-semibold text-dark font-mono" id="vdSubtotalBs">Bs. 0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-baseline pt-1 border-top" style="border-color: #FECACA !important;">
+                            <span class="fw-bold text-danger fs-6">TOTAL A COBRAR:</span>
+                            <span class="fs-3 fw-bold text-danger font-mono" id="vdTotalCobrarBs" style="letter-spacing: -0.5px;">Bs. 0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- FORMA DE PAGO EN TIENDA -->
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-bold text-uppercase mb-2" style="font-size: 0.72rem;">Forma de Pago en Tienda:</label>
+                        
+                        <!-- Pestañas de Pago -->
+                        <div class="d-flex gap-2 mb-2">
+                            <div class="pago-metodo-tab flex-fill text-center active" id="tabMetodoEfectivo" onclick="seleccionarMetodoPago('EFECTIVO')">
+                                <i class="bi bi-cash-stack d-block fs-5 text-success mb-1"></i>
+                                <span style="font-size: 0.78rem;">Efectivo</span>
+                            </div>
+                            <div class="pago-metodo-tab flex-fill text-center" id="tabMetodoQR" onclick="seleccionarMetodoPago('QR_TIENDA')">
+                                <i class="bi bi-qr-code-scan d-block fs-5 text-danger mb-1"></i>
+                                <span style="font-size: 0.78rem;">QR en Tienda</span>
+                            </div>
+                            <div class="pago-metodo-tab flex-fill text-center" id="tabMetodoTransferencia" onclick="seleccionarMetodoPago('TRANSFERENCIA')">
+                                <i class="bi bi-bank d-block fs-5 text-warning mb-1"></i>
+                                <span style="font-size: 0.78rem;">Transferencia</span>
+                            </div>
+                        </div>
+
+                        <!-- Panel Efectivo (Cálculo de Cambio) -->
+                        <div id="panelPagoEfectivo" class="p-2 bg-light rounded border">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-6">
+                                    <label class="form-label small text-secondary fw-semibold mb-1" style="font-size: 0.72rem;">Monto Recibido (Bs.):</label>
+                                    <input type="number" step="0.5" min="0" id="inputMontoRecibido" class="form-control form-control-sm font-mono fw-bold" placeholder="0.00" oninput="calcularCambioEfectivo()">
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="text-secondary small d-block" style="font-size: 0.72rem;">Cambio a devolver:</span>
+                                    <span class="fs-5 fw-bold font-mono text-success" id="txtCambioDevolverBs">Bs. 0.00</span>
+                                </div>
+                            </div>
+                            <!-- Atajos de Billetes Bolivianos -->
+                            <div class="d-flex flex-wrap gap-1 mt-2 pt-2 border-top">
+                                <button type="button" class="btn shortcut-billete-btn" onclick="fijarMontoRecibido('EXACTO')">Exacto</button>
+                                <button type="button" class="btn shortcut-billete-btn" onclick="fijarMontoRecibido(50)">Bs. 50</button>
+                                <button type="button" class="btn shortcut-billete-btn" onclick="fijarMontoRecibido(100)">Bs. 100</button>
+                                <button type="button" class="btn shortcut-billete-btn" onclick="fijarMontoRecibido(200)">Bs. 200</button>
+                                <button type="button" class="btn shortcut-billete-btn" onclick="fijarMontoRecibido(500)">Bs. 500</button>
+                            </div>
+                        </div>
+
+                        <!-- Panel QR en Tienda (Yape Bolivia) -->
+                        <div id="panelPagoQR" class="p-3 bg-light rounded border text-center d-none">
+                            <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                                <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-size: 0.72rem; padding: 3px 8px; border-radius: 9999px;">
+                                    <i class="bi bi-phone me-1"></i>SIMPLE / Yape
+                                </span>
+                                <span class="small fw-bold text-dark">Nelson Polares Ortiz</span>
+                            </div>
+                            <div class="d-flex justify-content-center my-2">
+                                <img src="/img/qr-yape-hd.png" alt="QR Tienda Mostrador" class="img-fluid rounded border shadow-sm" style="width: 150px; height: 150px; object-fit: contain; background: #FFFFFF; padding: 4px;">
+                            </div>
+                            <div class="small text-muted" style="font-size: 0.75rem;">
+                                El cliente escanea desde su app móvil el monto exacto:
+                                <strong class="text-danger font-mono" id="txtQRMontoExacto">Bs. 0.00</strong>
+                            </div>
+                        </div>
+
+                        <!-- Panel Transferencia / Banca Móvil -->
+                        <div id="panelPagoTransferencia" class="p-2 bg-light rounded border d-none" style="font-size: 0.78rem;">
+                            <div class="fw-bold text-dark">Banco Unión S.A. (Cta. Corriente Fiscal)</div>
+                            <div class="text-secondary font-mono">N° de Cuenta: 1000048291045</div>
+                            <div class="text-secondary">Titular: Nelson Polares Ortiz (NIT: 1029384756)</div>
+                            <div class="mt-2">
+                                <input type="text" id="inputRefTransferencia" class="form-control form-control-sm" placeholder="N° Comprobante / Operación bancaria (opcional)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BOTÓN PRINCIPAL REGISTRAR VENTA -->
+                    <button type="button" id="btnRegistrarVentaDirecta" class="btn btn-danger w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm" style="background-color: #B91C1C; border-color: #991B1B; border-radius: 10px; font-size: 0.95rem;" onclick="ejecutarVentaDirecta()">
+                        <i class="bi bi-check2-circle fs-5"></i>
+                        <span>Registrar Venta Directa</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL DE CONFIRMACIÓN DE VENTA & GENERACIÓN DE NOTA DE VENTA              -->
+    <!-- ========================================================================= -->
+    <div class="modal fade" id="modalVentaDirectaExitosa" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0 pb-0 text-center d-flex flex-column align-items-center">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-2" style="width: 56px; height: 56px; background: #ECFDF5; color: #10B981;">
+                        <i class="bi bi-check-lg fs-1"></i>
+                    </div>
+                    <h5 class="modal-title fw-bold text-dark" id="modalVentaTitulo">¡Venta Registrada Exitosamente!</h5>
+                    <p class="text-muted small mb-0">La venta presencial fue procesada y el inventario descontado.</p>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-light rounded border mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary small">Código de Orden:</span>
+                            <span class="font-mono fw-bold text-dark" id="modalVentaCodigo">PED-0000</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary small">Cliente:</span>
+                            <span class="fw-semibold text-dark" id="modalVentaCliente">Consumidor Final</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary small">NIT / CI:</span>
+                            <span class="font-mono text-dark" id="modalVentaNit">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary small">Método de Pago:</span>
+                            <span class="fw-semibold text-dark" id="modalVentaMetodo">EFECTIVO</span>
+                        </div>
+                        <div class="d-flex justify-content-between pt-2 border-top mt-2">
+                            <span class="fw-bold text-danger">Total Pagado:</span>
+                            <span class="fs-5 fw-bold text-danger font-mono" id="modalVentaTotal">Bs. 0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between pt-1" id="filaModalCambio">
+                            <span class="text-success small fw-semibold">Cambio Entregado:</span>
+                            <span class="font-mono fw-bold text-success" id="modalVentaCambio">Bs. 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-dark py-2 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 10px;" onclick="imprimirNotaVentaActual()">
+                            <i class="bi bi-printer text-danger"></i>
+                            <span>Descargar / Imprimir Nota de Venta (PDF)</span>
+                        </button>
+                        <button type="button" class="btn btn-danger py-2 fw-bold d-flex align-items-center justify-content-center gap-2" style="background: #B91C1C; border-radius: 10px;" onclick="cerrarModalYNuevaVenta()">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Siguiente Atención (Nueva Venta)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor invisible para render de factura/nota de entrega PDF -->
+    <div id="contenedorRenderFactura" style="display: none;"></div>
+
+    <!-- Scripts y Librerías -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="documentos-golden.js?v=3"></script>
+    <script src="menu.js?v=31"></script>
+    <script src="venta-directa.js?v=1"></script>
+</body>
+</html>

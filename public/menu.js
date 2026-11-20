@@ -71,6 +71,11 @@ function renderizarMenu(paginaActiva) {
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link-stitch ${paginaActiva === 'venta-directa' ? 'active' : ''}" href="venta-directa.html">
+                        <i class="bi bi-cart-check-fill me-1 text-danger"></i> Venta Directa
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link-stitch ${paginaActiva === 'usuarios' ? 'active' : ''}" href="usuarios.html">
                         <i class="bi bi-people-fill me-1 text-danger"></i> Talleres
                     </a>
@@ -169,6 +174,13 @@ function renderizarMenu(paginaActiva) {
                 <div class="d-flex flex-column">
                     <span class="fw-bold">Panel de Control</span>
                     <small class="text-muted" style="font-size: 0.72rem;">Métricas generales y KPIs</small>
+                </div>
+            </a>
+            <a class="nav-drawer-link ${paginaActiva === 'venta-directa' ? 'active' : ''}" href="venta-directa.html">
+                <i class="bi bi-cart-check-fill text-danger fs-5"></i>
+                <div class="d-flex flex-column">
+                    <span class="fw-bold">Venta Directa en Tienda</span>
+                    <small class="text-muted" style="font-size: 0.72rem;">Caja presencial y mostrador de repuestos</small>
                 </div>
             </a>
             <a class="nav-drawer-link ${paginaActiva === 'usuarios' ? 'active' : ''}" href="usuarios.html">
@@ -282,6 +294,44 @@ function renderizarMenu(paginaActiva) {
         rolLegible = usuarioSesion.rol;
     }
 
+    // Formateo de usuario, iniciales e identidad compacta futurista
+    const nombreCompleto = usuarioSesion ? (usuarioSesion.nombre || 'Usuario') : 'Usuario';
+    const emailUsuario = usuarioSesion ? (usuarioSesion.email || '') : '';
+
+    // Iniciales en mayúsculas (ej: 'Carlos Mendoza' -> 'CM')
+    const partesNombre = nombreCompleto.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean);
+    let iniciales = 'U';
+    if (partesNombre.length >= 2) {
+        iniciales = (partesNombre[0].charAt(0) + partesNombre[1].charAt(0)).toUpperCase();
+    } else if (partesNombre.length === 1 && partesNombre[0].length >= 2) {
+        iniciales = partesNombre[0].substring(0, 2).toUpperCase();
+    } else if (partesNombre.length === 1) {
+        iniciales = partesNombre[0].charAt(0).toUpperCase();
+    }
+
+    // Nombre corto limpio para barra superior (ej: 'Carlos Mendoza')
+    const nombreCorto = partesNombre.length >= 2 ? `${partesNombre[0]} ${partesNombre[1]}` : (partesNombre[0] || 'Usuario');
+
+    // Micro-insignia tecnológica del rol
+    let rolTechTag = 'INVITADO';
+    let rolTechClass = 'role-cliente';
+    if (rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'SUPERADMIN' || rol === 'GERENTE') {
+        rolTechTag = 'ADMIN';
+        rolTechClass = 'role-admin';
+    } else if (rol === 'EMPAQUE' || rol === 'ALMACENERO' || rol === 'ALMACEN') {
+        rolTechTag = 'EMPAQUE';
+        rolTechClass = 'role-empaque';
+    } else if (rol === 'DESPACHO' || rol === 'REPARTIDOR') {
+        rolTechTag = 'DESPACHO';
+        rolTechClass = 'role-despacho';
+    } else if (rol === 'CLIENTE' || rol === 'CLIENTE_B2B' || rol === 'CLIENTE_B2C') {
+        rolTechTag = 'CLIENTE';
+        rolTechClass = 'role-cliente';
+    } else if (rol === 'TRABAJADOR') {
+        rolTechTag = 'VENTAS';
+        rolTechClass = 'role-empaque';
+    }
+
     const menuHTML = `
     <nav class="navbar navbar-expand-lg navbar-golden" style="background: transparent; border: none; padding: 12px 24px; min-height: 72px;">
         <div class="container-fluid px-0 py-0 d-flex align-items-center justify-content-between">
@@ -319,44 +369,106 @@ function renderizarMenu(paginaActiva) {
                 </ul>
             </div>
 
-            <!-- Área Derecha: Campanita de Stock, Identificación de Usuario, Carrito y Salir (1 Sola Fila Horizontal) -->
+            <!-- Área Derecha: Campanita de Notificaciones Minimalista, Perfil Compacto y Menú Flotante -->
             <div class="d-flex align-items-center flex-nowrap gap-2 ms-auto flex-shrink-0" style="white-space: nowrap;">
                 
                 ${!esCliente ? `
-                <!-- Campanita de Reposición: Solo visible para Administración y Almacén -->
+                <!-- Campanita de Notificaciones Minimalista (36px x 36px) -->
                 <div class="position-relative flex-shrink-0">
-                    <button id="btnCampanaNotificaciones" class="btn p-0 text-white d-flex align-items-center justify-content-center position-relative flex-shrink-0" style="width: 32px; height: 32px; background: #27272A; border: 1px solid #3F3F46; border-radius: 6px;" onclick="mostrarModalAlertasStock()" title="Control de reposición y stock crítico">
-                        <i class="bi bi-bell-fill" style="color: #F59E0B; font-size: 0.85rem;"></i>
-                        <span id="badgeNotificacionesStock" class="position-absolute top-0 start-100 translate-middle badge bg-danger border border-dark" style="font-size: 0.6rem; display: none; padding: 0.2em 0.35em; border-radius: 4px;">
-                            0
-                        </span>
+                    <button id="btnCampanaNotificaciones" class="btn-nav-notif-futuristic" onclick="mostrarModalAlertasStock()" title="Control de reposición y stock crítico" aria-label="Notificaciones de reposición">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-bell-svg">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span id="badgeNotificacionesStock" class="nav-bell-badge" style="display: none;">0</span>
                     </button>
                 </div>
                 ` : ''}
 
-                <!-- Identificación de Usuario Compacta y Humana -->
-                <div id="userInfoBadge" class="nav-user-badge-stitch flex-shrink-0 d-none d-sm-flex" style="padding: 4px 8px;">
-                    <span class="pulse-dot pulse-dot-emerald"></span>
-                    <div class="d-flex flex-column" style="line-height: 1.15;">
-                        <span class="fw-bold text-white text-nowrap" style="font-size: 0.76rem;" id="navUserName">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
-                        <span class="text-nowrap" style="font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 600; color: #D97706; letter-spacing: 0.2px;" id="navUserRol">${rolLegible}</span>
+                <!-- Identificación de Usuario Compacta y Futurista (Estilo Linear / Vercel) -->
+                <div class="dropdown position-relative flex-shrink-0" id="userInfoBadge">
+                    <div class="nav-profile-chip" data-bs-toggle="dropdown" aria-expanded="false" role="button" title="Perfil de ${nombreCompleto}">
+                        <!-- Avatar Circular con Iniciales e Indicador Esmeralda -->
+                        <div class="nav-avatar-wrap">
+                            <div class="nav-avatar-img">
+                                ${iniciales}
+                            </div>
+                            <span class="nav-avatar-status" title="Sesión activa"></span>
+                        </div>
+
+                        <!-- Identidad Limpia (Nombre Corto + Micro-insignia tecnológica de rol) -->
+                        <div class="d-none d-sm-flex align-items-center gap-2">
+                            <span class="nav-profile-name" id="navUserName">${nombreCorto}</span>
+                            <span class="nav-role-badge-tech ${rolTechClass}" id="navUserRol">${rolTechTag}</span>
+                            <i class="bi bi-chevron-down nav-profile-chevron"></i>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Flotante Oscura (Glassmorphism) -->
+                    <div class="dropdown-menu dropdown-menu-end nav-profile-dropdown-menu shadow-lg" style="margin-top: 8px;">
+                        <!-- Cabecera de Usuario -->
+                        <div class="d-flex align-items-center gap-3 pb-3 border-bottom border-secondary border-opacity-25">
+                            <div class="nav-avatar-img" style="width: 40px; height: 40px; font-size: 15px; border-radius: 50%; flex-shrink: 0;">
+                                ${iniciales}
+                            </div>
+                            <div class="d-flex flex-column text-truncate" style="line-height: 1.25;">
+                                <span class="fw-bold text-white text-truncate" style="font-size: 13.5px;">${nombreCompleto}</span>
+                                <span class="text-secondary small text-truncate" style="font-size: 11px;">${rolLegible}</span>
+                                ${emailUsuario ? `<span class="font-mono text-muted text-truncate mt-1" style="font-size: 10.5px;">${emailUsuario}</span>` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Estado de Conexión Activa -->
+                        <div class="d-flex align-items-center justify-content-between py-2 px-3 my-2 rounded-2" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);">
+                            <span class="small text-secondary" style="font-size: 11.5px;">Estado de sesión</span>
+                            <span class="d-inline-flex align-items-center gap-1 small text-success fw-bold" style="font-size: 11px;">
+                                <span style="width: 7px; height: 7px; background: #10B981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px rgba(16,185,129,0.5);"></span>
+                                Activo
+                            </span>
+                        </div>
+
+                        <!-- Acciones según rol -->
+                        <div class="d-flex flex-column gap-1 my-2">
+                            ${!esCliente ? `
+                                <a href="dashboard.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                                    <i class="bi bi-speedometer2 text-danger"></i>
+                                    <span>Panel de control</span>
+                                </a>
+                                <a href="tienda.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                                    <i class="bi bi-shop text-danger"></i>
+                                    <span>Catálogo comercial</span>
+                                </a>
+                            ` : `
+                                <a href="tienda.html" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none">
+                                    <i class="bi bi-shop text-danger"></i>
+                                    <span>Catálogo de productos</span>
+                                </a>
+                                <button type="button" class="nav-dropdown-item d-flex align-items-center gap-2 py-2 px-2 rounded-2 text-decoration-none border-0 bg-transparent text-start w-100" onclick="navegarAMisPedidos()">
+                                    <i class="bi bi-truck text-warning"></i>
+                                    <span>Mis pedidos</span>
+                                </button>
+                            `}
+                        </div>
+
+                        <!-- Botón de Salir Integrado -->
+                        <div class="pt-2 border-top border-secondary border-opacity-25 mt-2">
+                            <button id="btnHeaderSalir" class="btn btn-futuristic-logout w-100 d-flex align-items-center justify-content-center gap-2" onclick="cerrarSesion()" title="Cerrar sesión">
+                                <i class="bi bi-power"></i>
+                                <span>Cerrar sesión</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 ${paginaActiva === 'tienda' ? `
                 <!-- Botón Pedido / Carrito -->
-                <button class="btn btn-stitch-primary d-flex align-items-center gap-1 px-2 py-1 flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="border-radius: 6px; background-color: #C81E1E; border: 1px solid #C81E1E; color: #FFFFFF; font-size: 0.76rem;">
+                <button class="btn btn-stitch-primary d-flex align-items-center gap-1 px-2 py-1 flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#carritoLateral" style="border-radius: 8px; background-color: #C81E1E; border: 1px solid #C81E1E; color: #FFFFFF; font-size: 0.76rem; height: 36px;">
                     <i class="bi bi-cart3 fs-6"></i>
                     <span class="d-none d-md-inline">Mi pedido</span>
                     <span id="contadorCarrito" class="badge bg-white text-dark font-monospace ms-1" style="font-size: 0.68rem; border-radius: 4px;">0</span>
                 </button>
                 ` : ''}
 
-                <!-- Botón Salir Compacto Integrado al Header Oscuro -->
-                <button id="btnHeaderSalir" class="btn btn-sm d-flex align-items-center gap-1 flex-shrink-0 btn-header-logout" onclick="cerrarSesion()" title="Cerrar sesión">
-                    <i class="bi bi-power"></i>
-                    <span class="d-none d-sm-inline">Salir</span>
-                </button>
             </div>
         </div>
     </nav>
@@ -381,16 +493,22 @@ function renderizarMenu(paginaActiva) {
         <div class="offcanvas-body d-flex flex-column justify-content-between p-3" style="overflow-y: auto;">
             <div>
                 <!-- Tarjeta de Usuario Activo en el Drawer -->
-                <div class="p-3 mb-3 rounded-3" style="background: #1C1917; border: 1px solid #3F3F46;">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 40px; height: 40px; background: #B91C1C; font-size: 1rem;">
-                            ${(usuarioSesion ? usuarioSesion.nombre : 'U').charAt(0).toUpperCase()}
+                <div class="p-3 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="nav-avatar-wrap" style="width: 38px; height: 38px;">
+                            <div class="nav-avatar-img" style="width: 38px; height: 38px; font-size: 14px;">
+                                ${iniciales}
+                            </div>
+                            <span class="nav-avatar-status" style="width: 9px; height: 9px; bottom: 0; right: 0;"></span>
                         </div>
                         <div class="d-flex flex-column text-truncate" style="line-height: 1.2;">
-                            <span class="text-white fw-bold text-truncate" style="font-size: 0.88rem;">${usuarioSesion ? usuarioSesion.nombre : 'Usuario'}</span>
-                            <div class="d-flex align-items-center gap-1 mt-1">
-                                <span class="badge bg-danger text-uppercase px-2 py-0" style="font-size: 0.65rem;">${rolLegible}</span>
-                                <span class="badge bg-dark border text-muted" style="font-size: 0.65rem;">ACTIVO</span>
+                            <span class="text-white fw-bold text-truncate" style="font-size: 0.9rem;">${nombreCorto}</span>
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <span class="nav-role-badge-tech ${rolTechClass}">${rolTechTag}</span>
+                                <span class="d-inline-flex align-items-center gap-1 text-success fw-bold" style="font-size: 10.5px;">
+                                    <span style="width: 6px; height: 6px; background: #10B981; border-radius: 50%; display: inline-block;"></span>
+                                    Sesión activa
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -441,6 +559,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pag !== 'index' && pag !== 'login') {
             renderizarMenu(pag);
         }
+    }
+});
+
+// Manejador global del Menú Desplegable de Perfil Futurista (soporte nativo y sin dependencias)
+document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.nav-profile-chip');
+    const allDropdowns = document.querySelectorAll('.nav-profile-dropdown-menu');
+
+    if (chip) {
+        const wrap = chip.closest('#userInfoBadge');
+        const menu = wrap ? wrap.querySelector('.nav-profile-dropdown-menu') : null;
+        if (menu) {
+            const isShown = menu.classList.contains('show');
+            allDropdowns.forEach(d => {
+                d.classList.remove('show');
+                const p = d.closest('#userInfoBadge');
+                const c = p ? p.querySelector('.nav-profile-chip') : null;
+                if (c) c.setAttribute('aria-expanded', 'false');
+            });
+            chip.setAttribute('aria-expanded', String(!isShown));
+            if (!isShown) menu.classList.add('show');
+        }
+    } else if (!e.target.closest('.nav-profile-dropdown-menu')) {
+        allDropdowns.forEach(d => {
+            d.classList.remove('show');
+            const p = d.closest('#userInfoBadge');
+            const c = p ? p.querySelector('.nav-profile-chip') : null;
+            if (c) c.setAttribute('aria-expanded', 'false');
+        });
     }
 });
 
@@ -711,7 +858,7 @@ async function iniciarMonitorAlertasStock() {
         if (badge) {
             if (cacheProductosCriticos.length > 0) {
                 badge.innerText = cacheProductosCriticos.length;
-                badge.style.display = 'inline-block';
+                badge.style.display = 'inline-flex';
             } else {
                 badge.innerText = '0';
                 badge.style.display = 'none';

@@ -558,6 +558,64 @@
             "description": "Consulta el listado general de pedidos y cuentas por cobrar para auditar el estado financiero."
           },
           "response": []
+        },
+        {
+          "name": "Registrar Venta Directa en Tienda (POST /api/ventas/directa)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const jsonData = pm.response.json();",
+                  "pm.test(\"Respuesta exitosa de venta directa\", function () {",
+                  "    pm.expect(jsonData.ok).to.eql(true);",
+                  "    pm.expect(jsonData.pedido_id).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              },
+              {
+                "key": "x-usuario-rol",
+                "value": "ADMIN"
+              },
+              {
+                "key": "x-usuario-email",
+                "value": "{{admin_email}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cliente_nombre\": \"Consumidor Final\",\n  \"nit_ci\": \"0\",\n  \"cliente_email\": \"consumidor.final@golden.bo\",\n  \"items\": [\n    {\n      \"producto_id\": 101,\n      \"cantidad\": 1,\n      \"precio\": 250\n    }\n  ],\n  \"metodo_pago\": \"EFECTIVO\",\n  \"monto_recibido\": 300,\n  \"cambio\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ventas/directa",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "ventas",
+                "directa"
+              ]
+            },
+            "description": "Registra una venta presencial directa en mostrador con descuento de stock inmediato y emisión de comprobante."
+          }
         }
       ]
     },

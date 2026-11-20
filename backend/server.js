@@ -3,7 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const QRCode = require('qrcode');
 const db = require('./database');
+
+// Constante oficial Yape Bolivia (Payload EMVCo verificado - Titular: Nelson Polares Ortiz)
+const YAPE_QR_PAYLOAD = 'H7GXJFTPPG6jGWbWg6p3PS9e4VEdikOpCEKTIbP8s4Nc+LR4a97Gz83PS+VZaeiX0xz5p2zrv95w6TmyajXzBSD9cFEHv/xuXv8+x+CWApnguV30yJJZP85Gy2e/S/WRbFKhcL28FAGUEJSDRT/TFSolXlsQhcL1ZeEbP5ogKATxGUJqbXlVSua4D+gQgBb/mnOA9XOtRO1esQLJLDzXOYStC/dp4fPPMJ6wGZjFyMB/NDJ/nfX6vm204FPeQe65Aaz32yskfmsPEJYyeXHNqp/InN+5w0+ccweopGRHsf5oyUZqOFnLJQn5jkqHTU1t1N8/XkQjuCD+d0jr+Xd1SQ==|09916E9C26A9918634083E03359A7443';
 const { enviarAlertaAdmin, obtenerEstadoWhatsApp, iniciarBot } = require('./whatsapp-bot');
 const {
     enviarCotizacionEmail,
@@ -1178,17 +1182,17 @@ const registrarVentaOPedido = (req, res) => {
 
                                         const estPagoEtiqueta = estPago.includes('PAGADO') ? 'PAGADO / VERIFICADO' : 'PENDIENTE DE VALIDACIÓN BANCARIA';
 
-                                        const alertaNuevoPedido = `🔔 *NUEVO PEDIDO REGISTRADO (#${codPedidoFmt})*\n` +
-                                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                                            `🏢 *Cliente / Taller:* ${user.nombre}\n` +
-                                            `💰 *Monto Total:* *Bs. ${totalNum.toFixed(2)}*\n` +
-                                            `💳 *Método de Pago:* ${metodoPagoEtiqueta}\n` +
-                                            `📑 *N° Boleta / Referencia:* \`${finalNumOperacion}\`\n` +
-                                            `🏦 *Entidad Financiera:* ${bancoOrig}\n` +
-                                            `📊 *Estado de Cobro:* ${estPagoEtiqueta}\n` +
-                                            `📦 *Ítems Solicitados:* ${carrito.length} repuesto(s)\n` +
-                                            `🚚 *Logística Inicial:* ${estLogistica}\n` +
-                                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                        const alertaNuevoPedido = `*NUEVO PEDIDO REGISTRADO (#${codPedidoFmt})*\n` +
+                                            `──────────────────────────\n` +
+                                            `• *Cliente:* ${user.nombre}\n` +
+                                            `• *Total:* *Bs. ${totalNum.toFixed(2)}*\n` +
+                                            `• *Pago:* ${metodoPagoEtiqueta}\n` +
+                                            `• *Referencia:* \`${finalNumOperacion}\`\n` +
+                                            `• *Banco:* ${bancoOrig}\n` +
+                                            `• *Cobro:* ${estPagoEtiqueta}\n` +
+                                            `• *Ítems:* ${carrito.length} repuesto(s)\n` +
+                                            `• *Logística:* ${estLogistica}\n` +
+                                            `──────────────────────────\n` +
                                             `_Consulte el panel de Cobranzas del ERP para validar el ingreso._`;
 
                                         enviarAlertaAdmin(alertaNuevoPedido).catch(() => {});
@@ -1229,13 +1233,13 @@ const registrarVentaOPedido = (req, res) => {
                                         // Disparador Proactivo 2: Alerta por WhatsApp de stock bajo detectado
                                         if (productosEnAlertaStock.length > 0) {
                                             for (const critico of productosEnAlertaStock) {
-                                                const alertaStockBajo = `⚠️ *ALERTA DE STOCK BAJO EN ALMACÉN*\n` +
-                                                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                                                    `📦 *Producto:* ${critico.nombre}\n` +
-                                                    `🏷️ *Código SKU:* \`${critico.sku}\`\n` +
-                                                    `📉 *Stock Restante:* *${critico.stockRestante} unids.* (Mínimo: ${critico.stockMinimo} unids.)\n` +
-                                                    `📍 *Ubicación:* Almacén Central - Sucre, Bolivia\n` +
-                                                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                                                const alertaStockBajo = `*ALERTA DE STOCK BAJO EN ALMACÉN*\n` +
+                                                    `──────────────────────────\n` +
+                                                    `• *Producto:* ${critico.nombre}\n` +
+                                                    `• *SKU:* \`${critico.sku}\`\n` +
+                                                    `• *Stock Restante:* *${critico.stockRestante} unids.* (Mínimo: ${critico.stockMinimo} unids.)\n` +
+                                                    `• *Ubicación:* Almacén Central - Sucre, Bolivia\n` +
+                                                    `──────────────────────────\n` +
                                                     `_Se sugiere emitir orden de reposición o compra a proveedor._`;
 
                                                 enviarAlertaAdmin(alertaStockBajo).catch(() => {});
@@ -1270,6 +1274,389 @@ const registrarVentaOPedido = (req, res) => {
 
 app.post('/api/ventas', registrarVentaOPedido);
 app.post('/api/pedidos', registrarVentaOPedido);
+
+// ============================================================================
+// MÓDULO DE VENTA DIRECTA EN TIENDA FÍSICA (CAJA / MOSTRADOR PRESENCIAL)
+// ============================================================================
+
+/**
+ * Middleware para validar permisos en Venta Directa en Tienda Mostrador
+ * Solo se permite a roles internos: ADMIN, ADMINISTRADOR, SUPERADMIN, GERENTE, TRABAJADOR, EMPAQUE, ALMACENERO, VENDEDOR.
+ * Bloquea CLIENTE, DESPACHO y peticiones anónimas con 403 Forbidden.
+ */
+function verificarPermisoVentaDirecta(req, res, next) {
+    const authHeader = (req.headers['authorization'] || '').toString().trim();
+    let authBearer = '';
+    if (authHeader.toLowerCase().startsWith('bearer ')) {
+        authBearer = authHeader.slice(7).trim();
+    }
+
+    const rolHeader = (
+        authBearer ||
+        req.headers['x-usuario-rol'] || 
+        req.headers['x-user-rol'] || 
+        req.headers['x-rol'] || 
+        req.body?.usuario_rol || 
+        req.body?.rol || 
+        req.body?.usuario?.rol || 
+        req.query?.rol || 
+        ''
+    ).toString().toUpperCase().trim();
+
+    const emailHeader = (
+        req.headers['x-usuario-email'] || 
+        req.headers['x-user-email'] || 
+        req.headers['x-email'] || 
+        req.body?.usuario_email || 
+        req.body?.email || 
+        ''
+    ).toString().toLowerCase().trim();
+
+    // Bloqueo explícito de roles no autorizados (CLIENTES externos y DESPACHO)
+    if (
+        rolHeader === 'CLIENTE' || 
+        rolHeader === 'CLIENTE_B2B' || 
+        rolHeader === 'CLIENTE_B2C' || 
+        rolHeader === 'DESPACHO' || 
+        rolHeader === 'CHOFER' || 
+        rolHeader === 'REPARTIDOR'
+    ) {
+        registrarAuditoria('SEGURIDAD', `Acceso denegado a Venta Directa: rol no autorizado "${rolHeader}" (${emailHeader || 'sin email'})`, 'VENTAS');
+        return res.status(403).json({
+            error: `Acceso denegado (403 Forbidden): El rol "${rolHeader}" no tiene permisos para registrar ventas directas en mostrador.`
+        });
+    }
+
+    const rolesAutorizados = ['ADMIN', 'ADMINISTRADOR', 'SUPERADMIN', 'GERENTE', 'TRABAJADOR', 'EMPAQUE', 'ALMACENERO', 'ALMACEN', 'VENDEDOR'];
+
+    if (rolHeader && rolesAutorizados.includes(rolHeader)) {
+        if (emailHeader) {
+            return db.get('SELECT rol, estado FROM usuarios WHERE LOWER(email) = ? OR LOWER(correo) = ?', [emailHeader, emailHeader], (err, user) => {
+                if (!err && user) {
+                    const rolDB = (user.rol || '').toUpperCase().trim();
+                    if (user.estado !== 'ACTIVO') {
+                        return res.status(403).json({ error: 'Acceso denegado: El usuario vendedor está inactivo.' });
+                    }
+                    if (!rolesAutorizados.includes(rolDB)) {
+                        registrarAuditoria('SEGURIDAD', `Acceso denegado: rol en headers (${rolHeader}) no coincide con rol en BD (${rolDB}) para ${emailHeader}`, 'VENTAS');
+                        return res.status(403).json({ error: 'Acceso denegado: Credenciales no autorizadas.' });
+                    }
+                }
+                next();
+            });
+        }
+        return next();
+    }
+
+    // Si no se proporcionó rol o no está autorizado: 403 Forbidden
+    registrarAuditoria('SEGURIDAD', `Intento no autorizado de registrar venta directa sin credenciales de rol válidas (${rolHeader || 'ANÓNIMO'})`, 'VENTAS');
+    return res.status(403).json({
+        error: 'Acceso denegado (403 Forbidden): Se requiere rol de ADMIN o Personal Interno para registrar ventas directas en mostrador.'
+    });
+}
+
+/**
+ * Registrar Venta Presencial Directa en Tienda Mostrador
+ * POST /api/ventas/directa
+ */
+const registrarVentaDirecta = (req, res) => {
+    try {
+        const {
+            cliente_nombre,
+            nit_ci,
+            cliente_email,
+            items,
+            metodo_pago,
+            monto_recibido,
+            cambio,
+            cliente_id,
+            observaciones
+        } = req.body;
+
+        const listaItems = Array.isArray(items) ? items : [];
+        if (listaItems.length === 0) {
+            return res.status(400).json({ error: 'La venta directa requiere al menos un repuesto en el detalle.' });
+        }
+
+        const nombreClienteFinal = (cliente_nombre || 'Consumidor Final').trim();
+        const nitCiFinal = (nit_ci || 'S/N').trim();
+        const emailClienteFinal = (cliente_email || '').trim();
+        const metodoPagoFinal = (metodo_pago || 'EFECTIVO').toUpperCase().trim();
+
+        const metodosValidos = ['EFECTIVO', 'QR_TIENDA', 'TRANSFERENCIA'];
+        const mPago = metodosValidos.includes(metodoPagoFinal) ? metodoPagoFinal : 'EFECTIVO';
+
+        // Calcular total a partir de los items
+        let totalCalculado = 0;
+        for (const it of listaItems) {
+            const cant = parseInt(it.cantidad, 10);
+            const precio = parseFloat(it.precio);
+            if (isNaN(cant) || cant <= 0 || isNaN(precio) || precio < 0) {
+                return res.status(400).json({ error: 'Los ítems de la venta contienen cantidades o precios no válidos.' });
+            }
+            totalCalculado += (cant * precio);
+        }
+        const totalFinal = parseFloat(totalCalculado.toFixed(2));
+
+        const montoRecibidoNum = (monto_recibido !== undefined && monto_recibido !== null && String(monto_recibido).trim() !== '') 
+            ? parseFloat(monto_recibido) 
+            : totalFinal;
+
+        const cambioNum = (cambio !== undefined && cambio !== null && String(cambio).trim() !== '') 
+            ? parseFloat(cambio) 
+            : Math.max(0, parseFloat((montoRecibidoNum - totalFinal).toFixed(2)));
+
+        if (mPago === 'EFECTIVO' && montoRecibidoNum < totalFinal) {
+            return res.status(400).json({ error: `El monto recibido (Bs. ${montoRecibidoNum.toFixed(2)}) es menor al total de la venta (Bs. ${totalFinal.toFixed(2)}).` });
+        }
+
+        // Obtener ID del cliente (cliente registrado o Consumidor Final)
+        const idClienteSolicitado = cliente_id ? parseInt(cliente_id, 10) : null;
+
+        db.get(
+            idClienteSolicitado 
+                ? 'SELECT id, nombre, email, nit FROM usuarios WHERE id = ?' 
+                : "SELECT id, nombre, email, nit FROM usuarios WHERE email = 'consumidor.final@golden.bo' OR id = 1 LIMIT 1",
+            idClienteSolicitado ? [idClienteSolicitado] : [],
+            (userErr, clienteUser) => {
+                if (userErr || !clienteUser) {
+                    return res.status(500).json({ error: 'No se pudo resolver el registro del cliente en base de datos.' });
+                }
+
+                const clienteIdFinal = clienteUser.id;
+                const idsProductos = listaItems.map(it => it.producto_id || it.id);
+                const placeholders = idsProductos.map(() => '?').join(',');
+
+                // INICIAR TRANSACCIÓN ATÓMICA EN SQLITE
+                db.serialize(() => {
+                    db.run('BEGIN IMMEDIATE TRANSACTION;', (beginErr) => {
+                        if (beginErr) {
+                            console.error('Error al iniciar transacción de venta directa:', beginErr.message);
+                            return res.status(500).json({ error: 'No se pudo iniciar la transacción de venta directa.' });
+                        }
+
+                        // 1. Verificar stock disponible para cada producto
+                        db.all(
+                            `SELECT id, sku, nombre, stock, COALESCE(stock_minimo, 5) as stock_minimo, precio FROM productos WHERE id IN (${placeholders})`,
+                            idsProductos,
+                            (stockErr, rowsProductos) => {
+                                if (stockErr) {
+                                    db.run('ROLLBACK;');
+                                    return res.status(500).json({ error: 'Error al verificar stock de repuestos en tienda.' });
+                                }
+
+                                const mapProds = new Map();
+                                rowsProductos.forEach(p => mapProds.set(p.id, p));
+
+                                for (const it of listaItems) {
+                                    const pId = it.producto_id || it.id;
+                                    const prod = mapProds.get(pId);
+                                    if (!prod) {
+                                        db.run('ROLLBACK;');
+                                        return res.status(400).json({ error: `El repuesto con ID #${pId} no existe en inventario.` });
+                                    }
+                                    const cantRequerida = parseInt(it.cantidad, 10);
+                                    if (prod.stock < cantRequerida) {
+                                        db.run('ROLLBACK;');
+                                        const msgStock = prod.stock <= 0
+                                            ? `Stock agotado en tienda para "${prod.nombre}".`
+                                            : `Stock insuficiente para "${prod.nombre}": solo quedan ${prod.stock} unidades en tienda física (solicitadas: ${cantRequerida}).`;
+                                        return res.status(400).json({ error: msgStock });
+                                    }
+                                }
+
+                                // 2. Insertar cabecera de pedido: VENTA_DIRECTA, VERIFICADO, ENTREGADO_TIENDA
+                                const numOp = 'VD-' + Date.now().toString().slice(-6);
+                                const bancoOrigen = mPago === 'QR_TIENDA' 
+                                    ? 'Yape Bolivia / QR SIMPLE' 
+                                    : (mPago === 'TRANSFERENCIA' ? 'Banca Móvil / ACH' : 'Caja Tienda Central');
+
+                                db.run(
+                                    `INSERT INTO pedidos (
+                                        cliente_id, total, estado, fecha_compra,
+                                        metodo_pago, comprobante_ref, numero_operacion, banco_origen,
+                                        estado_pago, estado_logistica, canal,
+                                        cliente_nombre, cliente_nit_ci, cliente_email,
+                                        monto_recibido, cambio,
+                                        entrega_receptor_nombre, entrega_receptor_ci, entrega_fecha, entrega_observaciones
+                                    ) VALUES (?, ?, 'PAGADO', datetime('now'), ?, ?, ?, ?, 'VERIFICADO', 'ENTREGADO_TIENDA', 'VENTA_DIRECTA', ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)`,
+                                    [
+                                        clienteIdFinal,
+                                        totalFinal,
+                                        mPago,
+                                        numOp,
+                                        numOp,
+                                        bancoOrigen,
+                                        nombreClienteFinal,
+                                        nitCiFinal,
+                                        emailClienteFinal || null,
+                                        montoRecibidoNum,
+                                        cambioNum,
+                                        nombreClienteFinal,
+                                        nitCiFinal,
+                                        observaciones || 'Venta directa presencial en tienda física mostrador'
+                                    ],
+                                    function (insOrderErr) {
+                                        if (insOrderErr) {
+                                            db.run('ROLLBACK;');
+                                            console.error('Error al insertar cabecera de venta directa:', insOrderErr.message);
+                                            return res.status(500).json({ error: 'Error al registrar orden de venta directa: ' + insOrderErr.message });
+                                        }
+
+                                        const pedidoId = this.lastID;
+
+                                        // 3. Descontar stock inmediatamente, insertar detalles y registrar Kardex
+                                        const stmtDetalle = db.prepare(
+                                            `INSERT INTO pedido_detalles (pedido_id, producto_id, producto_nombre, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?, ?)`
+                                        );
+                                        const stmtStock = db.prepare(
+                                            `UPDATE productos SET stock = stock - ? WHERE id = ?`
+                                        );
+                                        const stmtKardex = db.prepare(
+                                            `INSERT INTO kardex (producto_id, tipo, cantidad, stock_anterior, stock_nuevo, motivo, referencia_id) VALUES (?, 'SALIDA_VENTA', ?, ?, ?, ?, ?)`
+                                        );
+
+                                        let errorDetalles = false;
+                                        const productosAlerta = [];
+
+                                        for (const it of listaItems) {
+                                            const pId = it.producto_id || it.id;
+                                            const prod = mapProds.get(pId);
+                                            const cant = parseInt(it.cantidad, 10);
+                                            const precioUnit = parseFloat(it.precio);
+                                            const sub = parseFloat((cant * precioUnit).toFixed(2));
+                                            const stockAnt = prod.stock;
+                                            const stockNuevo = prod.stock - cant;
+                                            const minStock = Number(prod.stock_minimo || 5);
+
+                                            if (stockNuevo <= minStock) {
+                                                productosAlerta.push({
+                                                    sku: prod.sku,
+                                                    nombre: prod.nombre,
+                                                    stockRestante: stockNuevo,
+                                                    stockMinimo: minStock
+                                                });
+                                            }
+
+                                            stmtDetalle.run(pedidoId, pId, prod.nombre, cant, precioUnit, sub, (dErr) => {
+                                                if (dErr) errorDetalles = true;
+                                            });
+                                            stmtStock.run(cant, pId, (sErr) => {
+                                                if (sErr) errorDetalles = true;
+                                            });
+                                            stmtKardex.run(
+                                                pId,
+                                                cant,
+                                                stockAnt,
+                                                stockNuevo,
+                                                `Salida por Venta Directa en Tienda Mostrador #${pedidoId} (${mPago})`,
+                                                pedidoId,
+                                                (kErr) => {
+                                                    if (kErr) errorDetalles = true;
+                                                }
+                                            );
+                                        }
+
+                                        stmtDetalle.finalize();
+                                        stmtStock.finalize();
+                                        stmtKardex.finalize((finalErr) => {
+                                            if (errorDetalles || finalErr) {
+                                                db.run('ROLLBACK;');
+                                                console.error('Error en detalles/kardex venta directa:', finalErr?.message);
+                                                return res.status(500).json({ error: 'Error al actualizar inventario o kardex de la venta directa.' });
+                                            }
+
+                                            // 4. Confirmar transacción
+                                            db.run('COMMIT;', (commitErr) => {
+                                                if (commitErr) {
+                                                    db.run('ROLLBACK;');
+                                                    return res.status(500).json({ error: 'Error al confirmar la transacción de venta directa.' });
+                                                }
+
+                                                // 5. Registrar en bitácora de auditoría
+                                                registrarAuditoria(
+                                                    'VENTA-DIRECTA',
+                                                    `Venta Directa en Mostrador #${pedidoId} por Bs. ${totalFinal.toFixed(2)} (${listaItems.length} ítems) a "${nombreClienteFinal}" (NIT/CI: ${nitCiFinal}). Método: ${mPago}.`,
+                                                    'VENTAS'
+                                                );
+
+                                                // 6. Si el cliente dejó correo electrónico, enviar nota de venta / comprobante por Gmail
+                                                if (emailClienteFinal && emailClienteFinal.includes('@')) {
+                                                    enviarComprobantePedidoEmail(
+                                                        {
+                                                            id: clienteIdFinal,
+                                                            nombre: nombreClienteFinal,
+                                                            email: emailClienteFinal,
+                                                            nit: nitCiFinal
+                                                        },
+                                                        {
+                                                            id: pedidoId,
+                                                            total: totalFinal,
+                                                            metodo_pago: mPago,
+                                                            numero_operacion: numOp,
+                                                            banco_origen: bancoOrigen,
+                                                            comprobante_ref: numOp,
+                                                            canal: 'VENTA_DIRECTA'
+                                                        },
+                                                        listaItems.map(it => {
+                                                            const p = mapProds.get(it.producto_id || it.id);
+                                                            return {
+                                                                sku: p ? p.sku : 'REP',
+                                                                producto_nombre: p ? p.nombre : (it.nombre || 'Repuesto'),
+                                                                cantidad: it.cantidad,
+                                                                precio_unitario: it.precio,
+                                                                subtotal: (it.cantidad * it.precio)
+                                                            };
+                                                        })
+                                                    ).catch(errMail => console.error('[EmailService] Error al enviar comprobante de venta directa:', errMail.message));
+                                                }
+
+                                                // 7. Notificación WhatsApp si hay alertas de stock bajo
+                                                if (productosAlerta.length > 0) {
+                                                    for (const critico of productosAlerta) {
+                                                        const msgAlerta = `*ALERTA DE STOCK BAJO EN TIENDA*\n` +
+                                                            `──────────────────────────\n` +
+                                                            `• *Producto:* ${critico.nombre}\n` +
+                                                            `• *SKU:* \`${critico.sku}\`\n` +
+                                                            `• *Stock Restante:* *${critico.stockRestante} unids.* (Mínimo: ${critico.stockMinimo} unids.)\n` +
+                                                            `• *Motivo:* Salida por Venta Directa Mostrador #${pedidoId}\n` +
+                                                            `──────────────────────────`;
+                                                        enviarAlertaAdmin(msgAlerta).catch(() => {});
+                                                    }
+                                                }
+
+                                                // 8. Respuesta exitosa
+                                                return res.status(201).json({
+                                                    ok: true,
+                                                    mensaje: 'Venta directa registrada exitosamente',
+                                                    pedido_id: pedidoId,
+                                                    codigo_pedido: `PED-${String(pedidoId).padStart(4, '0')}`,
+                                                    total: totalFinal,
+                                                    monto_recibido: montoRecibidoNum,
+                                                    cambio: cambioNum,
+                                                    metodo_pago: mPago,
+                                                    cliente_nombre: nombreClienteFinal,
+                                                    nit_ci: nitCiFinal,
+                                                    cliente_email: emailClienteFinal,
+                                                    fecha: new Date().toISOString()
+                                                });
+                                            });
+                                        });
+                                    }
+                                );
+                            }
+                        );
+                    });
+                });
+            }
+        );
+    } catch (error) {
+        console.error('Error crítico en POST /api/ventas/directa:', error);
+        return res.status(500).json({ error: 'Error del servidor al registrar venta directa: ' + error.message });
+    }
+};
+
+app.post('/api/ventas/directa', verificarPermisoVentaDirecta, registrarVentaDirecta);
 
 // ============================================================================
 // INTEGRACIÓN PAYPAL REST API (SANDBOX & CAPTURA)
@@ -1353,8 +1740,12 @@ app.get('/api/pedidos', (req, res) => {
                 p.entrega_pin,
                 p.entrega_observaciones,
                 p.entrega_fecha,
-                COALESCE(u.nombre, 'Cliente Desconocido') as cliente,
-                COALESCE(u.email, '-') as cliente_email
+                p.canal,
+                p.cliente_nit_ci,
+                p.monto_recibido,
+                p.cambio,
+                COALESCE(p.cliente_nombre, u.nombre, 'Cliente Desconocido') as cliente,
+                COALESCE(p.cliente_email, u.email, '-') as cliente_email
             FROM pedidos p 
             LEFT JOIN usuarios u ON p.cliente_id = u.id
         `;
@@ -1388,9 +1779,9 @@ app.get('/api/pedidos/:id', (req, res) => {
         const sqlPedido = `
             SELECT 
                 p.*, 
-                COALESCE(u.nombre, 'Cliente Desconocido') as cliente, 
-                COALESCE(u.email, '-') as cliente_email,
-                COALESCE(u.nit, '1029384756') as cliente_nit,
+                COALESCE(p.cliente_nombre, u.nombre, 'Cliente Desconocido') as cliente, 
+                COALESCE(p.cliente_email, u.email, '-') as cliente_email,
+                COALESCE(p.cliente_nit_ci, u.nit, '1029384756') as cliente_nit,
                 COALESCE(u.direccion, 'Sucre, Bolivia') as cliente_direccion,
                 COALESCE(u.telefono, '(+591) 4 64-52890') as cliente_telefono
             FROM pedidos p
@@ -1450,14 +1841,14 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
 
                     // Alerta WhatsApp proactiva a Gerencia de cobro verificado
                     const codPed = `PED-${String(pedidoId).padStart(4, '0')}`;
-                    const alertaCobroAprobado = `✅ *PAGO VERIFICADO Y PASADO A EMPAQUE (#${codPed})*\n` +
-                        `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                        `💰 *Monto Validado:* *Bs. ${parseFloat(ped.total || 0).toFixed(2)}*\n` +
-                        `💳 *Método de Pago:* ${metodoTexto}\n` +
-                        `📑 *N° Boleta / Ref:* \`${numBoleta}\`\n` +
-                        `🏦 *Banco:* ${ped.banco_origen || 'Banco Unión'}\n` +
-                        `📦 *Siguiente Paso:* Listo para Picking y Empaque en Almacén\n` +
-                        `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    const alertaCobroAprobado = `*PAGO VERIFICADO (#${codPed})*\n` +
+                        `──────────────────────────\n` +
+                        `• *Monto:* *Bs. ${parseFloat(ped.total || 0).toFixed(2)}*\n` +
+                        `• *Método:* ${metodoTexto}\n` +
+                        `• *Boleta / Ref:* \`${numBoleta}\`\n` +
+                        `• *Banco:* ${ped.banco_origen || 'Banco Unión'}\n` +
+                        `• *Estado:* Habilitado para Picking y Empaque\n` +
+                        `──────────────────────────\n` +
                         `_Validado por: ${usuario_nombre || 'Cobranzas / Administración'}_`;
                     enviarAlertaAdmin(alertaCobroAprobado).catch(() => {});
 
@@ -1524,14 +1915,14 @@ app.post('/api/pagos/webhook-qr', (req, res) => {
                     );
 
                     if (nuevoEstadoPago === 'VERIFICADO') {
-                        const alertaWebhook = `⚡ *CONFIRMACIÓN AUTOMÁTICA QR (WEBHOOK BANCARIO)*\n` +
-                            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                            `🆔 *Pedido:* #PED-${String(ped.id).padStart(4, '0')}\n` +
-                            `💰 *Monto Conciliado:* *Bs. ${parseFloat(ped.total).toFixed(2)}*\n` +
-                            `🏦 *Canal:* API Interoperable (${banco || 'SIMPLE / Yape'})\n` +
-                            `📑 *Transacción ID:* \`${numOperacion}\`\n` +
-                            `📦 *Acción:* Habilitado automáticamente para Empaque y Despacho\n` +
-                            `━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+                        const alertaWebhook = `*CONFIRMACIÓN AUTOMÁTICA QR (WEBHOOK)*\n` +
+                            `──────────────────────────\n` +
+                            `• *Pedido:* #PED-${String(ped.id).padStart(4, '0')}\n` +
+                            `• *Monto:* *Bs. ${parseFloat(ped.total).toFixed(2)}*\n` +
+                            `• *Canal:* API Interoperable (${banco || 'SIMPLE / Yape'})\n` +
+                            `• *Transacción ID:* \`${numOperacion}\`\n` +
+                            `• *Estado:* Habilitado para Empaque y Despacho\n` +
+                            `──────────────────────────`;
                         enviarAlertaAdmin(alertaWebhook).catch(() => {});
                     }
 
@@ -1549,6 +1940,67 @@ app.post('/api/pagos/webhook-qr', (req, res) => {
         console.error('Error en webhook-qr:', error);
         res.status(500).json({ error: 'Error procesando webhook QR' });
     }
+});
+
+/**
+ * Endpoint de Consulta y Renderizado Vectorial del QR Oficial Yape Bolivia
+ * GET /api/pagos/qr-yape?format=svg|json
+ */
+app.get('/api/pagos/qr-yape', async (req, res) => {
+    try {
+        const format = (req.query.format || 'svg').toLowerCase();
+        if (format === 'svg') {
+            let svg = await QRCode.toString(YAPE_QR_PAYLOAD, {
+                type: 'svg',
+                errorCorrectionLevel: 'H',
+                margin: 2,
+                color: {
+                    dark: '#581c87',
+                    light: '#ffffff'
+                }
+            });
+            const badge = `
+            <g id="badge-central">
+                <circle cx="50.5" cy="50.5" r="8.2" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.8"/>
+                <text x="50.5" y="53.4" font-family="'Inter', system-ui, sans-serif" font-size="7.5" font-weight="900" fill="#581c87" text-anchor="middle">Bs.</text>
+            </g>
+            `;
+            svg = svg.replace('</svg>', `${badge}</svg>`);
+            res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+            return res.send(svg);
+        } else {
+            const dataUrl = await QRCode.toDataURL(YAPE_QR_PAYLOAD, {
+                errorCorrectionLevel: 'H',
+                margin: 2,
+                width: 600,
+                color: {
+                    dark: '#581c87',
+                    light: '#ffffff'
+                }
+            });
+            return res.json({
+                success: true,
+                payload: YAPE_QR_PAYLOAD,
+                titular: 'Nelson Polares Ortiz',
+                vigencia: '2026-12-19',
+                banco: 'Yape Bolivia / QR SIMPLE',
+                dataUrl
+            });
+        }
+    } catch (err) {
+        console.error('Error en GET /api/pagos/qr-yape:', err);
+        return res.status(500).json({ success: false, error: 'Error al generar código QR oficial' });
+    }
+});
+
+app.get('/api/pagos/qr-yape/info', (req, res) => {
+    res.json({
+        success: true,
+        payload: YAPE_QR_PAYLOAD,
+        titular: 'Nelson Polares Ortiz',
+        vigencia: '2026-12-19',
+        banco: 'Yape Bolivia / QR Interoperable (Bs.)'
+    });
 });
 
 /**
@@ -2409,14 +2861,13 @@ app.post('/api/soporte/tickets', (req, res) => {
                 );
 
                 // Disparador Proactivo 3: Alerta por WhatsApp a Gerencia de nuevo ticket
-                const alertaTicket = `🎫 *NUEVO TICKET DE ATENCIÓN (${codigoTicket})*\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `📌 *Tipo:* ${tipoFinal}\n` +
-                    `👤 *Cliente / Taller:* ${nombreFinal}\n` +
-                    `📱 *Teléfono de Contacto:* ${telefono_cliente}\n` +
-                    `💬 *Detalle del Requerimiento:*\n` +
-                    `"${String(mensaje).trim()}"\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                const alertaTicket = `*NUEVO TICKET DE ATENCIÓN (${codigoTicket})*\n` +
+                    `──────────────────────────\n` +
+                    `• *Tipo:* ${tipoFinal}\n` +
+                    `• *Cliente:* ${nombreFinal}\n` +
+                    `• *Teléfono:* ${telefono_cliente}\n` +
+                    `• *Mensaje:* "${String(mensaje).trim()}"\n` +
+                    `──────────────────────────\n` +
                     `_Asignar a asesor comercial o equipo de logística en Sucre._`;
 
                 enviarAlertaAdmin(alertaTicket).catch(() => {});
@@ -2480,15 +2931,15 @@ app.post('/api/cotizaciones', async (req, res) => {
         });
 
         // 4. Notificación Proactiva por WhatsApp a Gerencia
-        const alertaCotizacionWhatsApp = `📋 *NUEVA SOLICITUD DE COTIZACIÓN MAYORISTA [${codigoCot}]*\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-            `🏢 *Cliente / Taller:* ${nombreCliente}\n` +
-            `📱 *WhatsApp / Tel:* ${telefonoCliente}\n` +
-            `✉️ *Correo Electrónico:* ${emailCliente || 'No especificado'}\n` +
-            `💰 *Monto Estimado:* *Bs. ${totalNum.toFixed(2)}*\n` +
-            `📦 *Ítems Solicitados:* ${items.length} repuesto(s)\n` +
-            `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-            `_Se ha emitido la proforma comercial formal con validez de 7 días calendario._`;
+        const alertaCotizacionWhatsApp = `*NUEVA SOLICITUD DE COTIZACIÓN [${codigoCot}]*\n` +
+            `──────────────────────────\n` +
+            `• *Cliente:* ${nombreCliente}\n` +
+            `• *Teléfono:* ${telefonoCliente}\n` +
+            `• *Correo:* ${emailCliente || 'No especificado'}\n` +
+            `• *Total Estimado:* *Bs. ${totalNum.toFixed(2)}*\n` +
+            `• *Ítems:* ${items.length} repuesto(s)\n` +
+            `──────────────────────────\n` +
+            `_Proforma comercial formal emitida con validez de 7 días calendario._`;
         enviarAlertaAdmin(alertaCotizacionWhatsApp).catch(() => {});
 
         res.status(200).json({

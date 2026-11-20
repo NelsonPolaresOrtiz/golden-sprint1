@@ -9,6 +9,9 @@
  */
 
 const API_URL = '/api';
+
+// Constante oficial Yape Bolivia (Payload EMVCo verificado - Titular: Nelson Polares Ortiz)
+const YAPE_QR_PAYLOAD = 'H7GXJFTPPG6jGWbWg6p3PS9e4VEdikOpCEKTIbP8s4Nc+LR4a97Gz83PS+VZaeiX0xz5p2zrv95w6TmyajXzBSD9cFEHv/xuXv8+x+CWApnguV30yJJZP85Gy2e/S/WRbFKhcL28FAGUEJSDRT/TFSolXlsQhcL1ZeEbP5ogKATxGUJqbXlVSua4D+gQgBb/mnOA9XOtRO1esQLJLDzXOYStC/dp4fPPMJ6wGZjFyMB/NDJ/nfX6vm204FPeQe65Aaz32yskfmsPEJYyeXHNqp/InN+5w0+ccweopGRHsf5oyUZqOFnLJQn5jkqHTU1t1N8/XkQjuCD+d0jr+Xd1SQ==|09916E9C26A9918634083E03359A7443';
 const FALLBACK_IMG_OFFLINE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'><rect width='400' height='300' fill='%23f8fafc'/><rect x='10' y='10' width='380' height='280' fill='none' stroke='%23cbd5e1' stroke-dasharray='6 6' rx='4'/><text x='50%25' y='46%25' dominant-baseline='middle' text-anchor='middle' fill='%2364748b' font-family='sans-serif' font-size='15' font-weight='bold'>REPUESTO AUTOMOTRIZ</text><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='%23d97706' font-family='sans-serif' font-size='12' font-weight='600'>GOLDEN ERP</text></svg>";
 
 // Catálogo Oficial de Respaldo GOLDEN (8 productos reales para contingencia / inventario vacío)
@@ -442,21 +445,39 @@ function sincronizarControlesUsuarioHeader() {
     const btnMisPedidos = document.getElementById('btnTiendaMisPedidos');
     const dropdownERP = document.getElementById('dropdownTiendaERP');
 
-    if (navName) navName.innerText = nombre;
+    // Calcular iniciales y nombre corto
+    const partes = nombre.replace(/\([^)]*\)/g, '').trim().split(/\s+/).filter(Boolean);
+    let iniciales = 'U';
+    if (partes.length >= 2) {
+        iniciales = (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
+    } else if (partes.length === 1 && partes[0].length >= 2) {
+        iniciales = partes[0].substring(0, 2).toUpperCase();
+    } else if (partes.length === 1) {
+        iniciales = partes[0].charAt(0).toUpperCase();
+    }
+    const nombreCorto = partes.length >= 2 ? `${partes[0]} ${partes[1]}` : (partes[0] || 'Usuario');
+
+    if (navName) navName.innerText = nombreCorto;
     if (navRol) {
-        let labelTag = 'CLIENTE (TALLER)';
+        let labelTag = 'CLIENTE';
+        let rolClass = 'role-cliente';
         if (esAdmin) {
-            if (rol === 'ADMIN' || rol === 'ADMINISTRADOR') labelTag = 'ADMINISTRADOR';
-            else if (rol === 'EMPAQUE' || rol === 'ALMACENERO' || rol === 'ALMACEN') labelTag = 'ALMACÉN';
+            if (rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'SUPERADMIN' || rol === 'GERENTE') {
+                labelTag = 'ADMIN';
+                rolClass = 'role-admin';
+            } else if (rol === 'EMPAQUE' || rol === 'ALMACENERO' || rol === 'ALMACEN') {
+                labelTag = 'EMPAQUE';
+                rolClass = 'role-empaque';
+            }
         } else if (rol === 'DESPACHO' || rol === 'REPARTIDOR') {
-            labelTag = 'DISTRIBUCIÓN';
+            labelTag = 'DESPACHO';
+            rolClass = 'role-despacho';
         }
         navRol.innerText = labelTag;
-        navRol.style.color = esAdmin ? '#B91C1C' : '#D97706';
+        navRol.className = `nav-role-badge-tech ${rolClass}`;
     }
     if (navAvatar) {
-        navAvatar.innerText = nombre.charAt(0).toUpperCase();
-        navAvatar.style.background = esAdmin ? '#B91C1C' : '#D97706';
+        navAvatar.innerText = iniciales;
     }
 
     // Si es ADMIN o EMPAQUE autorizado: mostrar dropdown con 9 módulos ERP
@@ -1108,22 +1129,22 @@ function cambiarPresentacion(prodId, presId, event) {
     const btnCompra = document.getElementById(`btn-compra-${prodId}`);
     if (datos.stockDisponible <= 0) {
         if (wrapCompra) {
-            wrapCompra.outerHTML = `<button class="btn btn-secondary btn-sm px-3 py-1 fw-bold opacity-50 text-uppercase" disabled id="btn-compra-${prodId}" style="font-size:0.75rem;">AGOTADO</button>`;
+            wrapCompra.outerHTML = `<button class="btn btn-secondary w-100 fw-bold opacity-50" disabled id="btn-compra-${prodId}" style="height: 42px; border-radius: 10px; font-size: 13px;">Agotado</button>`;
         }
     } else {
         if (btnCompra && !wrapCompra) {
             btnCompra.outerHTML = `
-                <div class="d-flex align-items-center gap-1" id="wrap-compra-${prodId}" onclick="event.stopPropagation();">
-                    <div class="input-group input-group-sm" style="width: 78px;">
-                        <button class="btn btn-outline-secondary px-1 py-0" type="button" onclick="ajustarCantidadTarjeta(${prodId}, -1)">-</button>
-                        <input type="number" id="cant-card-${prodId}" class="form-control text-center px-0 py-0 font-mono fw-bold" value="1" min="1" max="${datos.stockDisponible}" onchange="validarCantidadTarjeta(${prodId}, this)" style="font-size: 0.82rem; height: 26px;">
-                        <button class="btn btn-outline-secondary px-1 py-0" type="button" onclick="ajustarCantidadTarjeta(${prodId}, 1)">+</button>
+                <div class="d-flex align-items-center gap-2 mt-2" id="wrap-compra-${prodId}" onclick="event.stopPropagation();">
+                    <div class="card-qty-stepper">
+                        <button class="btn-qty-step" type="button" onclick="ajustarCantidadTarjeta(${prodId}, -1)">-</button>
+                        <input type="number" id="cant-card-${prodId}" class="input-qty-val font-mono" value="1" min="1" max="${datos.stockDisponible}" onchange="validarCantidadTarjeta(${prodId}, this)">
+                        <button class="btn-qty-step" type="button" onclick="ajustarCantidadTarjeta(${prodId}, 1)">+</button>
                     </div>
-                    <button class="btn btn-primary btn-sm px-2 py-1 d-flex align-items-center gap-1" 
-                            style="background-color: #B91C1C; border-color: #B91C1C; border-radius: 4px; height: 26px; font-size: 0.76rem;"
+                    <button class="btn-agregar-pedido flex-grow-1" 
+                            id="btn-compra-${prodId}"
                             onclick="event.stopPropagation(); agregarDesdeTarjeta(${prodId})">
                         <i class="bi bi-cart-plus"></i>
-                        <span>Agregar</span>
+                        <span>Agregar al pedido</span>
                     </button>
                 </div>
             `;
@@ -1420,80 +1441,85 @@ function renderizarCarruselTecfil() {
 
         html += `
             <div class="col-12 col-sm-6 col-lg-3">
-                <div class="tecfil-tech-card position-relative" onclick="abrirFichaTecnica(${p.id})">
+                <div class="tecfil-tech-card position-relative h-100 d-flex flex-column" onclick="abrirFichaTecnica(${p.id})" title="Ver Ficha Técnica y Aplicaciones">
                     
-                    ${(esAdminOTrabajador && modoEdicionActivo) ? `
-                        <div class="admin-card-overlay-actions">
-                            <button type="button" class="btn btn-warning" onclick="event.stopPropagation(); abrirModalEditarProducto(${p.id})" title="Editar repuesto">
-                                <i class="bi bi-pencil-square"></i> Editar
-                            </button>
-                            <button type="button" class="btn ${p.en_oferta ? 'btn-danger' : 'btn-dark text-warning'}" onclick="event.stopPropagation(); alternarOfertaRapida(${p.id})" title="Activar/Desactivar en ofertas">
-                                <i class="bi bi-tag-fill"></i> ${p.en_oferta ? 'Oferta ON' : 'Oferta OFF'}
-                            </button>
-                        </div>
-                    ` : ''}
-
-                    <!-- Marco Industrial Amarillo Ficha Técnica Tecfil -->
-                    <div class="tecfil-tech-frame">
-                        <div class="tecfil-tech-frame-top">
-                            <span style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.82rem; color: #141619;">GOLDEN</span>
-                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-size: 0.65rem; font-family: 'Inter', sans-serif;">-15% MAYORISTA</span>
-                        </div>
-                        
-                        <div class="tecfil-sku-code mb-1" id="tecfil-sku-${p.id}">
-                            ${datos.skuCompleto}
+                    <!-- Escenario Visual del Producto -->
+                    <div class="card-stage-futuristic wix-img-wrapper">
+                        <div class="card-stage-header">
+                            <span class="card-prod-sku font-mono" id="tecfil-sku-${p.id}">${datos.skuCompleto}</span>
+                            <div class="card-stage-badges">
+                                <span class="badge-oferta-mayorista">-15% Mayorista</span>
+                                ${(esAdminOTrabajador && modoEdicionActivo) ? `
+                                    <button type="button" class="btn-admin-edit-mini" onclick="event.stopPropagation(); abrirModalEditarProducto(${p.id})" title="Editar repuesto">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </button>
+                                    <button type="button" class="btn-admin-edit-mini ${p.en_oferta ? 'active' : ''}" onclick="event.stopPropagation(); alternarOfertaRapida(${p.id})" title="${p.en_oferta ? 'Quitar de ofertas' : 'Poner en ofertas'}">
+                                        <i class="bi bi-tag-fill"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
 
-                        <div class="text-center py-2" style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
-                            <img src="${rutaImg}" alt="${escaparHTML(p.nombre)}" style="max-height: 110px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;">
-                        </div>
-
-                        <div class="tecfil-spec-table">
-                            <div><strong>Visc/Rosca:</strong> ${specs.viscRosca}</div>
-                            <div><strong>Litraje/Dim:</strong> ${specs.diamLitros}</div>
-                        </div>
-
-                        <div class="tecfil-compat-badge text-truncate" title="${compat.resumenModelos}">
-                            <i class="bi bi-car-front-fill me-1 text-danger"></i>${compat.resumenModelos}
+                        <div class="card-stage-image-container">
+                            <img src="${rutaImg}" alt="${escaparHTML(p.nombre)}" class="card-floating-img" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;">
                         </div>
                     </div>
 
-                    <!-- Datos Comerciales y Compra -->
-                    <div class="d-flex flex-column flex-grow-1 justify-content-between">
-                        <div>
-                            <span class="text-muted text-uppercase font-mono d-block mb-1" style="font-size: 0.68rem; letter-spacing: 0.5px;">${p.categoria}</span>
-                            <h6 class="fw-bold text-dark mb-2 text-truncate-2" style="font-size: 0.88rem; min-height: 38px; line-height: 1.25; font-family: 'Inter', sans-serif;" title="${escaparHTML(p.nombre)}">
-                                ${escaparHTML(p.nombre)}
-                            </h6>
+                    <!-- Datos Técnicos y Comerciales -->
+                    <div class="card-prod-body d-flex flex-column flex-grow-1">
+                        <span class="card-prod-categoria">${p.categoria}</span>
+                        <h6 class="card-prod-title" title="${escaparHTML(p.nombre)}">
+                            ${escaparHTML(p.nombre)}
+                        </h6>
 
-                            <!-- Selector de Presentación -->
-                            <div class="presentaciones-selector mb-3" id="tecfil-pres-${p.id}">
-                                ${obtenerPresentaciones(p).map(pres => `
-                                    <button type="button" 
-                                            class="btn-presentacion ${pres.id === presActiva ? 'active' : ''}" 
-                                            data-pres-id="${pres.id}" 
-                                            onclick="cambiarPresentacionTecfil(${p.id}, '${pres.id}', event)">
-                                        ${pres.label}
-                                    </button>
-                                `).join('')}
+                        <!-- Micro-grid de especificaciones técnicas -->
+                        <div class="card-specs-grid mb-2">
+                            <div class="card-spec-chip" title="Viscosidad / Rosca: ${specs.viscRosca}">
+                                <i class="bi bi-gear-fill"></i>
+                                <span>${specs.viscRosca}</span>
+                            </div>
+                            <div class="card-spec-chip" title="Litraje / Dimensiones: ${specs.diamLitros}">
+                                <i class="bi bi-box-seam"></i>
+                                <span>${specs.diamLitros}</span>
+                            </div>
+                            <div class="card-spec-chip card-spec-chip-full" title="${compat.resumenModelos}">
+                                <i class="bi bi-car-front-fill"></i>
+                                <span class="text-truncate">Ideal: ${compat.resumenModelos}</span>
                             </div>
                         </div>
 
-                        <div class="pt-2 border-top" style="border-color: #E2E8F0;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <span class="text-muted text-decoration-line-through font-mono small d-block" id="tecfil-precio-orig-${p.id}" style="font-size: 0.7rem; line-height: 1;">
+                        <!-- Selector de Presentación segmentado -->
+                        <div class="presentaciones-selector mb-3" id="tecfil-pres-${p.id}">
+                            ${obtenerPresentaciones(p).map(pres => `
+                                <button type="button" 
+                                        class="btn-presentacion ${pres.id === presActiva ? 'active' : ''}" 
+                                        data-pres-id="${pres.id}" 
+                                        onclick="cambiarPresentacionTecfil(${p.id}, '${pres.id}', event)">
+                                    ${pres.label}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <!-- Footer de Precio y Botón de Compra -->
+                        <div class="card-footer-futuristic mt-auto pt-2 border-top">
+                            <div class="d-flex justify-content-between align-items-end mb-2">
+                                <div class="card-price-block">
+                                    <span class="card-price-orig" id="tecfil-precio-orig-${p.id}">
                                         Bs. ${datos.precioOriginal.toFixed(2)}
                                     </span>
-                                    <span class="fw-bold font-mono text-dark" id="tecfil-precio-${p.id}" style="font-size: 1.25rem;">
-                                        Bs. ${datos.precioFinal.toFixed(2)}
-                                    </span>
+                                    <div class="d-flex align-items-baseline gap-1">
+                                        <span class="card-price-tag" id="tecfil-precio-${p.id}">
+                                            Bs. ${datos.precioFinal.toFixed(2)}
+                                        </span>
+                                        <span class="badge-factura-pill">c/Factura</span>
+                                    </div>
                                 </div>
-                                <span class="badge" style="background: #F1F5F9; color: #475569; font-size: 0.68rem;">c/Factura</span>
+                                <span class="badge" style="background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; font-size:0.72rem; font-weight:600; border-radius:9999px; padding:3px 8px;">
+                                    <i class="bi bi-check2-circle me-1"></i>En Stock
+                                </span>
                             </div>
 
-                            <button class="btn btn-danger w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2" 
-                                    style="background: #B91C1C; border-color: #B91C1C; border-radius: 4px; font-size: 0.82rem;" 
+                            <button class="btn-agregar-pedido w-100" 
                                     onclick="event.stopPropagation(); agregarOfertaAlCarrito(${p.id}, this)">
                                 <i class="bi bi-cart-plus-fill"></i>
                                 <span>Agregar al pedido</span>
@@ -1709,34 +1735,35 @@ function generarTarjetaProductoHTML(producto, index = 0, esOfertaForzada = false
     const presActiva = presentacionesSeleccionadas[p.id] || obtenerPresentaciones(p)[0].id;
     const datos = calcularDatosPresentacion(p, presActiva, esOferta);
     const compat = obtenerCompatibilidadVehicular(p);
+    const specs = obtenerSpecsTecfil(p);
 
     const sinStock = datos.stockDisponible <= 0;
     
     let badgeStockHTML = '';
     if (sinStock) {
-        badgeStockHTML = `<span class="card-stock-label stock-out fw-bold text-uppercase" id="stock-prod-${p.id}" style="background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5; font-size:0.75rem;">AGOTADO</span>`;
+        badgeStockHTML = `<span class="badge" id="stock-prod-${p.id}" style="background:#FEF2F2; color:#991B1B; border:1px solid #FECACA; font-size:0.72rem; font-weight:600; border-radius:9999px; padding:3px 8px;"><i class="bi bi-x-circle me-1"></i>Agotado</span>`;
     } else if (p.stock <= p.stock_minimo) {
-        badgeStockHTML = `<span class="card-stock-label stock-alert" id="stock-prod-${p.id}">Últimas ${datos.stockDisponible} unidades</span>`;
+        badgeStockHTML = `<span class="badge" id="stock-prod-${p.id}" style="background:#FFFBEB; color:#92400E; border:1px solid #FDE68A; font-size:0.72rem; font-weight:600; border-radius:9999px; padding:3px 8px;"><i class="bi bi-exclamation-triangle me-1"></i>Últimas ${datos.stockDisponible} unid.</span>`;
     } else {
-        badgeStockHTML = `<span class="card-stock-label stock-ok" id="stock-prod-${p.id}">En almacén: ${datos.stockDisponible} unid.</span>`;
+        badgeStockHTML = `<span class="badge" id="stock-prod-${p.id}" style="background:#ECFDF5; color:#065F46; border:1px solid #A7F3D0; font-size:0.72rem; font-weight:600; border-radius:9999px; padding:3px 8px;"><i class="bi bi-check2-circle me-1"></i>Stock: ${datos.stockDisponible} unid.</span>`;
     }
 
     let controlCompraHTML = '';
     if (sinStock) {
-        controlCompraHTML = `<button class="btn btn-secondary btn-sm px-3 py-1 fw-bold opacity-50 text-uppercase" disabled id="btn-compra-${p.id}" style="font-size:0.75rem;">AGOTADO</button>`;
+        controlCompraHTML = `<button class="btn btn-secondary w-100 fw-bold opacity-50" disabled id="btn-compra-${p.id}" style="height: 42px; border-radius: 10px; font-size: 13px;">Agotado</button>`;
     } else {
         controlCompraHTML = `
-            <div class="d-flex align-items-center gap-1" id="wrap-compra-${p.id}" onclick="event.stopPropagation();">
-                <div class="input-group input-group-sm" style="width: 78px;">
-                    <button class="btn btn-outline-secondary px-1 py-0" type="button" onclick="ajustarCantidadTarjeta(${p.id}, -1)">-</button>
-                    <input type="number" id="cant-card-${p.id}" class="form-control text-center px-0 py-0 font-mono fw-bold" value="1" min="1" max="${datos.stockDisponible}" onchange="validarCantidadTarjeta(${p.id}, this)" style="font-size: 0.82rem; height: 26px;">
-                    <button class="btn btn-outline-secondary px-1 py-0" type="button" onclick="ajustarCantidadTarjeta(${p.id}, 1)">+</button>
+            <div class="d-flex align-items-center gap-2 mt-2" id="wrap-compra-${p.id}" onclick="event.stopPropagation();">
+                <div class="card-qty-stepper">
+                    <button class="btn-qty-step" type="button" onclick="ajustarCantidadTarjeta(${p.id}, -1)">-</button>
+                    <input type="number" id="cant-card-${p.id}" class="input-qty-val font-mono" value="1" min="1" max="${datos.stockDisponible}" onchange="validarCantidadTarjeta(${p.id}, this)">
+                    <button class="btn-qty-step" type="button" onclick="ajustarCantidadTarjeta(${p.id}, 1)">+</button>
                 </div>
-                <button class="btn btn-primary btn-sm px-2 py-1 d-flex align-items-center gap-1" 
-                        style="background-color: #B91C1C; border-color: #B91C1C; border-radius: 4px; height: 26px; font-size: 0.76rem;"
+                <button class="btn-agregar-pedido flex-grow-1" 
+                        id="btn-compra-${p.id}"
                         onclick="event.stopPropagation(); agregarDesdeTarjeta(${p.id})">
                     <i class="bi bi-cart-plus"></i>
-                    <span>Agregar</span>
+                    <span>Agregar al pedido</span>
                 </button>
             </div>
         `;
@@ -1744,45 +1771,57 @@ function generarTarjetaProductoHTML(producto, index = 0, esOfertaForzada = false
 
     return `
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 stagger-card" style="--stagger-i: ${index};">
-            <div class="card-producto-wix h-100 d-flex flex-column border position-relative" onclick="abrirFichaTecnica(${p.id})" title="Ver Ficha Técnica y Aplicaciones">
+            <div class="card-producto-wix h-100 d-flex flex-column position-relative" onclick="abrirFichaTecnica(${p.id})" title="Ver Ficha Técnica y Aplicaciones">
                 
-                ${(esAdminOTrabajador && modoEdicionActivo) ? `
-                    <div class="admin-card-overlay-actions">
-                        <button type="button" class="btn btn-warning" onclick="event.stopPropagation(); abrirModalEditarProducto(${p.id})" title="Editar repuesto">
-                            <i class="bi bi-pencil-square"></i> Editar
-                        </button>
-                        <button type="button" class="btn ${p.en_oferta ? 'btn-danger' : 'btn-dark text-warning'}" onclick="event.stopPropagation(); alternarOfertaRapida(${p.id})" title="Activar/Desactivar en ofertas">
-                            <i class="bi bi-tag-fill"></i> ${p.en_oferta ? 'Oferta ON' : 'Oferta OFF'}
-                        </button>
-                    </div>
-                ` : ''}
-
-                <div class="card-prod-topbar">
-                    <span class="card-prod-categoria">${p.categoria}</span>
-                    <span class="card-prod-sku" id="sku-prod-${p.id}">${datos.skuCompleto}</span>
-                </div>
-
-                <div class="wix-img-wrapper">
-                    <img src="${rutaImg}" alt="${nombreEsc}" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;">
-                    ${esOferta ? `
-                        <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 700; padding: 3px 6px; border-radius: 4px;">
-                                -15% DTO
-                            </span>
+                <!-- Escenario Visual del Producto -->
+                <div class="card-stage-futuristic wix-img-wrapper">
+                    <div class="card-stage-header">
+                        <span class="card-prod-sku font-mono" id="sku-prod-${p.id}">${datos.skuCompleto}</span>
+                        <div class="card-stage-badges">
+                            ${esOferta ? `
+                                <span class="badge-oferta-mayorista">-15% Mayorista</span>
+                            ` : ''}
+                            ${(esAdminOTrabajador && modoEdicionActivo) ? `
+                                <button type="button" class="btn-admin-edit-mini" onclick="event.stopPropagation(); abrirModalEditarProducto(${p.id})" title="Editar repuesto">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button type="button" class="btn-admin-edit-mini ${p.en_oferta ? 'active' : ''}" onclick="event.stopPropagation(); alternarOfertaRapida(${p.id})" title="${p.en_oferta ? 'Quitar de ofertas' : 'Poner en ofertas'}">
+                                    <i class="bi bi-tag-fill"></i>
+                                </button>
+                            ` : ''}
                         </div>
-                    ` : ''}
+                    </div>
+
+                    <div class="card-stage-image-container">
+                        <img src="${rutaImg}" alt="${nombreEsc}" class="card-floating-img" onerror="this.onerror=null; this.src=FALLBACK_IMG_OFFLINE;">
+                    </div>
                 </div>
 
-                <div class="card-prod-body">
+                <!-- Cuerpo de la Tarjeta -->
+                <div class="card-prod-body d-flex flex-column flex-grow-1">
+                    <span class="card-prod-categoria">${p.categoria}</span>
                     <h6 class="card-prod-title" title="${nombreEsc}">
                         ${nombreEsc}
                     </h6>
 
-                    <div class="card-compat-text">
-                        <strong>Ideal para:</strong> ${p.compatibilidad || compat.resumenModelos}
+                    <!-- Ficha técnica resumida en micro-grid -->
+                    <div class="card-specs-grid mb-2">
+                        <div class="card-spec-chip" title="Viscosidad / Rosca: ${specs.viscRosca}">
+                            <i class="bi bi-gear-fill"></i>
+                            <span>${specs.viscRosca}</span>
+                        </div>
+                        <div class="card-spec-chip" title="Litraje / Dimensiones: ${specs.diamLitros}">
+                            <i class="bi bi-box-seam"></i>
+                            <span>${specs.diamLitros}</span>
+                        </div>
+                        <div class="card-spec-chip card-spec-chip-full" title="${p.compatibilidad || compat.resumenModelos}">
+                            <i class="bi bi-car-front-fill"></i>
+                            <span class="text-truncate">Ideal: ${p.compatibilidad || compat.resumenModelos}</span>
+                        </div>
                     </div>
 
-                    <div class="presentaciones-selector" id="presentaciones-prod-${p.id}">
+                    <!-- Selector de Presentaciones segmentado -->
+                    <div class="presentaciones-selector mb-3" id="presentaciones-prod-${p.id}">
                         ${obtenerPresentaciones(p).map(pres => `
                             <button type="button" 
                                     class="btn-presentacion ${pres.id === presActiva ? 'active' : ''}" 
@@ -1793,23 +1832,28 @@ function generarTarjetaProductoHTML(producto, index = 0, esOfertaForzada = false
                         `).join('')}
                     </div>
 
-                    <div class="card-price-action-row">
-                        <div class="card-price-block">
-                            ${esOferta ? `
-                                <span class="text-muted small text-decoration-line-through font-mono d-block" id="precio-orig-prod-${p.id}" style="font-size: 0.72rem; line-height: 1;">
-                                    Bs. ${datos.precioOriginal.toFixed(2)}
-                                </span>
-                            ` : ''}
-                            <div class="card-price-tag" id="precio-prod-${p.id}">
-                                Bs. ${datos.precioFinal.toFixed(2)}
+                    <!-- Footer de Precio y Compra -->
+                    <div class="card-footer-futuristic mt-auto pt-2 border-top">
+                        <div class="d-flex justify-content-between align-items-end mb-2">
+                            <div class="card-price-block">
+                                ${esOferta ? `
+                                    <span class="card-price-orig" id="precio-orig-prod-${p.id}">
+                                        Bs. ${datos.precioOriginal.toFixed(2)}
+                                    </span>
+                                ` : ''}
+                                <div class="d-flex align-items-baseline gap-1">
+                                    <span class="card-price-tag" id="precio-prod-${p.id}">
+                                        Bs. ${datos.precioFinal.toFixed(2)}
+                                    </span>
+                                    <span class="badge-factura-pill">c/Factura</span>
+                                </div>
                             </div>
-                            <span class="card-price-sublabel">Precio taller c/factura</span>
-                            ${badgeStockHTML}
+                            <div class="text-end">
+                                ${badgeStockHTML}
+                            </div>
                         </div>
 
-                        <div>
-                            ${controlCompraHTML}
-                        </div>
+                        ${controlCompraHTML}
                     </div>
                 </div>
 
@@ -1845,12 +1889,20 @@ function limpiarBuscadorCatalogo() {
     renderizarCatalogo();
 }
 
+let ordenPrecioActual = '';
+
+function cambiarOrdenPrecio(nuevoOrden) {
+    ordenPrecioActual = nuevoOrden;
+    renderizarCatalogo();
+}
+window.cambiarOrdenPrecio = cambiarOrdenPrecio;
+
 function renderizarCatalogo() {
     const contenedor = document.getElementById('catalogoProductos');
     if (!contenedor) return;
     contenedor.innerHTML = '';
 
-    let productosFiltrados = productosTienda;
+    let productosFiltrados = productosTienda.slice();
 
     if (categoriaActual === 'Ofertas') {
         productosFiltrados = productosFiltrados.filter(p => p.en_oferta || p.stock >= 20);
@@ -1905,6 +1957,27 @@ function renderizarCatalogo() {
                    vehiculos.includes(terminoBusqueda) || 
                    presList.includes(terminoBusqueda);
         });
+    }
+
+    // Selector de ordenamiento por precio o nombre
+    if (ordenPrecioActual === 'menor_precio') {
+        productosFiltrados.sort((a, b) => {
+            const presA = presentacionesSeleccionadas[a.id] || obtenerPresentaciones(a)[0].id;
+            const datosA = calcularDatosPresentacion(a, presA, Boolean(a.en_oferta || a.stock >= 20 || categoriaActual === 'Ofertas'));
+            const presB = presentacionesSeleccionadas[b.id] || obtenerPresentaciones(b)[0].id;
+            const datosB = calcularDatosPresentacion(b, presB, Boolean(b.en_oferta || b.stock >= 20 || categoriaActual === 'Ofertas'));
+            return datosA.precioFinal - datosB.precioFinal;
+        });
+    } else if (ordenPrecioActual === 'mayor_precio') {
+        productosFiltrados.sort((a, b) => {
+            const presA = presentacionesSeleccionadas[a.id] || obtenerPresentaciones(a)[0].id;
+            const datosA = calcularDatosPresentacion(a, presA, Boolean(a.en_oferta || a.stock >= 20 || categoriaActual === 'Ofertas'));
+            const presB = presentacionesSeleccionadas[b.id] || obtenerPresentaciones(b)[0].id;
+            const datosB = calcularDatosPresentacion(b, presB, Boolean(b.en_oferta || b.stock >= 20 || categoriaActual === 'Ofertas'));
+            return datosB.precioFinal - datosA.precioFinal;
+        });
+    } else if (ordenPrecioActual === 'nombre') {
+        productosFiltrados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
     }
 
     if (productosFiltrados.length === 0) {
@@ -2859,12 +2932,14 @@ function abrirModalCheckout() {
     };
 
     const elTotalBs = document.getElementById('checkoutMontoTotalBs');
+    const elQRMontoDestacado = document.getElementById('checkoutQRMontoDestacado');
     const elDepositoBs = document.getElementById('depositoMontoTotalBs');
     const elPpBs = document.getElementById('paypalMontoBs');
     const elPpUsd = document.getElementById('paypalMontoUsd');
     const elRefGlosa = document.getElementById('checkoutOrdenRefGlosa');
 
     if (elTotalBs) elTotalBs.innerText = `Bs. ${totalBs.toFixed(2)}`;
+    if (elQRMontoDestacado) elQRMontoDestacado.innerText = `Bs. ${totalBs.toFixed(2)}`;
     if (elDepositoBs) elDepositoBs.innerText = `Bs. ${totalBs.toFixed(2)}`;
     if (elPpBs) elPpBs.innerText = `Bs. ${totalBs.toFixed(2)}`;
     if (elPpUsd) elPpUsd.innerText = `$${totalUsd} USD`;
@@ -2888,6 +2963,8 @@ function abrirModalCheckout() {
     if (modalEl) {
         const bsModal = new bootstrap.Modal(modalEl);
         bsModal.show();
+        // Renderizado vectorial/alta densidad del QR Oficial Yape
+        renderizarQROficialYape();
     }
 }
 
@@ -2962,26 +3039,150 @@ function fallbackCopiar(texto, mensaje) {
     document.body.removeChild(ta);
 }
 
-function descargarQROficial() {
-    const img = document.getElementById('imgQROficial');
-    if (!img || !img.src) {
-        if (typeof Toast !== 'undefined') Toast.fire({ icon: 'info', title: 'Descargando QR oficial...' });
-        return;
+/**
+ * Renderizado Vectorial / Canvas de Alta Densidad del Código QR Oficial de Yape Bolivia
+ * Aplica corrección de errores nivel H y un badge central "Bs." estético que no obstruye localizadores.
+ */
+function renderizarQROficialYape() {
+    const canvas = document.getElementById('canvasQROficial');
+    const imgOficial = document.getElementById('imgQROficial');
+    if (!canvas && !imgOficial) return;
+
+    if (window.QRCode && typeof window.QRCode === 'function') {
+        try {
+            const virtualDiv = document.createElement('div');
+            new QRCode(virtualDiv, {
+                text: YAPE_QR_PAYLOAD,
+                width: 480,
+                height: 480,
+                colorDark: '#581c87', // Púrpura distintivo Yape
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                const qrCanvas = virtualDiv.querySelector('canvas');
+                if (qrCanvas && canvas) {
+                    canvas.width = 480;
+                    canvas.height = 480;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(qrCanvas, 0, 0, 480, 480);
+                    dibujarBadgeCentralQR(canvas);
+
+                    const dataUrl = canvas.toDataURL('image/png');
+                    if (imgOficial) imgOficial.src = dataUrl;
+                    const btnDescarga = document.getElementById('btnDescargarQROficial');
+                    if (btnDescarga) btnDescarga.href = dataUrl;
+                    canvas.style.display = 'block';
+                    if (imgOficial) imgOficial.style.display = 'none';
+                } else {
+                    fallbackRenderizadoVectorial();
+                }
+            }, 60);
+            return;
+        } catch (e) {
+            console.warn('Error al invocar QRCode.js, recurriendo a renderizado vectorial/HD:', e);
+        }
     }
+
+    fallbackRenderizadoVectorial();
+}
+
+function fallbackRenderizadoVectorial() {
+    const canvas = document.getElementById('canvasQROficial');
+    const imgOficial = document.getElementById('imgQROficial');
+
+    const hdImg = new Image();
+    hdImg.crossOrigin = 'anonymous';
+    hdImg.onload = function () {
+        if (canvas) {
+            canvas.width = hdImg.naturalWidth || 500;
+            canvas.height = hdImg.naturalHeight || 500;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(hdImg, 0, 0, canvas.width, canvas.height);
+            canvas.style.display = 'block';
+            if (imgOficial) imgOficial.style.display = 'none';
+
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                const btnDescarga = document.getElementById('btnDescargarQROficial');
+                if (btnDescarga) btnDescarga.href = dataUrl;
+            } catch (err) {}
+        }
+    };
+    hdImg.onerror = function () {
+        if (imgOficial) {
+            imgOficial.src = '/img/qr-yape-vectorial.svg';
+            imgOficial.style.display = 'block';
+        }
+        if (canvas) canvas.style.display = 'none';
+    };
+    hdImg.src = '/img/qr-yape-hd.png';
+}
+
+function dibujarBadgeCentralQR(canvas) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const r = Math.round(w * 0.082); // Radio proporcional seguro dentro del margen de error H
+
+    ctx.save();
+    // Círculo base blanco con borde sutil
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.lineWidth = Math.max(2, Math.round(w * 0.005));
+    ctx.strokeStyle = '#E2E8F0';
+    ctx.stroke();
+
+    // Texto distintivo "Bs." centrado
+    ctx.font = `900 ${Math.round(r * 0.88)}px 'Inter', -apple-system, sans-serif`;
+    ctx.fillStyle = '#581C87';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Bs.', cx, cy + Math.round(r * 0.06));
+    ctx.restore();
+}
+
+function descargarQROficial() {
+    const canvas = document.getElementById('canvasQROficial');
+    const img = document.getElementById('imgQROficial');
+    let dataUrl = null;
+
+    if (canvas && canvas.toDataURL && canvas.style.display !== 'none') {
+        try {
+            dataUrl = canvas.toDataURL('image/png');
+        } catch (e) {
+            console.warn('Canvas export toDataURL failed:', e);
+        }
+    }
+    if (!dataUrl && img && img.src && !img.src.endsWith('.svg')) {
+        dataUrl = img.src;
+    }
+    if (!dataUrl) {
+        dataUrl = '/img/qr-yape-hd.png';
+    }
+
     const a = document.createElement('a');
-    a.href = img.src;
-    a.download = `QR_Golden_Lubricantes_${Date.now()}.png`;
+    a.href = dataUrl;
+    a.download = 'QR_Pago_GOLDEN_Lubricantes.png';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    if (typeof Toast !== 'undefined') Toast.fire({ icon: 'success', title: 'Código QR descargado correctamente' });
+
+    if (typeof Toast !== 'undefined') {
+        Toast.fire({ icon: 'success', title: 'Código QR en alta resolución descargado correctamente' });
+    }
 }
 
 function fallbackQROficial(img) {
-    const total = ordenEnProcesoCheckout ? ordenEnProcesoCheckout.totalBs.toFixed(2) : '100.00';
-    const payload = `GOLDEN-PAY-B2B|ORDEN-${Date.now()}|BS-${total}|CTA-UNION-1000048291045|NIT-1029384756`;
+    if (!img) return;
     img.onerror = null;
-    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payload)}`;
+    img.src = '/img/qr-yape-vectorial.svg';
 }
 
 // Método A: Confirmar Pedido con Pago QR Interoperable (SIMPLE / Yape / Todos los Bancos)

@@ -10,7 +10,7 @@
     <!-- Tipografía Editorial Automotriz: Archivo (Títulos), Work Sans (Cuerpo), Chivo Mono (SKU / Precios) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Estilos Comerciales Automotrices Tecfil -->
     <link rel="stylesheet" href="styles.css?v=27">
 </head>
@@ -147,14 +147,17 @@
 
                     <!-- 2. Controles para Usuario con Sesión Activa -->
                     <div id="tiendaLoggedControls" class="d-none d-flex align-items-center gap-2 flex-wrap">
-                        <!-- Identificación de Usuario Logueado -->
-                        <div class="d-flex align-items-center gap-2 px-2 py-1 rounded" style="background: #F1F5F9; border: 1px solid #E2E8F0;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 28px; height: 28px; background: #B91C1C; font-size: 0.75rem;" id="tiendaUserAvatar">
-                                U
+                        <!-- Identificación de Usuario Logueado (Chip Compacto Futurista) -->
+                        <div class="nav-profile-chip nav-profile-chip-light" id="tiendaProfileChip">
+                            <div class="nav-avatar-wrap">
+                                <div class="nav-avatar-img" id="tiendaUserAvatar">
+                                    U
+                                </div>
+                                <span class="nav-avatar-status" title="Sesión activa"></span>
                             </div>
-                            <div class="d-flex flex-column text-truncate" style="line-height: 1.15; max-width: 140px;">
-                                <span class="fw-bold text-dark text-truncate" style="font-size: 0.76rem;" id="tiendaUserName">Usuario</span>
-                                <span class="badge p-0 text-start text-uppercase font-mono" style="font-size: 0.62rem; color: #D97706; font-weight: 700;" id="tiendaUserRol">CLIENTE</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="nav-profile-name text-dark" id="tiendaUserName">Usuario</span>
+                                <span class="nav-role-badge-tech role-cliente" id="tiendaUserRol">CLIENTE</span>
                             </div>
                         </div>
 
@@ -207,58 +210,54 @@
     <!-- ========================================================================= -->
     <!-- 2. HERO BANNER INDUSTRIAL Y COMERCIAL                                      -->
     <!-- ========================================================================= -->
-    <section class="tecfil-hero" id="heroBanner">
+    <section class="tecfil-hero" id="heroBanner" style="min-height: 250px; padding: 38px 0; background: #141619; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
         <div class="container-fluid px-4 px-lg-5 position-relative" style="z-index: 2;">
             <div class="row align-items-center g-4">
                 
                 <!-- Columna Izquierda: Presentación limpia y directa -->
                 <div class="col-12 col-lg-7">
-                    <span class="badge mb-3 bg-dark text-light border border-secondary" id="heroBadgeText" style="font-size: 0.78rem; font-weight: 500; padding: 5px 10px;">
+                    <span class="badge mb-2 text-white border" id="heroBadgeText" style="background: rgba(185, 28, 28, 0.22); border-color: rgba(185, 28, 28, 0.45) !important; font-size: 0.78rem; font-weight: 600; padding: 5px 12px; border-radius: 9999px;">
                         <i class="bi bi-shield-check text-danger me-1"></i> Distribución oficial en Sucre
                     </span>
                     
-                    <h1 class="mb-3 fw-bold text-white" id="heroTitleText" style="font-size: 2.2rem; line-height: 1.25; letter-spacing: -0.01em;">
+                    <h1 class="mb-2 fw-bold text-white" id="heroTitleText" style="font-size: 2.1rem; line-height: 1.25; letter-spacing: -0.015em;">
                         Distribución de lubricantes y filtros
                     </h1>
                     
-                    <p class="mb-4 text-light text-opacity-75" id="heroParagraphText" style="font-size: 1.05rem; line-height: 1.5; max-width: 580px;">
+                    <p class="mb-3 text-light text-opacity-75" id="heroParagraphText" style="font-size: 1rem; line-height: 1.5; max-width: 580px;">
                         Ventas por mayor y menor para talleres, transporte e industria en Sucre.
                     </p>
 
-                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <a href="#catalogoGeneral" class="btn btn-danger py-2 px-4 fw-semibold shadow-sm" style="background:#B91C1C; border-color:#B91C1C; font-size: 0.88rem; border-radius: 6px;">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <a href="#catalogoGeneral" class="btn btn-danger py-2 px-3 fw-semibold shadow-sm" style="background:#B91C1C; border-color:#B91C1C; font-size: 0.85rem; border-radius: 8px;">
                             Ver catálogo de repuestos
                         </a>
-                        <a href="#lanzamientosOfertas" class="btn btn-outline-light py-2 px-3 fw-medium" style="font-size: 0.88rem; border-radius: 6px;">
+                        <a href="#lanzamientosOfertas" class="btn btn-outline-light py-2 px-3 fw-medium" style="font-size: 0.85rem; border-radius: 8px;">
                             Ofertas destacadas
                         </a>
-                        <button type="button" class="btn btn-outline-warning py-2 px-3 fw-medium admin-only-btn d-none" id="btnEditarBannerHero" onclick="abrirModalEditarBanner()" style="font-size: 0.88rem; border-radius: 6px;">
+                        <button type="button" class="btn btn-outline-warning py-2 px-3 fw-medium admin-only-btn d-none" id="btnEditarBannerHero" onclick="abrirModalEditarBanner()" style="font-size: 0.85rem; border-radius: 8px;">
                             <i class="bi bi-pencil-square me-1"></i> Editar banner
                         </button>
                     </div>
                 </div>
 
                 <!-- Columna Derecha: Composición de producto limpia y equilibrada -->
-                <div class="col-12 col-lg-5 text-center">
-                    <div class="position-relative d-inline-block py-2" style="max-width: 360px; min-height: 250px;">
+                <div class="col-12 col-lg-5 text-center d-none d-md-block">
+                    <div class="position-relative d-inline-block py-2" style="max-width: 320px; min-height: 210px;">
                         <!-- Envase Trasero Izquierdo: Galón OAT Rojo -->
-                        <img src="./img/Refrigerante_Galon_Rojo.svg" alt="Refrigerante OAT" class="tecfil-showcase-float-img position-absolute" style="width: 130px; left: 0; bottom: 15px; transform: rotate(-8deg); z-index: 1;">
+                        <img src="./img/Refrigerante_Galon_Rojo.svg" alt="Refrigerante OAT" class="tecfil-showcase-float-img position-absolute" style="width: 110px; left: 0; bottom: 10px; transform: rotate(-8deg); z-index: 1;">
                         
                         <!-- Envase Central: Aceite Sintético Golden Ultra 5W-30 -->
-                        <img src="./img/Aceite_Sintetico.jpg" alt="Aceite Sintético Golden" class="tecfil-showcase-float-img position-relative" style="width: 180px; border-radius: 8px; z-index: 3; border: 2px solid #E2E8F0;">
+                        <img src="./img/Aceite_Sintetico.jpg" alt="Aceite Sintético Golden" class="tecfil-showcase-float-img position-relative" style="width: 165px; border-radius: 8px; z-index: 3; border: 1px solid rgba(255,255,255,0.15);">
                         
                         <!-- Filtro Delantero Derecho: Filtro de Aceite Spin-On -->
-                        <img src="./img/Filtro_de_Aceite.jpg" alt="Filtro Blindado Spin-On" class="tecfil-showcase-float-img position-absolute" style="width: 120px; right: 0; bottom: 0; transform: rotate(8deg); z-index: 4; border-radius: 6px; border: 2px solid #FFFFFF;">
+                        <img src="./img/Filtro_de_Aceite.jpg" alt="Filtro Blindado Spin-On" class="tecfil-showcase-float-img position-absolute" style="width: 105px; right: 0; bottom: 0; transform: rotate(8deg); z-index: 4; border-radius: 6px; border: 1px solid #FFFFFF;">
                     </div>
 
                     <!-- Elementos de control preservados para compatibilidad de scripts -->
                     <span id="heroDestacadoText" class="d-none">Lotes mayoristas</span>
                     <a href="#lanzamientosOfertas" id="heroDestacadoBtn" class="d-none"></a>
                 </div>
-
-            </div>
-        </div>
-    </section>
 
             </div>
         </div>
@@ -298,7 +297,7 @@
                 </div>
             </div>
 
-            <!-- Contenedor del Carrusel de 4 Fichas Técnicas (Marco Amarillo #FACC15) -->
+            <!-- Contenedor del Carrusel de Ofertas y Lanzamientos -->
             <div class="row g-3" id="tecfilCarouselContainer">
                 <div class="col-12 text-center py-5 text-muted">
                     <span class="spinner-border spinner-border-sm text-danger me-2"></span>Cargando lanzamientos y ofertas...
@@ -403,11 +402,11 @@
                     </div>
                 </div>
 
-                <!-- Columna Derecha: Bloque Amarillo / Ámbar Industrial (#FACC15) -->
+                <!-- Columna Derecha: Escenario Visual de Producto -->
                 <div class="col-12 col-md-4 col-lg-4">
                     <div class="tecfil-showcase-yellow-box">
-                        <img id="showcaseImgPrincipal" src="./img/Aceite_Sintetico.jpg" alt="Producto Principal" style="max-height: 220px; object-fit: contain; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.3)); transform: rotate(-5deg);" class="me-3">
-                        <img id="showcaseImgSecundaria" src="./img/Aceite_Sintetico1.jpg" alt="Producto Secundario" style="max-height: 160px; object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.25)); transform: rotate(10deg); margin-left: -30px;">
+                        <img id="showcaseImgPrincipal" src="./img/Aceite_Sintetico.jpg" alt="Producto Principal" style="max-height: 220px; object-fit: contain; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2)); transform: rotate(-5deg);" class="me-3">
+                        <img id="showcaseImgSecundaria" src="./img/Aceite_Sintetico1.jpg" alt="Producto Secundario" style="max-height: 160px; object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.18)); transform: rotate(10deg); margin-left: -30px;">
                         
                         <!-- Tarjeta Blanca Flotante con Código Destacado -->
                         <div class="tecfil-showcase-floating-card">
@@ -415,7 +414,7 @@
                                 <span class="d-block text-muted text-uppercase" style="font-size: 0.65rem; font-family: 'Inter', sans-serif;">CÓDIGO DESTACADO</span>
                                 <strong class="font-mono text-dark" style="font-size: 0.85rem;" id="showcaseCodigoDestacado">SYN-5W30 • 100% Sintético Larga Vida</strong>
                             </div>
-                            <span class="badge" style="background: #141619; color: #FACC15; font-family: 'Inter', sans-serif; font-size: 0.72rem;">TECFIL SPEC</span>
+                            <span class="badge" style="background: #141619; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 0.72rem; border-radius: 6px; padding: 4px 8px;">TECFIL SPEC</span>
                         </div>
                     </div>
                 </div>
@@ -503,31 +502,31 @@
                 </div>
             </div>
 
-            <!-- Buscador de Mostrador & Selector de Vehículo -->
-            <div class="bg-white p-3 p-md-4 rounded-3 border mb-4 shadow-sm" style="border-color: #E2E8F0;">
+            <!-- Buscador Instantáneo Amplio & Selector de Vehículo -->
+            <div class="bg-white p-3 p-md-4 mb-4" style="border-radius: 14px; border: 1px solid #E2E8F0; box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);">
                 <div class="row align-items-center g-3">
-                    <div class="col-12 col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted ps-3">
+                    <div class="col-12 col-md-7">
+                        <div class="input-group" style="border-radius: 10px; overflow: hidden; border: 1px solid #CBD5E1;">
+                            <span class="input-group-text bg-white border-0 text-muted ps-3">
                                 <i class="bi bi-search"></i>
                             </span>
                             <input type="text" 
                                    id="buscadorCatalogo" 
-                                   class="form-control border-start-0 py-2 ps-1" 
-                                   placeholder="Buscar por código SKU, viscosidad (10W-40, 5W-30) o repuesto..." 
-                                   style="font-size: 0.88rem; outline: none; box-shadow: none;">
+                                   class="form-control border-0 py-2 ps-1" 
+                                   placeholder="Buscar repuesto por nombre, código SKU o viscosidad (10W-40, 5W-30)..." 
+                                   style="font-size: 0.9rem; outline: none; box-shadow: none;">
                             <button class="btn btn-transparent border-0 text-secondary pe-3 d-none" id="btnLimpiarBuscador" type="button" onclick="limpiarBuscadorCatalogo()" title="Limpiar búsqueda">
                                 <i class="bi bi-x-circle-fill text-muted"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="col-12 col-md-6">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-danger ps-3">
+                    <div class="col-12 col-md-5">
+                        <div class="input-group" style="border-radius: 10px; overflow: hidden; border: 1px solid #CBD5E1;">
+                            <span class="input-group-text bg-white border-0 text-danger ps-3">
                                 <i class="bi bi-car-front-fill"></i>
                             </span>
-                            <select id="filtroVehiculo" class="form-select border-start-0 py-2" style="font-size: 0.85rem; font-weight: 500; outline: none; box-shadow: none;" onchange="filtrarPorVehiculo(this.value)">
+                            <select id="filtroVehiculo" class="form-select border-0 py-2" style="font-size: 0.85rem; font-weight: 500; outline: none; box-shadow: none;" onchange="filtrarPorVehiculo(this.value)">
                                 <option value="">Filtrar por vehículo: Todos los modelos</option>
                                 <option value="hilux">Toyota Hilux</option>
                                 <option value="corolla_probox">Toyota Corolla &amp; Probox</option>
@@ -540,30 +539,45 @@
                 </div>
             </div>
 
-            <!-- Pestañas de Categoría Comercial & Píldoras de Viscosidad SAE -->
+            <!-- Pestañas de Categoría Comercial & Selector de Ordenamiento por Precio -->
             <div class="mb-4">
-                <div class="d-flex justify-content-start flex-wrap gap-2 mb-2">
-                    <button class="btn btn-secondary active px-3" onclick="filtrarCategoria('Todos', this)">
-                        Todos los repuestos
-                    </button>
-                    <button class="btn btn-secondary px-3" onclick="filtrarCategoria('Ofertas', this)">
-                        En Oferta (-15%)
-                    </button>
-                    <button class="btn btn-secondary px-3" onclick="filtrarCategoria('Aceites Minerales', this)">
-                        Aceites Minerales
-                    </button>
-                    <button class="btn btn-secondary px-3" onclick="filtrarCategoria('Aceites Sintéticos', this)">
-                        Aceites Sintéticos
-                    </button>
-                    <button class="btn btn-secondary px-3" onclick="filtrarCategoria('Filtros de Aceite', this)">
-                        Filtros de Aceite
-                    </button>
-                    <button class="btn btn-secondary px-3" onclick="filtrarCategoria('Filtros de Aire', this)">
-                        Filtros de Aire
-                    </button>
-                    <button class="btn btn-secondary px-3" onclick="filtrarCategoria('Refrigerantes y Líquidos', this)">
-                        Refrigerantes y Líquidos
-                    </button>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-2">
+                    <div class="d-flex align-items-center flex-wrap gap-2" id="contenedorFiltrosCategoria">
+                        <button class="btn btn-filter-stitch active" onclick="filtrarCategoria('Todos', this)">
+                            Todos
+                        </button>
+                        <button class="btn btn-filter-stitch" onclick="filtrarCategoria('Aceites Sintéticos', this)">
+                            Aceites Sintéticos
+                        </button>
+                        <button class="btn btn-filter-stitch" onclick="filtrarCategoria('Aceites Minerales', this)">
+                            Aceites Minerales
+                        </button>
+                        <button class="btn btn-filter-stitch" onclick="filtrarCategoria('Filtros de Aceite', this)">
+                            Filtros de Aceite
+                        </button>
+                        <button class="btn btn-filter-stitch" onclick="filtrarCategoria('Filtros de Aire', this)">
+                            Filtros de Aire
+                        </button>
+                        <button class="btn btn-filter-stitch" onclick="filtrarCategoria('Refrigerantes y Líquidos', this)">
+                            Refrigerantes y Líquidos
+                        </button>
+                        <button class="btn btn-filter-stitch btn-filter-oferta" onclick="filtrarCategoria('Ofertas', this)">
+                            <i class="bi bi-tag-fill me-1"></i>En Oferta (-15%)
+                        </button>
+                    </div>
+
+                    <!-- Selector de Ordenamiento por Precio -->
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <label for="selectOrdenCatalogo" class="text-secondary small fw-semibold text-nowrap d-none d-sm-inline" style="font-size: 0.8rem;">
+                            <i class="bi bi-arrow-down-up text-danger me-1"></i>Ordenar por:
+                        </label>
+                        <select id="selectOrdenCatalogo" class="form-select form-select-sm" style="border-radius: 9999px; font-size: 0.82rem; font-weight: 600; border-color: #CBD5E1; min-width: 175px; padding: 6px 14px;" onchange="cambiarOrdenPrecio(this.value)">
+                            <option value="">Relevancia / Destacados</option>
+                            <option value="menor_precio">Precio: Menor a Mayor</option>
+                            <option value="mayor_precio">Precio: Mayor a Menor</option>
+                            <option value="nombre">Nombre (A - Z)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Fila 2: Píldoras de Viscosidad SAE -->
@@ -582,6 +596,15 @@
                     </button>
                     <button type="button" class="btn-viscosidad-pill" onclick="filtrarViscosidad('15W-40', this)">
                         15W-40
+                    </button>
+                    <button type="button" class="btn-viscosidad-pill" onclick="filtrarViscosidad('20W-50', this)">
+                        20W-50
+                    </button>
+                    <button type="button" class="btn-viscosidad-pill" onclick="filtrarViscosidad('DOT-4', this)">
+                        DOT-4
+                    </button>
+                </div>
+            </div>
                     </button>
                     <button type="button" class="btn-viscosidad-pill" onclick="filtrarViscosidad('20W-50', this)">
                         20W-50
@@ -1310,7 +1333,7 @@
                                                 Activar en Carrusel de Ofertas Mayoristas
                                             </label>
                                             <small class="d-block text-muted" style="font-size: 0.74rem;">
-                                                Al activarlo, se destacará automáticamente en la sección "Lanzamientos y Ofertas" con marco amarillo.
+                                                Al activarlo, se destacará automáticamente en la sección "Lanzamientos y Ofertas" con pastilla de oferta.
                                             </small>
                                         </div>
 
@@ -1450,29 +1473,49 @@
                         <!-- ========================================================================= -->
                         <div class="tab-pane fade show active" id="tab-qr-pane" role="tabpanel" tabindex="0">
                             <div class="row g-4 align-items-center">
-                                <!-- Columna QR Oficial -->
+                                <!-- Columna QR Oficial Vectorial -->
                                 <div class="col-md-5 text-center border-end pe-md-4">
-                                    <div class="p-3 bg-white border rounded shadow-sm mb-3">
-                                        <div id="checkoutCodigoQR" class="d-flex justify-content-center align-items-center position-relative mb-2" style="min-height: 220px;">
-                                            <img id="imgQROficial" src="/img/qr-golden-oficial.png" alt="QR Oficial Golden Lubricantes" class="img-fluid rounded border shadow-sm" style="max-width: 210px; max-height: 250px; object-fit: contain;" onerror="fallbackQROficial(this)">
-                                        </div>
-                                        <div class="text-center">
-                                            <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-family: 'Inter', sans-serif; font-size: 0.72rem;">
-                                                <i class="bi bi-phone me-1"></i>QR INTEROPERABLE BOLIVIA
+                                    <div class="p-3 bg-white border mb-3 text-center" style="background: #FFFFFF; border: 1px solid #E2E8F0 !important; border-radius: 16px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);">
+                                        <!-- Encabezado de la Tarjeta -->
+                                        <div class="d-flex align-items-center justify-content-center gap-2 mb-2 pb-2 border-bottom" style="border-color: #F1F5F9 !important;">
+                                            <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-size: 0.74rem; padding: 4px 10px; border-radius: 9999px;">
+                                                <i class="bi bi-qr-code-scan me-1"></i>Simple
                                             </span>
-                                            <div class="fw-bold text-dark mt-1" style="font-size: 0.84rem;">Nelson Polares Ortiz</div>
-                                            <p class="small text-muted mb-0" style="font-size: 0.74rem;">
-                                                Válido para Yape, Banco Unión, BCP, BNB, Bisa, Mercantil, Ganadero, FIE y billeteras móviles.
+                                            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.88rem; letter-spacing: -0.2px;">Pago con QR Simple / Yape Bolivia (Bs.)</h6>
+                                        </div>
+
+                                        <!-- Monto exacto a transferir -->
+                                        <div class="mb-3 p-2 rounded" style="background: #FEF2F2; border: 1px solid #FECACA;">
+                                            <span class="text-secondary small fw-semibold d-block" style="font-size: 0.72rem; text-transform: none;">Monto exacto a transferir:</span>
+                                            <span class="fs-4 fw-bold text-danger font-mono" id="checkoutQRMontoDestacado" style="font-feature-settings: 'tnum';">Bs. 0.00</span>
+                                        </div>
+
+                                        <!-- Contenedor QR Vectorial / Canvas de Alta Densidad -->
+                                        <div id="checkoutCodigoQR" class="d-flex justify-content-center align-items-center position-relative mb-2 p-2 bg-white" style="border-radius: 12px; min-height: 230px; border: 1px solid #F1F5F9;">
+                                            <canvas id="canvasQROficial" width="500" height="500" style="width: 215px; height: 215px; display: block; border-radius: 10px;"></canvas>
+                                            <img id="imgQROficial" src="/img/qr-yape-vectorial.svg" alt="QR Oficial Yape - Nelson Polares Ortiz" class="img-fluid rounded border shadow-sm" style="display: none; max-width: 215px; max-height: 250px; object-fit: contain; border-radius: 10px !important;" onerror="fallbackQROficial(this)">
+                                        </div>
+
+                                        <!-- Datos del titular y vigencia -->
+                                        <div class="text-center pt-1">
+                                            <div class="fw-bold text-dark mt-1" style="font-size: 0.95rem; color: #6b21a8 !important;">
+                                                Nelson Polares Ortiz
+                                            </div>
+                                            <div class="text-muted small mt-1" style="font-size: 0.78rem;">
+                                                <i class="bi bi-calendar-check text-success me-1"></i><strong>Vigencia:</strong> Válido hasta el 19 dic. 2026
+                                            </div>
+                                            <p class="text-muted mt-2 mb-0" style="font-size: 0.73rem; line-height: 1.35;">
+                                                Acepta pagos directos sin comisión desde Yape y todos los bancos de Bolivia (Banco Unión, BCP, BNB, Bisa, Mercantil, Ganadero, FIE y cooperativas).
                                             </p>
                                         </div>
                                     </div>
 
-                                    <button type="button" class="btn btn-outline-dark btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" onclick="descargarQROficial()">
+                                    <a href="/img/qr-yape-hd.png" download="QR_Pago_GOLDEN_Lubricantes.png" id="btnDescargarQROficial" class="btn btn-outline-dark btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center gap-2 py-2 mb-2" style="border-radius: 8px; border-color: #CBD5E1;" onclick="descargarQROficial(); return false;">
                                         <i class="bi bi-download text-danger"></i>
-                                        <span>Descargar QR</span>
-                                    </button>
+                                        <span>Descargar QR en alta resolución</span>
+                                    </a>
 
-                                    <div class="mt-3 p-2 bg-light rounded text-start" style="font-size: 0.75rem;">
+                                    <div class="p-2 bg-light rounded text-start" style="font-size: 0.75rem; border: 1px solid #E2E8F0;">
                                         <strong>Titular de la cuenta receptora:</strong><br>
                                         Nelson Polares Ortiz (GOLDEN Lubricantes &amp; Filtros)<br>
                                         <span class="text-muted">Acepta transferencias directas desde cualquier banco de Bolivia vía QR SIMPLE / Yape sin comisión.</span>
