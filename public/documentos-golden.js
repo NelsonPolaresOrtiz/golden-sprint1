@@ -132,10 +132,10 @@
             ? `${pedido.despacho_chofer} (Placa: ${pedido.despacho_placa || 'Interna'})`
             : (pedido.empaque_responsable || 'Almacén Central Sucre');
 
-        const clienteNombre = pedido.cliente || pedido.cliente_nombre || 'Taller Mecánico Autorizado';
+        const clienteNombre = pedido.nombre_destinatario || pedido.cliente || pedido.cliente_nombre || 'Taller Mecánico Autorizado';
         const clienteNit = pedido.cliente_nit || pedido.nit || '1029384756';
-        const clienteDir = pedido.cliente_direccion || pedido.direccion_envio || 'Av. Jaime Mendoza, Sucre';
-        const clienteTel = pedido.cliente_telefono || pedido.telefono || '(+591) 4 64-52890';
+        const clienteDir = pedido.direccion_entrega || pedido.direccion_final || pedido.cliente_direccion || pedido.direccion_envio || 'Av. Jaime Mendoza, Sucre';
+        const clienteTel = pedido.telefono_contacto || pedido.telefono_final || pedido.cliente_telefono || pedido.telefono || '(+591) 4 64-52890';
 
         // Detalle de ítems con anchos fijos y word-wrap
         let filasItemsHTML = '';

@@ -373,15 +373,43 @@ function renderizarMenu(paginaActiva) {
             <div class="d-flex align-items-center flex-nowrap gap-2 ms-auto flex-shrink-0" style="white-space: nowrap;">
                 
                 ${!esCliente ? `
-                <!-- Campanita de Notificaciones Minimalista (36px x 36px) -->
-                <div class="position-relative flex-shrink-0">
-                    <button id="btnCampanaNotificaciones" class="btn-nav-notif-futuristic" onclick="mostrarModalAlertasStock()" title="Control de reposición y stock crítico" aria-label="Notificaciones de reposición">
+                <!-- Campanita de Notificaciones con Popover Desplegable Moderno -->
+                <div class="position-relative flex-shrink-0 notificaciones-dropdown-container" id="notificacionesContainer">
+                    <button id="btnCampanaNotificaciones" class="btn-nav-notif-futuristic" onclick="togglePopoverNotificaciones(event)" title="Notificaciones del Sistema" aria-label="Notificaciones del Sistema">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-bell-svg">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
                         <span id="badgeNotificacionesStock" class="nav-bell-badge" style="display: none;">0</span>
                     </button>
+
+                    <!-- Popover Desplegable de Notificaciones (#popoverNotificaciones) -->
+                    <div id="popoverNotificaciones" class="popover-notificaciones-panel shadow-lg d-none" role="dialog" aria-labelledby="popoverNotifTitulo">
+                        <!-- Cabecera del Panel -->
+                        <div class="popover-notif-header d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: #F1F5F9 !important;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-bell-fill text-danger" style="font-size: 0.95rem;"></i>
+                                <h6 class="mb-0 fw-bold text-dark" id="popoverNotifTitulo" style="font-size: 0.88rem; letter-spacing: -0.2px;">Notificaciones del Sistema</h6>
+                                <span id="popoverNotifBadgeCount" class="badge bg-danger rounded-pill font-mono" style="font-size: 0.68rem; padding: 2px 7px;">0</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none text-secondary p-0 fw-medium" id="btnMarcarLeidas" onclick="marcarNotificacionesLeidas(event)" style="font-size: 0.75rem;">
+                                Marcar leídas
+                            </button>
+                        </div>
+
+                        <!-- Lista Dinámica de Notificaciones (Scrollable) -->
+                        <div class="popover-notif-list" id="popoverNotifLista" style="max-height: 380px; overflow-y: auto;">
+                            <div class="text-center py-4 text-muted small">
+                                <span class="spinner-border spinner-border-sm me-2 text-danger"></span> Cargando notificaciones...
+                            </div>
+                        </div>
+
+                        <!-- Pie del Panel -->
+                        <a href="auditoria.html" class="popover-notif-footer d-flex align-items-center justify-content-between px-3 py-2 text-decoration-none bg-light text-secondary border-top" style="border-color: #F1F5F9 !important; font-size: 0.78rem;">
+                            <span class="fw-medium">Ver historial completo en Auditoría</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
                 ` : ''}
 
@@ -837,8 +865,16 @@ window.cerrarSesion = function () {
 window.logout = window.cerrarSesion;
 
 // =========================================================================
-// MONITOREO DE STOCK EN TIEMPO REAL (SOLO PARA PERSONAL INTERNO)
+// CENTRO DE NOTIFICACIONES MODERNO EN TIEMPO REAL (#popoverNotificaciones)
 // =========================================================================
+let cacheNotificaciones = {
+    productosCriticos: [],
+    pedidosPendientes: [],
+    leidas: false,
+    timestamp: 0
+};
+
+// Variable para retrocompatibilidad
 let cacheProductosCriticos = [];
 
 async function iniciarMonitorAlertasStock() {
@@ -847,107 +883,290 @@ async function iniciarMonitorAlertasStock() {
         if (usuario && (usuario.rol === 'CLIENTE_B2B' || usuario.rol === 'CLIENTE_B2C')) {
             return; // No ejecutar para clientes
         }
-
-        const res = await fetch('/api/productos?t=' + Date.now());
-        if (!res.ok) return;
-        const productos = await res.json();
-        if (!Array.isArray(productos)) return;
-
-        cacheProductosCriticos = productos.filter(p => p.stock <= p.stock_minimo);
-        const badge = document.getElementById('badgeNotificacionesStock');
-
-        if (badge) {
-            if (cacheProductosCriticos.length > 0) {
-                badge.innerText = cacheProductosCriticos.length;
-                badge.style.display = 'inline-flex';
-            } else {
-                badge.innerText = '0';
-                badge.style.display = 'none';
-            }
-        }
+        await cargarNotificacionesSistema(false);
     } catch (e) {
-        console.warn("Monitor de alertas de stock en espera...", e.message);
+        console.warn("Monitor de notificaciones en espera...", e.message);
     }
 }
 
-function mostrarModalAlertasStock() {
-    if (!cacheProductosCriticos || cacheProductosCriticos.length === 0) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: '<span class="text-success fw-bold"><i class="bi bi-shield-check me-2"></i>Almacén en orden</span>',
-                html: '<p class="text-muted small mb-0">No se registran repuestos en nivel crítico. Todas las referencias cuentan con stock por encima del nivel de reposición mínimo.</p>',
-                icon: 'success',
-                background: '#FFFFFF',
-                color: '#1C1917',
-                confirmButtonColor: '#C81E1E',
-                confirmButtonText: 'Entendido'
-            });
-        } else {
-            alert("No hay alertas de stock crítico.");
-        }
+async function cargarNotificacionesSistema(forzar = false) {
+    const ahora = Date.now();
+    // Cache de 12 segundos para evitar sobrecarga de peticiones
+    if (!forzar && ahora - cacheNotificaciones.timestamp < 12000 && cacheNotificaciones.timestamp > 0) {
+        renderizarListaNotificaciones();
+        actualizarBadgesCampana();
         return;
     }
 
-    const filasHTML = cacheProductosCriticos.map(p => {
-        const esAgotado = p.stock <= 0;
-        const badgeEstado = esAgotado 
-            ? '<span class="badge bg-danger text-white px-2 py-1 small">Agotado</span>'
-            : `<span class="badge bg-warning text-dark px-2 py-1 small fw-bold">Crítico (${p.stock})</span>`;
-        return `
-            <tr>
-                <td class="text-start py-2 font-monospace text-dark small">${p.sku}</td>
-                <td class="text-start py-2 text-dark small">${p.nombre}</td>
-                <td class="text-center py-2 font-monospace text-muted small">${p.stock_minimo}</td>
-                <td class="text-center py-2">${badgeEstado}</td>
-            </tr>
-        `;
-    }).join('');
+    try {
+        const [resProds, resPedidos] = await Promise.all([
+            fetch('/api/productos?t=' + ahora).catch(() => null),
+            fetch('/api/pedidos?t=' + ahora).catch(() => null)
+        ]);
 
-    const tablaHTML = `
-        <div class="text-start mb-3">
-            <span class="text-muted small">Se registran <strong class="text-dark">${cacheProductosCriticos.length} repuestos</strong> con existencias iguales o inferiores al stock mínimo de reposición:</span>
-        </div>
-        <div class="table-responsive rounded-1 mb-2 border" style="max-height: 260px; overflow-y: auto; background: #FFFFFF;">
-            <table class="table table-sm align-middle mb-0" style="color: #1C1917;">
-                <thead>
-                    <tr style="background: #1C1917; color: #FFFFFF;">
-                        <th class="py-2 text-start small">SKU</th>
-                        <th class="py-2 text-start small">Repuesto</th>
-                        <th class="py-2 text-center small">Mínimo</th>
-                        <th class="py-2 text-center small">Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filasHTML}
-                </tbody>
-            </table>
-        </div>
-    `;
+        let productosCriticos = [];
+        if (resProds && resProds.ok) {
+            const prods = await resProds.json();
+            if (Array.isArray(prods)) {
+                productosCriticos = prods.filter(p => p.stock <= p.stock_minimo)
+                    .sort((a, b) => a.stock - b.stock);
+            }
+        }
 
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: '<div class="d-flex align-items-center justify-content-center gap-2" style="color: #C81E1E;"><i class="bi bi-bell-fill"></i><span>Control de reposición y stock</span></div>',
-            html: tablaHTML,
-            icon: 'warning',
-            background: '#FFFFFF',
-            color: '#1C1917',
-            showCancelButton: true,
-            confirmButtonColor: '#C81E1E',
-            cancelButtonColor: '#64748B',
-            confirmButtonText: '<i class="bi bi-truck-flatbed me-1"></i> Ir a reposición / compras',
-            cancelButtonText: 'Cerrar',
-            customClass: {
-                popup: 'rounded-2 border shadow'
+        let pedidosPendientes = [];
+        if (resPedidos && resPedidos.ok) {
+            const pedidos = await resPedidos.json();
+            if (Array.isArray(pedidos)) {
+                pedidosPendientes = pedidos.filter(p => {
+                    const estPago = String(p.estado_pago || '').toUpperCase();
+                    const est = String(p.estado || '').toUpperCase();
+                    const estLog = String(p.estado_logistica || '').toUpperCase();
+                    return estPago === 'PENDIENTE' || est === 'PENDIENTE' || est === 'EMPAQUE' || estLog.includes('ORDEN RECIBIDA');
+                }).slice(0, 10);
             }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = 'compras.html';
-            }
-        });
-    } else {
-        alert(`Alerta de stock: ${cacheProductosCriticos.length} repuestos críticos.`);
+        }
+
+        cacheNotificaciones.productosCriticos = productosCriticos;
+        cacheNotificaciones.pedidosPendientes = pedidosPendientes;
+        cacheNotificaciones.timestamp = ahora;
+        cacheProductosCriticos = productosCriticos; // Retrocompatibilidad
+
+        actualizarBadgesCampana();
+        renderizarListaNotificaciones();
+
+    } catch (err) {
+        console.warn('Error al sincronizar notificaciones del sistema:', err);
+        const listaEl = document.getElementById('popoverNotifLista');
+        if (listaEl) {
+            listaEl.innerHTML = `
+                <div class="text-center py-4 px-3 text-muted small">
+                    <i class="bi bi-wifi-off text-warning fs-4 d-block mb-1"></i>
+                    <span>Sincronizando con el servidor ERP...</span>
+                </div>
+            `;
+        }
     }
 }
+
+function actualizarBadgesCampana() {
+    const total = cacheNotificaciones.productosCriticos.length + cacheNotificaciones.pedidosPendientes.length;
+    const badges = [
+        document.getElementById('badgeNotificacionesStock'),
+        document.getElementById('badgeNotificacionesSidebar'),
+        document.getElementById('badgeNotificacionesStockTienda')
+    ];
+
+    badges.forEach(b => {
+        if (!b) return;
+        if (total > 0 && !cacheNotificaciones.leidas) {
+            b.innerText = total > 99 ? '99+' : String(total);
+            b.style.display = 'inline-flex';
+        } else {
+            b.innerText = '0';
+            b.style.display = 'none';
+        }
+    });
+
+    const badgeHeader = document.getElementById('popoverNotifBadgeCount');
+    if (badgeHeader) {
+        badgeHeader.innerText = (total > 0 && !cacheNotificaciones.leidas) ? String(total) : '0';
+        badgeHeader.className = (total > 0 && !cacheNotificaciones.leidas) 
+            ? 'badge bg-danger rounded-pill font-mono' 
+            : 'badge bg-secondary rounded-pill font-mono';
+    }
+}
+
+function renderizarListaNotificaciones() {
+    const listaEl = document.getElementById('popoverNotifLista');
+    if (!listaEl) return;
+
+    const prods = cacheNotificaciones.productosCriticos;
+    const pedidos = cacheNotificaciones.pedidosPendientes;
+    const total = prods.length + pedidos.length;
+
+    if (total === 0 || cacheNotificaciones.leidas) {
+        listaEl.innerHTML = `
+            <div class="text-center py-5 px-3">
+                <div class="mb-2 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 48px; height: 48px; background: #F0FDF4; color: #16A34A; font-size: 24px;">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <div class="fw-bold text-dark small mb-1">Todo al día</div>
+                <div class="text-muted" style="font-size: 0.78rem;">No tienes alertas pendientes.</div>
+            </div>
+        `;
+        return;
+    }
+
+    let itemsHTML = '';
+
+    // 1. Productos con Stock Crítico o Agotados (enlace directo a inventario.html)
+    prods.slice(0, 15).forEach(p => {
+        const esAgotado = (p.stock <= 0);
+        const iconClass = esAgotado ? 'popover-notif-icon-danger' : 'popover-notif-icon-warning';
+        const iconSvg = esAgotado ? '<i class="bi bi-x-octagon-fill"></i>' : '<i class="bi bi-exclamation-triangle-fill"></i>';
+        const badgeTag = esAgotado
+            ? '<span class="badge bg-danger text-white rounded-pill px-2 py-0" style="font-size: 0.65rem;">AGOTADO</span>'
+            : `<span class="badge bg-warning text-dark rounded-pill px-2 py-0 fw-bold" style="font-size: 0.65rem;">CRÍTICO (${p.stock})</span>`;
+
+        itemsHTML += `
+            <a href="inventario.html" class="popover-notif-item" title="Ver en Inventario">
+                <div class="popover-notif-icon-wrap ${iconClass}">
+                    ${iconSvg}
+                </div>
+                <div class="popover-notif-content">
+                    <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+                        <span class="popover-notif-title text-truncate">${p.nombre}</span>
+                        ${badgeTag}
+                    </div>
+                    <div class="popover-notif-desc">
+                        SKU <span class="font-mono text-dark fw-semibold">${p.sku}</span> · Stock: <strong class="${esAgotado ? 'text-danger' : 'text-warning'}">${p.stock}</strong> vs Mínimo: ${p.stock_minimo}
+                    </div>
+                    <div class="popover-notif-meta">
+                        <i class="bi bi-box-seam me-1"></i>Almacén e Inventario · Reponer stock
+                    </div>
+                </div>
+            </a>
+        `;
+    });
+
+    // 2. Pedidos pendientes de verificación o empaque (enlace a cobranzas.html o logistica.html)
+    pedidos.slice(0, 10).forEach(ped => {
+        const esPagoPendiente = String(ped.estado_pago || '').toUpperCase() === 'PENDIENTE';
+        const iconClass = esPagoPendiente ? 'popover-notif-icon-warning' : 'popover-notif-icon-primary';
+        const iconSvg = esPagoPendiente ? '<i class="bi bi-cash-coin"></i>' : '<i class="bi bi-truck"></i>';
+        const destino = esPagoPendiente ? 'cobranzas.html' : 'logistica.html';
+        const badgeTag = esPagoPendiente
+            ? '<span class="badge bg-warning text-dark rounded-pill px-2 py-0 fw-bold" style="font-size: 0.65rem;">PAGO PENDIENTE</span>'
+            : '<span class="badge bg-primary text-white rounded-pill px-2 py-0" style="font-size: 0.65rem;">DESPACHO</span>';
+
+        itemsHTML += `
+            <a href="${destino}" class="popover-notif-item" title="Gestionar orden">
+                <div class="popover-notif-icon-wrap ${iconClass}">
+                    ${iconSvg}
+                </div>
+                <div class="popover-notif-content">
+                    <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+                        <span class="popover-notif-title text-truncate">Pedido #${ped.id} · ${ped.cliente || 'Cliente'}</span>
+                        ${badgeTag}
+                    </div>
+                    <div class="popover-notif-desc">
+                        Total: <strong class="text-danger font-mono">Bs. ${parseFloat(ped.total || 0).toFixed(2)}</strong> · ${ped.metodo_pago || 'QR Simple'}
+                    </div>
+                    <div class="popover-notif-meta">
+                        <i class="bi bi-arrow-up-right-circle me-1"></i>${destino === 'cobranzas.html' ? 'Cobranzas' : 'Logística & Despacho'}
+                    </div>
+                </div>
+            </a>
+        `;
+    });
+
+    listaEl.innerHTML = itemsHTML;
+}
+
+function marcarNotificacionesLeidas(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    cacheNotificaciones.leidas = true;
+    actualizarBadgesCampana();
+    renderizarListaNotificaciones();
+}
+
+function garantizarPopoverNotificaciones(containerDestino) {
+    let popover = document.getElementById('popoverNotificaciones');
+    if (!popover) {
+        popover = document.createElement('div');
+        popover.id = 'popoverNotificaciones';
+        popover.className = 'popover-notificaciones-panel shadow-lg d-none';
+        popover.setAttribute('role', 'dialog');
+        popover.setAttribute('aria-labelledby', 'popoverNotifTitulo');
+        popover.innerHTML = `
+            <div class="popover-notif-header d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: #F1F5F9 !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-bell-fill text-danger" style="font-size: 0.95rem;"></i>
+                    <h6 class="mb-0 fw-bold text-dark" id="popoverNotifTitulo" style="font-size: 0.88rem; letter-spacing: -0.2px;">Notificaciones del Sistema</h6>
+                    <span id="popoverNotifBadgeCount" class="badge bg-danger rounded-pill font-mono" style="font-size: 0.68rem; padding: 2px 7px;">0</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-link text-decoration-none text-secondary p-0 fw-medium" id="btnMarcarLeidas" onclick="marcarNotificacionesLeidas(event)" style="font-size: 0.75rem;">
+                    Marcar leídas
+                </button>
+            </div>
+            <div class="popover-notif-list" id="popoverNotifLista" style="max-height: 380px; overflow-y: auto;">
+                <div class="text-center py-4 text-muted small">
+                    <span class="spinner-border spinner-border-sm me-2 text-danger"></span> Cargando notificaciones...
+                </div>
+            </div>
+            <a href="auditoria.html" class="popover-notif-footer d-flex align-items-center justify-content-between px-3 py-2 text-decoration-none bg-light text-secondary border-top" style="border-color: #F1F5F9 !important; font-size: 0.78rem;">
+                <span class="fw-medium">Ver historial completo en Auditoría →</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        `;
+        const contenedor = containerDestino || document.querySelector('.notificaciones-dropdown-container') || document.body;
+        contenedor.appendChild(popover);
+    }
+    return popover;
+}
+
+function togglePopoverNotificaciones(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    const triggerBtn = (event && event.currentTarget) || document.getElementById('btnCampanaNotificaciones');
+    const container = triggerBtn ? triggerBtn.closest('.notificaciones-dropdown-container') : null;
+    const popover = garantizarPopoverNotificaciones(container);
+
+    if (container && popover.parentElement !== container) {
+        container.appendChild(popover);
+    }
+
+    const estaOculto = popover.classList.contains('d-none');
+    if (estaOculto) {
+        // Cerrar cualquier otro dropdown abierto (ej. perfil de usuario)
+        document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+        popover.classList.remove('d-none');
+        cargarNotificacionesSistema(true);
+    } else {
+        popover.classList.add('d-none');
+    }
+}
+
+// Escuchador global: cerrar popover al hacer clic fuera o presionar Escape
+document.addEventListener('click', function(e) {
+    const popover = document.getElementById('popoverNotificaciones');
+    if (!popover || popover.classList.contains('d-none')) return;
+
+    const btnCampana = document.getElementById('btnCampanaNotificaciones');
+    const btnSidebar = document.getElementById('btnCampanaSidebar');
+    const btnTienda = document.getElementById('btnCampanaNotificacionesTienda');
+
+    if (popover.contains(e.target)) return;
+    if (btnCampana && btnCampana.contains(e.target)) return;
+    if (btnSidebar && btnSidebar.contains(e.target)) return;
+    if (btnTienda && btnTienda.contains(e.target)) return;
+
+    popover.classList.add('d-none');
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const popover = document.getElementById('popoverNotificaciones');
+        if (popover && !popover.classList.contains('d-none')) {
+            popover.classList.add('d-none');
+        }
+    }
+});
+
+// Función de compatibilidad
+function mostrarModalAlertasStock(event) {
+    togglePopoverNotificaciones(event);
+}
+
+window.togglePopoverNotificaciones = togglePopoverNotificaciones;
+window.marcarNotificacionesLeidas = marcarNotificacionesLeidas;
+window.cargarNotificacionesSistema = cargarNotificacionesSistema;
+window.mostrarModalAlertasStock = mostrarModalAlertasStock;
 
 // =========================================================================
 // EXPORTACIÓN A CSV / EXCEL
@@ -1007,7 +1226,7 @@ function exportarTablaCSV(tablaId, nombreArchivo = 'Reporte_GOLDEN', tituloRepor
         if (typeof Swal !== 'undefined') {
             Swal.fire({ icon: 'warning', title: 'Tabla no encontrada', text: 'No se pudo ubicar el elemento de datos para exportar.', background: '#FFFFFF', color: '#1C1917' });
         } else {
-            alert('Tabla no encontrada.');
+            console.warn('Tabla no encontrada para exportar.');
         }
         return;
     }
@@ -1124,7 +1343,7 @@ async function generarRecibo(pedidoId, modo = 'descargar') {
                 text: 'No se encontró el contenedor #plantilla-factura en la vista.'
             });
         } else {
-            alert('No se encontró el contenedor #plantilla-factura.');
+            console.warn('No se encontró el contenedor #plantilla-factura en la vista.');
         }
         return;
     }

@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#07090b"/>
+      <stop offset="45%" stop-color="#12151a"/>
+      <stop offset="85%" stop-color="#171b22"/>
+      <stop offset="100%" stop-color="#0a0c0f"/>
+    </linearGradient>
+    <linearGradient id="truckBody" x1="0" y1="0" x2="1" y2="0.8">
+      <stop offset="0%" stop-color="#333945"/>
+      <stop offset="25%" stop-color="#1c2027"/>
+      <stop offset="70%" stop-color="#12151b"/>
+      <stop offset="100%" stop-color="#282e38"/>
+    </linearGradient>
+    <linearGradient id="amberGlow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <filter id="glowBlur2" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bgGrad2)"/>
+
+  <!-- Speed Trails & Highway Geometry -->
+  <g opacity="0.15">
+    <line x1="-100" y1="200" x2="1300" y2="160" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="16 32"/>
+    <line x1="-100" y1="480" x2="1300" y2="440" stroke="#f59e0b" stroke-width="2"/>
+    <line x1="-100" y1="620" x2="1300" y2="610" stroke="#ef4444" stroke-width="1.2"/>
+  </g>
+
+  <!-- Highway Ground Surface -->
+  <path d="M0 650 L1200 650 L1200 900 L0 900 Z" fill="#080a0c"/>
+  <line x1="0" y1="650" x2="1200" y2="650" stroke="#2a2e37" stroke-width="3"/>
+  <ellipse cx="600" cy="660" rx="520" ry="14" fill="#d97706" opacity="0.25" filter="url(#glowBlur2)"/>
+
+  <!-- Heavy Truck Silhouette & Trailer -->
+  <g transform="translate(100, 160)">
+    <!-- Shadow under truck -->
+    <ellipse cx="500" cy="495" rx="490" ry="26" fill="#000000" opacity="0.85" filter="url(#glowBlur2)"/>
+
+    <!-- 1. Cargo Trailer Box -->
+    <rect x="360" y="80" width="580" height="340" rx="8" fill="#13161c" stroke="#2f3542" stroke-width="2"/>
+    <!-- Trailer Corrugated Ribs -->
+    <g opacity="0.2" stroke="#475569" stroke-width="2">
+      <line x1="420" y1="90" x2="420" y2="410"/>
+      <line x1="480" y1="90" x2="480" y2="410"/>
+      <line x1="540" y1="90" x2="540" y2="410"/>
+      <line x1="600" y1="90" x2="600" y2="410"/>
+      <line x1="660" y1="90" x2="660" y2="410"/>
+      <line x1="720" y1="90" x2="720" y2="410"/>
+      <line x1="780" y1="90" x2="780" y2="410"/>
+      <line x1="840" y1="90" x2="840" y2="410"/>
+      <line x1="900" y1="90" x2="900" y2="410"/>
+    </g>
+    <!-- Trailer Top Amber Marker Lights -->
+    <g fill="url(#amberGlow)" filter="url(#glowBlur2)">
+      <circle cx="380" cy="90" r="4"/>
+      <circle cx="650" cy="90" r="4"/>
+      <circle cx="920" cy="90" r="4"/>
+    </g>
+
+    <!-- 2. Truck Cab (Tractor Rig) -->
+    <path d="M40 440 
+             L40 280 
+             C40 260 55 240 75 220 
+             L140 140 
+             C155 120 180 110 210 110 
+             L350 110 
+             L350 440 Z" 
+          fill="url(#truckBody)" stroke="#3f4756" stroke-width="2.5"/>
+
+    <!-- Cab Windshield & Aerodynamic Roof Deflector -->
+    <path d="M145 145 L195 125 L340 125 L340 215 L105 215 Z" fill="#0b0e13" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.5"/>
+    <path d="M110 230 L220 230 L220 310 L75 310 Z" fill="#090c10" stroke="#1e293b" stroke-width="1.5"/>
+
+    <!-- Massive Chrome Grille & Bumper -->
+    <rect x="40" y="325" width="28" height="115" rx="4" fill="#94a3b8" stroke="#cbd5e1" stroke-width="1.5"/>
+    <g stroke="#334155" stroke-width="2">
+      <line x1="42" y1="340" x2="66" y2="340"/>
+      <line x1="42" y1="355" x2="66" y2="355"/>
+      <line x1="42" y1="370" x2="66" y2="370"/>
+      <line x1="42" y1="385" x2="66" y2="385"/>
+      <line x1="42" y1="400" x2="66" y2="400"/>
+      <line x1="42" y1="415" x2="66" y2="415"/>
+    </g>
+
+    <!-- Heavy-Duty Dual LED Headlights -->
+    <rect x="44" y="390" width="16" height="24" rx="3" fill="#e0f2fe" filter="url(#glowBlur2)"/>
+    <polygon points="40,405 -160,530 -140,610 60,430" fill="#38bdf8" opacity="0.14" filter="url(#glowBlur2)"/>
+
+    <!-- Cab Amber Roof Clearance Lights -->
+    <circle cx="160" cy="115" r="5" fill="#f59e0b" filter="url(#glowBlur2)"/>
+    <circle cx="190" cy="113" r="5" fill="#f59e0b" filter="url(#glowBlur2)"/>
+    <circle cx="220" cy="113" r="5" fill="#f59e0b" filter="url(#glowBlur2)"/>
+    <circle cx="250" cy="113" r="5" fill="#f59e0b" filter="url(#glowBlur2)"/>
+
+    <!-- Heavy Wheel Assemblies (Front + Tandem Drive + Tandem Trailer) -->
+    <!-- Wheel 1 (Steer) -->
+    <g transform="translate(130, 420)">
+      <circle cx="45" cy="45" r="46" fill="#090a0d"/>
+      <circle cx="45" cy="45" r="40" fill="#15181f" stroke="#333a48" stroke-width="3"/>
+      <circle cx="45" cy="45" r="26" fill="#1f242e" stroke="#64748b" stroke-width="2"/>
+      <circle cx="45" cy="45" r="10" fill="#0f1115" stroke="#d97706" stroke-width="2"/>
+    </g>
+
+    <!-- Wheel 2 & 3 (Tandem Drive Axles) -->
+    <g transform="translate(390, 420)">
+      <circle cx="45" cy="45" r="46" fill="#090a0d"/>
+      <circle cx="45" cy="45" r="40" fill="#15181f" stroke="#333a48" stroke-width="3"/>
+      <circle cx="45" cy="45" r="26" fill="#1f242e" stroke="#64748b" stroke-width="2"/>
+      <circle cx="45" cy="45" r="10" fill="#0f1115" stroke="#d97706" stroke-width="2"/>
+    </g>
+    <g transform="translate(485, 420)">
+      <circle cx="45" cy="45" r="46" fill="#090a0d"/>
+      <circle cx="45" cy="45" r="40" fill="#15181f" stroke="#333a48" stroke-width="3"/>
+      <circle cx="45" cy="45" r="26" fill="#1f242e" stroke="#64748b" stroke-width="2"/>
+      <circle cx="45" cy="45" r="10" fill="#0f1115" stroke="#d97706" stroke-width="2"/>
+    </g>
+
+    <!-- Wheel 4 & 5 (Trailer Axles) -->
+    <g transform="translate(750, 420)">
+      <circle cx="45" cy="45" r="46" fill="#090a0d"/>
+      <circle cx="45" cy="45" r="40" fill="#15181f" stroke="#333a48" stroke-width="3"/>
+      <circle cx="45" cy="45" r="26" fill="#1f242e" stroke="#64748b" stroke-width="2"/>
+    </g>
+    <g transform="translate(845, 420)">
+      <circle cx="45" cy="45" r="46" fill="#090a0d"/>
+      <circle cx="45" cy="45" r="40" fill="#15181f" stroke="#333a48" stroke-width="3"/>
+      <circle cx="45" cy="45" r="26" fill="#1f242e" stroke="#64748b" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- Technical Spec Watermark Overlay -->
+  <g opacity="0.25" font-family="'Inter', monospace" font-size="12" fill="#94a3b8">
+    <text x="60" y="80">SERIE: PESADA // MOTOR DIESEL TURBO INTERCOOLER</text>
+    <text x="60" y="100">VISCOSIDAD: 15W-40 · 20W-50 API CK-4 / CI-4 PLUS</text>
+  </g>
+</svg>

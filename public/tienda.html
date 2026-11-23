@@ -147,6 +147,17 @@
 
                     <!-- 2. Controles para Usuario con Sesión Activa -->
                     <div id="tiendaLoggedControls" class="d-none d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Campanita de Notificaciones en Tienda (para Personal Interno) -->
+                        <div class="position-relative flex-shrink-0 notificaciones-dropdown-container d-none" id="tiendaCampanaWrap">
+                            <button id="btnCampanaNotificacionesTienda" class="btn-nav-notif-futuristic" onclick="togglePopoverNotificaciones(event)" title="Notificaciones del Sistema" aria-label="Notificaciones del Sistema" style="background: #F1F5F9; border: 1px solid #CBD5E1; color: #334155;">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="nav-bell-svg">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                                <span id="badgeNotificacionesStockTienda" class="nav-bell-badge" style="display: none;">0</span>
+                            </button>
+                        </div>
+
                         <!-- Identificación de Usuario Logueado (Chip Compacto Futurista con Dropdown Anclado a la Derecha) -->
                         <div class="dropdown position-relative flex-shrink-0 user-dropdown-container" id="tiendaProfileWrap">
                             <div class="nav-profile-chip nav-profile-chip-light" id="tiendaProfileChip" role="button" aria-expanded="false" title="Perfil de usuario">
@@ -258,16 +269,30 @@
     </nav>
 
     <!-- ========================================================================= -->
-    <!-- 2. HERO BANNER INDUSTRIAL Y COMERCIAL                                      -->
+    <!-- 2. HERO BANNER INDUSTRIAL Y COMERCIAL CON FONDO CINEMATOGRÁFICO DE ACEITE -->
     <!-- ========================================================================= -->
-    <section class="tecfil-hero" id="heroBanner" style="min-height: 250px; padding: 38px 0; background: #141619; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-        <div class="container-fluid px-4 px-lg-5 position-relative" style="z-index: 2;">
+    <section class="tecfil-hero position-relative overflow-hidden" id="heroBanner" style="min-height: 280px; padding: 42px 0; background: #141619; border-bottom: 1px solid rgba(255, 255, 255, 0.08); position: relative; overflow: hidden;">
+        
+        <!-- 1. Canvas Procedural de Respaldo Inmediato (Ondas de Aceite Dorado) -->
+        <canvas id="heroOilCanvas" class="hero-oil-canvas" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none;"></canvas>
+
+        <!-- 2. Capa de Video HD en Bucle (Aceite de Motor en Cámara Lenta) -->
+        <video id="heroVideoBg" class="hero-video-bg" autoplay loop muted playsinline preload="auto" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s ease-in-out;">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-pouring-motor-oil-into-a-car-engine-42748-large.mp4" type="video/mp4">
+            <source src="assets/video-aceite-motor.mp4" type="video/mp4">
+        </video>
+
+        <!-- 3. Overlay Gradiente de Contraste Cinematográfico para Legibilidad Perfecta -->
+        <div class="hero-oil-overlay" style="position: absolute; inset: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(15,17,21,0.92) 0%, rgba(15,17,21,0.72) 50%, rgba(15,17,21,0.45) 100%); z-index: 1; pointer-events: none;"></div>
+
+        <!-- 4. Contenido del Banner (Z-INDEX 2: Totalmente Clicable y Nítido) -->
+        <div class="container-fluid px-4 px-lg-5 position-relative hero-content-wrap" style="z-index: 2;">
             <div class="row align-items-center g-4">
                 
                 <!-- Columna Izquierda: Presentación limpia y directa -->
                 <div class="col-12 col-lg-7">
                     <span class="badge mb-2 text-white border" id="heroBadgeText" style="background: rgba(185, 28, 28, 0.22); border-color: rgba(185, 28, 28, 0.45) !important; font-size: 0.78rem; font-weight: 600; padding: 5px 12px; border-radius: 9999px;">
-                        <i class="bi bi-shield-check text-danger me-1"></i> Distribución oficial en Sucre
+                        <i class="bi bi-shield-check text-danger me-1"></i> Distribuidor Mayorista Certificado
                     </span>
                     
                     <h1 class="mb-2 fw-bold text-white" id="heroTitleText" style="font-size: 2.1rem; line-height: 1.25; letter-spacing: -0.015em;">
@@ -312,6 +337,250 @@
             </div>
         </div>
     </section>
+
+    <!-- Script de Animación Cinematográfica de Aceite Dorado (Canvas Procedural + Video HD) -->
+    <script>
+    (function() {
+        function iniciarFondoCinematograficoHero() {
+            const heroSection = document.getElementById('heroBanner');
+            const video = document.getElementById('heroVideoBg');
+            const canvas = document.getElementById('heroOilCanvas');
+            if (!heroSection || !canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            let width = 0;
+            let height = 0;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            let animId = null;
+            let startTime = performance.now();
+
+            // Partículas suspendidas en el fluido de aceite (burbujas y destellos ámbar)
+            const particulas = [];
+            const numParticulas = 26;
+
+            function redimensionarCanvas() {
+                const rect = heroSection.getBoundingClientRect();
+                width = rect.width || window.innerWidth;
+                height = rect.height || 340;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+            }
+            redimensionarCanvas();
+            window.addEventListener('resize', redimensionarCanvas, { passive: true });
+
+            // Inicializar partículas
+            for (let i = 0; i < numParticulas; i++) {
+                particulas.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    radio: 1.5 + Math.random() * 3.5,
+                    velocidadY: -0.0003 - Math.random() * 0.0006,
+                    velocidadX: (Math.random() - 0.5) * 0.0002,
+                    alfa: 0.2 + Math.random() * 0.6,
+                    fase: Math.random() * Math.PI * 2
+                });
+            }
+
+            // Control de carga y reproducción de Video HD
+            if (video) {
+                const reproducirVideo = () => {
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            video.style.opacity = '1';
+                        }).catch(() => {
+                            // Autoplay restringido o sin red: canvas activo al 100%
+                            video.style.opacity = '0';
+                        });
+                    }
+                };
+
+                video.addEventListener('canplay', reproducirVideo);
+                video.addEventListener('playing', () => { video.style.opacity = '1'; });
+                video.addEventListener('error', () => { video.style.opacity = '0'; });
+
+                // Verificación inmediata si el video ya cargó en caché
+                if (video.readyState >= 2) {
+                    reproducirVideo();
+                }
+
+                // Fallback de seguridad: si tras 3.5s no reproduce, asegurar canvas visible
+                setTimeout(() => {
+                    if (video.paused || video.readyState < 2) {
+                        video.style.opacity = '0';
+                    }
+                }, 3500);
+            }
+
+            // Loop de Animación Procedural de Aceite Lubricante Dorado
+            function renderLoop(ahora) {
+                const t = (ahora - startTime) * 0.001;
+
+                ctx.save();
+                ctx.scale(dpr, dpr);
+
+                // Efecto Ken Burns cinematográfico suave (zoom 1.0 a 1.05 y paneo lento)
+                const kenBurnsZoom = 1.0 + 0.045 * (0.5 + 0.5 * Math.sin(t * 0.18));
+                const kenBurnsOffsetX = Math.sin(t * 0.12) * 8;
+                const kenBurnsOffsetY = Math.cos(t * 0.15) * 5;
+
+                ctx.translate(width / 2 + kenBurnsOffsetX, height / 2 + kenBurnsOffsetY);
+                ctx.scale(kenBurnsZoom, kenBurnsZoom);
+                ctx.translate(-width / 2, -height / 2);
+
+                // 1. Fondo base de motor y aceite oscuro (#0F1115 -> #1C1307 -> #2D1606)
+                const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+                bgGrad.addColorStop(0, '#0F1115');
+                bgGrad.addColorStop(0.45, '#1C1307');
+                bgGrad.addColorStop(0.85, '#2D1606');
+                bgGrad.addColorStop(1, '#0F1115');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, width, height);
+
+                // 2. Destello de luz cenital (simulando reflejo de estudio sobre el fluido)
+                const lightGrad = ctx.createRadialGradient(
+                    width * 0.72 + Math.sin(t * 0.4) * 60,
+                    height * 0.35 + Math.cos(t * 0.3) * 30,
+                    20,
+                    width * 0.72,
+                    height * 0.4,
+                    width * 0.65
+                );
+                lightGrad.addColorStop(0, 'rgba(245, 158, 11, 0.28)');
+                lightGrad.addColorStop(0.4, 'rgba(217, 119, 6, 0.15)');
+                lightGrad.addColorStop(0.8, 'rgba(120, 53, 15, 0.05)');
+                lightGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = lightGrad;
+                ctx.fillRect(0, 0, width, height);
+
+                // 3. Capas de Ondas Viscosas de Aceite Dorado (#78350F, #D97706, #F59E0B)
+                const capasOndas = [
+                    {
+                        colorStart: 'rgba(120, 53, 15, 0.55)', // Ámbar profundo #78350F
+                        colorMid: 'rgba(180, 83, 9, 0.65)',
+                        colorEnd: 'rgba(217, 119, 6, 0.45)',  // #D97706
+                        baseY: height * 0.72,
+                        amp1: 28, freq1: 0.003, speed1: 0.85,
+                        amp2: 18, freq2: 0.007, speed2: -0.6
+                    },
+                    {
+                        colorStart: 'rgba(180, 83, 9, 0.6)',
+                        colorMid: 'rgba(217, 119, 6, 0.7)',   // #D97706
+                        colorEnd: 'rgba(245, 158, 11, 0.55)', // #F59E0B
+                        baseY: height * 0.62,
+                        amp1: 34, freq1: 0.0025, speed1: 1.1,
+                        amp2: 22, freq2: 0.0055, speed2: 0.8
+                    },
+                    {
+                        colorStart: 'rgba(217, 119, 6, 0.65)', // #D97706
+                        colorMid: 'rgba(245, 158, 11, 0.75)',  // #F59E0B
+                        colorEnd: 'rgba(251, 191, 36, 0.6)',
+                        baseY: height * 0.50,
+                        amp1: 38, freq1: 0.0022, speed1: 0.95,
+                        amp2: 16, freq2: 0.006, speed2: -1.05
+                    },
+                    {
+                        colorStart: 'rgba(245, 158, 11, 0.45)', // #F59E0B
+                        colorMid: 'rgba(253, 230, 138, 0.6)',   // Brillo especular
+                        colorEnd: 'rgba(245, 158, 11, 0.25)',
+                        baseY: height * 0.38,
+                        amp1: 22, freq1: 0.0035, speed1: 1.3,
+                        amp2: 14, freq2: 0.008, speed2: 0.7
+                    }
+                ];
+
+                capasOndas.forEach((capa, idx) => {
+                    ctx.beginPath();
+                    ctx.moveTo(0, height);
+
+                    const grad = ctx.createLinearGradient(0, capa.baseY - 50, width, height);
+                    grad.addColorStop(0, capa.colorStart);
+                    grad.addColorStop(0.5, capa.colorMid);
+                    grad.addColorStop(1, capa.colorEnd);
+                    ctx.fillStyle = grad;
+
+                    const step = 8;
+                    for (let x = 0; x <= width + step; x += step) {
+                        const y = capa.baseY +
+                            Math.sin(x * capa.freq1 + t * capa.speed1) * capa.amp1 +
+                            Math.cos(x * capa.freq2 + t * capa.speed2) * capa.amp2;
+                        ctx.lineTo(x, y);
+                    }
+
+                    ctx.lineTo(width, height);
+                    ctx.lineTo(0, height);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Línea de brillo especular sobre la cresta de la ola
+                    if (idx >= 1) {
+                        ctx.save();
+                        ctx.strokeStyle = idx === 3 ? 'rgba(255, 255, 255, 0.4)' : 'rgba(254, 240, 138, 0.35)';
+                        ctx.lineWidth = idx === 3 ? 1.8 : 1.2;
+                        ctx.beginPath();
+                        for (let x = 0; x <= width + step; x += step) {
+                            const y = capa.baseY +
+                                Math.sin(x * capa.freq1 + t * capa.speed1) * capa.amp1 +
+                                Math.cos(x * capa.freq2 + t * capa.speed2) * capa.amp2;
+                            if (x === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                });
+
+                // 4. Partículas en suspensión (microburbujas en el aceite dorado)
+                particulas.forEach(p => {
+                    p.y += p.velocidadY;
+                    p.x += p.velocidadX;
+                    if (p.y < -0.05) p.y = 1.05;
+                    if (p.x < 0) p.x = 1;
+                    if (p.x > 1) p.x = 0;
+
+                    const px = p.x * width;
+                    const py = p.y * height;
+                    const pulse = 0.5 + 0.5 * Math.sin(t * 2.5 + p.fase);
+                    const radioActual = p.radio * (0.8 + 0.4 * pulse);
+                    const alfaActual = p.alfa * (0.6 + 0.4 * pulse);
+
+                    const pGrad = ctx.createRadialGradient(px, py, 0, px, py, radioActual);
+                    pGrad.addColorStop(0, `rgba(254, 243, 199, ${alfaActual})`);
+                    pGrad.addColorStop(0.5, `rgba(245, 158, 11, ${alfaActual * 0.7})`);
+                    pGrad.addColorStop(1, 'rgba(120, 53, 15, 0)');
+
+                    ctx.fillStyle = pGrad;
+                    ctx.beginPath();
+                    ctx.arc(px, py, radioActual, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                ctx.restore();
+                animId = requestAnimationFrame(renderLoop);
+            }
+
+            animId = requestAnimationFrame(renderLoop);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (animId) cancelAnimationFrame(animId);
+                } else {
+                    startTime = performance.now();
+                    animId = requestAnimationFrame(renderLoop);
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', iniciarFondoCinematograficoHero);
+        } else {
+            iniciarFondoCinematograficoHero();
+        }
+        window.iniciarFondoCinematograficoHero = iniciarFondoCinematograficoHero;
+    })();
+    </script>
 
     <!-- ========================================================================= -->
     <!-- 3. SECCIÓN "LANZAMIENTOS Y OFERTAS" CON PESTAÑAS + CARRUSEL DE FICHAS     -->
@@ -1479,6 +1748,89 @@
     </div>
 
     <!-- ========================================================================= -->
+    <!-- MODAL PASO 1: DATOS DE ENTREGA Y CONTACTO EN SUCRE (AUTÓNOMO Y PRECISO)   -->
+    <!-- ========================================================================= -->
+    <div class="modal fade" id="modalDatosEntregaCheckout" tabindex="-1" aria-labelledby="modalDatosEntregaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content" style="border: 2px solid #E2E8F0; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.25);">
+                <div class="modal-header px-4 py-3" style="background: #141619; border-bottom: 2px solid #B91C1C;">
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0" id="modalDatosEntregaLabel">
+                            <i class="bi bi-geo-alt-fill text-danger me-2"></i>Datos para la Entrega en Sucre
+                        </h5>
+                        <small class="font-mono text-warning" style="font-size: 0.72rem;">PASO 1 DE 2 · COORDINACIÓN DE DESPACHO DIRECTO AL TALLER O DOMICILIO</small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form id="formDatosEntrega" onsubmit="event.preventDefault(); confirmarDatosEntregaYProceder();">
+                    <div class="modal-body p-4" style="background: #FAF8F5;">
+                        <div class="p-3 mb-3 rounded-3" style="background: #FFFBEB; border: 1px solid #FDE68A;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-truck fs-4 text-warning"></i>
+                                <div style="font-size: 0.82rem; color: #92400E; line-height: 1.35;">
+                                    <strong>Despacho local en el día en Sucre:</strong> Entregamos repuestos y lubricantes directamente en tu taller o dirección. Confirma tus datos de contacto para coordinar con nuestro chofer.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.74rem;">
+                                Nombre del Destinatario / Taller *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-person-fill text-danger"></i></span>
+                                <input type="text" id="checkoutEntregaNombre" class="form-control" placeholder="Ej. Taller Mecánico Central / Marcos Condori" required style="font-size: 0.9rem;">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.74rem;">
+                                Teléfono / WhatsApp de Contacto *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white font-mono small text-secondary">+591</span>
+                                <input type="tel" id="checkoutEntregaTelefono" class="form-control font-mono" placeholder="Ej. 75789123 o 67375645" required style="font-size: 0.9rem;">
+                            </div>
+                            <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">El chofer de despacho se comunicará a este número antes de salir del almacén.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.74rem;">
+                                Dirección Exacta de Entrega en Sucre *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-geo-alt text-danger"></i></span>
+                                <input type="text" id="checkoutEntregaDireccion" class="form-control" placeholder="Ej. Av. Hernando Siles #450, Zona Central" required style="font-size: 0.9rem;">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.74rem;">
+                                Referencia Adicional (Opcional)
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="bi bi-signpost-2 text-secondary"></i></span>
+                                <input type="text" id="checkoutEntregaReferencia" class="form-control" placeholder="Ej. Frente al surtidor / Portón negro / Timbre blanco" style="font-size: 0.88rem;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer px-4 py-3 d-flex justify-content-between" style="background: #F8FAFC; border-top: 1px solid #E2E8F0;">
+                        <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal" style="font-size: 0.85rem;">
+                            Volver al Carrito
+                        </button>
+                        <button type="submit" id="btnContinuarPagoCheckout" class="btn btn-primary px-4 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-sm" style="background-color: #B91C1C; border-color: #B91C1C; font-size: 0.9rem;">
+                            <span>Continuar al Pago</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
     <!-- MODAL: CHECKOUT DE PAGO (QR SIMPLE / DEPÓSITO BANCARIO & PAYPAL API)        -->
     <!-- ========================================================================= -->
     <div class="modal fade" id="modalCheckoutPago" tabindex="-1" aria-labelledby="modalCheckoutLabel" aria-hidden="true">
@@ -1523,21 +1875,20 @@
                         <!-- ========================================================================= -->
                         <div class="tab-pane fade show active" id="tab-qr-pane" role="tabpanel" tabindex="0">
                             <div class="row g-4 align-items-center">
-                                <!-- Columna QR Oficial Vectorial -->
+                                <!-- Columna Izquierda: QR Oficial Bancario -->
                                 <div class="col-md-5 text-center border-end pe-md-4">
                                     <div class="p-3 bg-white border mb-3 text-center" style="background: #FFFFFF; border: 1px solid #E2E8F0 !important; border-radius: 16px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);">
-                                        <!-- Encabezado de la Tarjeta -->
-                                        <div class="d-flex align-items-center justify-content-center gap-2 mb-2 pb-2 border-bottom" style="border-color: #F1F5F9 !important;">
-                                            <span class="badge" style="background: #7c3aed; color: #FFFFFF; font-size: 0.74rem; padding: 4px 10px; border-radius: 9999px;">
-                                                <i class="bi bi-qr-code-scan me-1"></i>Simple
-                                            </span>
-                                            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.88rem; letter-spacing: -0.2px;">Pago con QR Simple / Yape Bolivia (Bs.)</h6>
+                                        <!-- Cabecera limpia -->
+                                        <div class="d-flex align-items-center justify-content-center gap-2 mb-3 pb-2 border-bottom" style="border-color: #F1F5F9 !important;">
+                                            <i class="bi bi-qr-code text-purple fs-5" style="color: #6b21a8;"></i>
+                                            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.95rem; letter-spacing: -0.2px;">Pago con QR Simple / Yape Bolivia</h6>
                                         </div>
 
-                                        <!-- Monto exacto a transferir -->
-                                        <div class="mb-3 p-2 rounded" style="background: #FEF2F2; border: 1px solid #FECACA;">
-                                            <span class="text-secondary small fw-semibold d-block" style="font-size: 0.72rem; text-transform: none;">Monto exacto a transferir:</span>
-                                            <span class="fs-4 fw-bold text-danger font-mono" id="checkoutQRMontoDestacado" style="font-feature-settings: 'tnum';">Bs. 0.00</span>
+                                        <!-- Recuadro destacado con Monto exacto a transferir -->
+                                        <div class="mb-3 p-3 rounded-3 text-center" style="background: #FEF2F2; border: 2px solid #F87171; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);">
+                                            <span class="text-secondary small fw-bold font-mono text-uppercase d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Monto exacto a transferir:</span>
+                                            <span class="fs-2 fw-extrabold text-danger font-mono d-block my-1" id="checkoutQRMontoDestacado" style="font-feature-settings: 'tnum'; font-size: 1.85rem !important; font-weight: 800;">Bs. 0.00</span>
+                                            <small class="text-muted d-block" style="font-size: 0.72rem; line-height: 1.2;">Ingresa el monto exacto en tu app bancaria para conciliación automática</small>
                                         </div>
 
                                         <!-- Contenedor QR Vectorial / Canvas de Alta Densidad -->
@@ -1546,102 +1897,127 @@
                                             <img id="imgQROficial" src="/img/qr-yape-vectorial.svg" alt="QR Oficial Yape - Nelson Polares Ortiz" class="img-fluid rounded border shadow-sm" style="display: none; max-width: 215px; max-height: 250px; object-fit: contain; border-radius: 10px !important;" onerror="fallbackQROficial(this)">
                                         </div>
 
-                                        <!-- Datos del titular y vigencia -->
+                                        <!-- Titular y Vigencia -->
                                         <div class="text-center pt-1">
-                                            <div class="fw-bold text-dark mt-1" style="font-size: 0.95rem; color: #6b21a8 !important;">
+                                            <div class="fw-bold text-dark mt-2" style="font-size: 0.95rem; color: #581c87 !important;">
                                                 Nelson Polares Ortiz
                                             </div>
                                             <div class="text-muted small mt-1" style="font-size: 0.78rem;">
                                                 <i class="bi bi-calendar-check text-success me-1"></i><strong>Vigencia:</strong> Válido hasta el 19 dic. 2026
                                             </div>
-                                            <p class="text-muted mt-2 mb-0" style="font-size: 0.73rem; line-height: 1.35;">
-                                                Acepta pagos directos sin comisión desde Yape y todos los bancos de Bolivia (Banco Unión, BCP, BNB, Bisa, Mercantil, Ganadero, FIE y cooperativas).
-                                            </p>
                                         </div>
-                                    </div>
 
-                                    <a href="/img/qr-yape-hd.png" download="QR_Pago_GOLDEN_Lubricantes.png" id="btnDescargarQROficial" class="btn btn-outline-dark btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center gap-2 py-2 mb-2" style="border-radius: 8px; border-color: #CBD5E1;" onclick="descargarQROficial(); return false;">
-                                        <i class="bi bi-download text-danger"></i>
-                                        <span>Descargar QR en alta resolución</span>
-                                    </a>
-
-                                    <div class="p-2 bg-light rounded text-start" style="font-size: 0.75rem; border: 1px solid #E2E8F0;">
-                                        <strong>Titular de la cuenta receptora:</strong><br>
-                                        Nelson Polares Ortiz (GOLDEN Lubricantes &amp; Filtros)<br>
-                                        <span class="text-muted">Acepta transferencias directas desde cualquier banco de Bolivia vía QR SIMPLE / Yape sin comisión.</span>
+                                        <!-- Botón discreto Descargar QR -->
+                                        <a href="/img/QR_Golden_Lubricantes_1795109310987.png" download="QR_Pago_GOLDEN_Lubricantes.png" id="btnDescargarQROficial" class="btn btn-outline-secondary btn-sm w-100 fw-medium d-flex align-items-center justify-content-center gap-2 py-2 mt-3" style="border-radius: 8px; border-color: #CBD5E1; font-size: 0.8rem;" onclick="descargarQROficial(); return false;">
+                                            <i class="bi bi-download"></i>
+                                            <span>Descargar QR</span>
+                                        </a>
                                     </div>
                                 </div>
 
-                                <!-- Columna Formulario de Pago QR Directo -->
+                                <!-- Columna Derecha: Resumen de Pago y Espera en Tiempo Real -->
                                 <div class="col-md-7 ps-md-3">
-                                    <div class="p-3 bg-white border rounded shadow-sm mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                    <div class="p-4 bg-white border rounded shadow-sm mb-3" style="border-radius: 14px !important; border: 1px solid #E2E8F0 !important;">
+                                        <!-- Monto exacto a pagar con botón sutil Copiar monto -->
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style="border-color: #F1F5F9 !important;">
                                             <div>
-                                                <span class="text-secondary small fw-bold font-mono text-uppercase d-block">Monto Exacto a Transferir:</span>
-                                                <span class="fs-3 fw-bold text-danger font-mono" id="checkoutMontoTotalBs">Bs. 0.00</span>
+                                                <span class="text-secondary small fw-bold font-mono text-uppercase d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Monto exacto a pagar:</span>
+                                                <span class="fs-2 fw-extrabold text-danger font-mono" id="checkoutMontoTotalBs" style="font-feature-settings: 'tnum'; font-size: 1.9rem !important; font-weight: 800;">Bs. 0.00</span>
                                             </div>
-                                            <button type="button" class="btn btn-sm btn-outline-danger fw-semibold d-inline-flex align-items-center gap-1" onclick="copiarMontoQR()">
-                                                <i class="bi bi-clipboard"></i> Copiar Monto
+                                            <button type="button" class="btn btn-sm btn-outline-danger fw-medium d-inline-flex align-items-center gap-1 py-1 px-3 rounded-pill" onclick="copiarMontoQR()" style="font-size: 0.78rem;">
+                                                <i class="bi bi-clipboard"></i> Copiar monto
                                             </button>
                                         </div>
 
-                                        <div class="p-2 mb-3 rounded" style="background: #F1F5F9; border: 1px solid #E2E8F0; font-size: 0.78rem;">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-secondary">Referencia de Orden:</span>
+                                        <!-- Código de Pedido con botón sutil Copiar -->
+                                        <div class="p-2 mb-3 rounded-3 d-flex justify-content-between align-items-center" style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 0.8rem;">
+                                            <div>
+                                                <span class="text-secondary small me-1">Código de Pedido:</span>
                                                 <span class="font-mono fw-bold text-dark" id="checkoutOrdenRefGlosa">ORD-000000</span>
-                                                <button type="button" class="btn btn-sm py-0 px-2 btn-light border text-dark" onclick="copiarRefGlosa()">Copiar Ref</button>
+                                            </div>
+                                            <button type="button" class="btn btn-sm py-1 px-2 btn-light border text-dark fw-medium" onclick="copiarRefGlosa()" style="font-size: 0.75rem;">
+                                                <i class="bi bi-copy me-1"></i>Copiar
+                                            </button>
+                                        </div>
+
+                                        <!-- Tarjeta limpia y humana de espera en tiempo real con animación suave -->
+                                        <div id="qrEstadoEsperaAutonoma" class="p-4 mb-3 rounded-3 text-center border" style="background: linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%); border-color: #86EFAC !important; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.08);">
+                                            <div id="qrPollingLiveBadge" class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                                                <span class="spinner-grow spinner-grow-sm text-success" role="status" style="width: 10px; height: 10px;"></span>
+                                                <span class="text-success fw-bold font-mono" style="font-size: 0.74rem; letter-spacing: 0.5px;">EN VIVO</span>
+                                                <span id="qrPollingStatusText" class="d-none">Esperando transferencia de Yape en tiempo real...</span>
+                                            </div>
+
+                                            <h5 class="fw-bold text-dark mb-2" style="font-size: 1.05rem; letter-spacing: -0.2px;">
+                                                Esperando confirmación de pago...
+                                            </h5>
+                                            <p class="text-secondary small mb-3" style="font-size: 0.84rem; line-height: 1.45; max-width: 440px; margin-left: auto; margin-right: auto;">
+                                                Escanea el código QR desde tu app de Yape o banco boliviano e ingresa el monto exacto. No necesitas enviar comprobante; el sistema detectará tu depósito automáticamente.
+                                            </p>
+
+                                            <!-- Indicador de tiempo de espera activo -->
+                                            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 bg-white border rounded-pill text-dark font-mono shadow-xs" style="font-size: 0.8rem; border-color: #CBD5E1 !important;">
+                                                <i class="bi bi-clock text-success"></i>
+                                                <span>Tiempo de espera: <strong id="lblQRWaitTimer" class="text-success">00:00</strong></span>
                                             </div>
                                         </div>
 
-                                        <form id="formPagoQR" onsubmit="event.preventDefault(); confirmarPagoQRDirecto();">
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
-                                                    Banco o Billetera emisora (Opcional)
-                                                </label>
-                                                <select id="checkoutQRBancoOrigen" class="form-select font-mono" style="font-size: 0.88rem;">
-                                                    <option value="Yape / BCP Bolivia" selected>Yape / BCP Bolivia</option>
-                                                    <option value="Banco Unión S.A.">Banco Unión S.A. (Unimóvil)</option>
-                                                    <option value="Banco Nacional de Bolivia (BNB)">Banco Nacional de Bolivia (BNB)</option>
-                                                    <option value="Banco Mercantil Santa Cruz">Banco Mercantil Santa Cruz</option>
-                                                    <option value="Banco FIE">Banco FIE</option>
-                                                    <option value="Banco Bisa">Banco Bisa</option>
-                                                    <option value="Banco Ganadero (GanaMóvil)">Banco Ganadero (GanaMóvil)</option>
-                                                    <option value="Tigo Money">Tigo Money</option>
-                                                    <option value="Otro Banco / SIMPLE">Otro Banco / Cooperativa</option>
-                                                </select>
+                                        <!-- Estado de Pago Verificado Automáticamente (Transición suave a Éxito) -->
+                                        <div id="qrPagoVerificadoSuccess" class="d-none p-4 text-center rounded-3 mb-3 shadow-sm" style="background: #F0FDF4; border: 2px solid #22C55E;">
+                                            <div class="mb-3 d-inline-flex align-items-center justify-content-center" style="width: 58px; height: 58px; background: #22C55E; color: white; border-radius: 50%; font-size: 30px; box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);">
+                                                <i class="bi bi-check-lg"></i>
                                             </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
-                                                    N° de Operación Bancaria (Opcional si adjuntas comprobante)
-                                                </label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text bg-white"><i class="bi bi-hash text-danger"></i></span>
-                                                    <input type="text" id="checkoutQRComprobanteRef" class="form-control font-mono" placeholder="Ej. 9847120 (o deja en blanco si subes captura)" style="font-size: 0.88rem;">
+                                            <h4 class="fw-bold text-success mb-1" style="letter-spacing: -0.3px;">¡Pago Exitoso! Tu pedido está confirmado</h4>
+                                            <div class="small text-secondary mb-3" style="font-size: 0.84rem;">Pago Verificado Automáticamente por Yape · Tu depósito fue conciliado y tu orden ingresó inmediatamente a preparación de despacho.</div>
+                                            
+                                            <p class="text-secondary small mb-3" style="font-size: 0.88rem;">
+                                                Monto acreditado: <strong class="text-dark font-mono fs-5" id="qrSuccessMonto">Bs. 0.00</strong>
+                                            </p>
+                                            
+                                            <div class="p-3 bg-white border rounded text-start mb-3 font-mono small" style="border-color: #BBF7D0 !important; font-size: 0.78rem;">
+                                                <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                                                    <span class="text-muted">Orden N°:</span>
+                                                    <strong class="text-dark" id="qrSuccessPedidoId">#PED-0000</strong>
                                                 </div>
-                                                <small class="text-muted" style="font-size: 0.72rem;">Si tu app no muestra número de operación, solo adjunta la captura abajo.</small>
+                                                <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                                                    <span class="text-muted">Validado por:</span>
+                                                    <span class="badge bg-success font-mono" id="qrSuccessValidador">YAPE_REAL_AUTO</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                                                    <span class="text-muted">Destinatario / Taller:</span>
+                                                    <strong class="text-dark" id="qrSuccessDestinatario">-</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between py-1 border-bottom border-light">
+                                                    <span class="text-muted">Dirección de Entrega:</span>
+                                                    <strong class="text-dark text-truncate" style="max-width: 230px;" id="qrSuccessDireccion">Sucre, Bolivia</strong>
+                                                </div>
+                                                <div class="d-flex justify-content-between py-1">
+                                                    <span class="text-muted">Teléfono Contacto:</span>
+                                                    <strong class="text-dark" id="qrSuccessTelefono">-</strong>
+                                                </div>
                                             </div>
 
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
-                                                    Captura del Pago QR realizado
-                                                </label>
-                                                <input type="file" id="checkoutQRCapturaArchivo" class="form-control" accept="image/*,.pdf" style="font-size: 0.82rem;" onchange="validarHabilitacionBotonQR()">
-                                                <small class="text-muted" style="font-size: 0.71rem;">Adjunta la captura de pantalla de tu app bancaria o Yape para verificación inmediata.</small>
+                                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                                <button type="button" class="btn btn-outline-danger btn-sm py-2 px-3 fw-bold d-inline-flex align-items-center gap-2" id="btnDescargarReciboYape" onclick="descargarReciboDesdeModal()">
+                                                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                                                    <span>Descargar Recibo / Factura</span>
+                                                </button>
+                                                <button type="button" class="btn btn-success btn-sm py-2 px-3 fw-bold d-inline-flex align-items-center gap-2" onclick="cerrarYContinuarCompra()">
+                                                    <i class="bi bi-bag-check-fill"></i>
+                                                    <span>Listo, Seguir en Tienda</span>
+                                                </button>
                                             </div>
+                                        </div>
 
-                                            <div class="form-check mb-3">
-                                                <input class="form-check-input" type="checkbox" id="checkConfirmoTransferenciaQR" onchange="validarHabilitacionBotonQR()">
-                                                <label class="form-check-label small text-dark" for="checkConfirmoTransferenciaQR" style="font-size: 0.78rem;">
-                                                    Confirmo que escaneé el código QR oficial y transferí el monto exacto indicado.
-                                                </label>
+                                        <!-- Pie discreto y amable de Soporte -->
+                                        <div id="qrSoporteHumanoCard" class="p-3 rounded-3 text-center border" style="background: #FAF8F5; border-color: #E2E8F0 !important; font-size: 0.8rem;">
+                                            <div class="text-secondary mb-1">
+                                                ¿Realizaste el pago y tienes algún inconveniente?
                                             </div>
-
-                                            <button type="submit" id="btnConfirmarPedidoQR" class="btn btn-primary w-100 py-3 fw-bold fs-6 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="background-color: #B91C1C; border-color: #B91C1C;">
-                                                <i class="bi bi-check-circle-fill"></i>
-                                                <span>Confirmar Pedido con QR</span>
-                                            </button>
-                                        </form>
+                                            <a id="lnkSoporteWhatsAppQR" href="https://wa.me/59167375645?text=Hola%20GOLDEN,%20hice%20el%20pago%20QR%20de%20mi%20orden%20y%20deseo%20confirmar" target="_blank" class="text-decoration-none text-success fw-semibold d-inline-flex align-items-center gap-1">
+                                                <i class="bi bi-whatsapp"></i> Contáctanos por WhatsApp al +591 67375645
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2053,7 +2429,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="documentos-golden.js?v=1"></script>
-    <script src="menu.js?v=29"></script>
-    <script src="tienda.js?v=29"></script>
+    <script src="menu.js?v=31"></script>
+    <script src="js/qr-dinamico.js?v=31"></script>
+    <script src="tienda.js?v=31"></script>
 </body>
 </html>

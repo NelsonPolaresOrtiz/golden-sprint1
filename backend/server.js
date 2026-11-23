@@ -8,6 +8,13 @@ const db = require('./database');
 
 // Constante oficial Yape Bolivia (Payload EMVCo verificado - Titular: Nelson Polares Ortiz)
 const YAPE_QR_PAYLOAD = 'H7GXJFTPPG6jGWbWg6p3PS9e4VEdikOpCEKTIbP8s4Nc+LR4a97Gz83PS+VZaeiX0xz5p2zrv95w6TmyajXzBSD9cFEHv/xuXv8+x+CWApnguV30yJJZP85Gy2e/S/WRbFKhcL28FAGUEJSDRT/TFSolXlsQhcL1ZeEbP5ogKATxGUJqbXlVSua4D+gQgBb/mnOA9XOtRO1esQLJLDzXOYStC/dp4fPPMJ6wGZjFyMB/NDJ/nfX6vm204FPeQe65Aaz32yskfmsPEJYyeXHNqp/InN+5w0+ccweopGRHsf5oyUZqOFnLJQn5jkqHTU1t1N8/XkQjuCD+d0jr+Xd1SQ==|09916E9C26A9918634083E03359A7443';
+const {
+    generarPayloadEMVCoDinamico,
+    validarCRC16,
+    crc16CcittFalse,
+    parsearTLV,
+    YAPE_EMVCO_BASE_TEMPLATE
+} = require(path.join(__dirname, '../public/js/qr-dinamico'));
 const { enviarAlertaAdmin, obtenerEstadoWhatsApp, iniciarBot } = require('./whatsapp-bot');
 const {
     enviarCotizacionEmail,
@@ -483,6 +490,52 @@ app.put('/api/usuarios/:id', (req, res) => {
         });
     } catch (error) {
         console.error('Error crítico al editar usuario:', error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+/**
+ * Actualizar perfil / datos de contacto y entrega de un usuario
+ * PUT /api/usuarios/:id/perfil
+ */
+app.put('/api/usuarios/:id/perfil', (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { nombre, telefono, direccion, nit } = req.body;
+        
+        db.get('SELECT id, nombre, email, rol, estado, nit, telefono, direccion FROM usuarios WHERE id = ?', [userId], (err, user) => {
+            if (err) return res.status(500).json({ error: 'Error al buscar usuario.' });
+            if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });
+
+            const nuevoNombre = (nombre && String(nombre).trim()) ? String(nombre).trim() : user.nombre;
+            const nuevoTelefono = (telefono && String(telefono).trim()) ? String(telefono).trim() : user.telefono;
+            const nuevaDireccion = (direccion && String(direccion).trim()) ? String(direccion).trim() : user.direccion;
+            const nuevoNit = (nit && String(nit).trim()) ? String(nit).trim() : user.nit;
+
+            db.run(
+                `UPDATE usuarios SET nombre = ?, telefono = ?, direccion = ?, nit = ? WHERE id = ?`,
+                [nuevoNombre, nuevoTelefono, nuevaDireccion, nuevoNit, userId],
+                function(uErr) {
+                    if (uErr) return res.status(500).json({ error: 'Error al actualizar perfil: ' + uErr.message });
+                    res.status(200).json({
+                        ok: true,
+                        mensaje: 'Perfil y datos de entrega actualizados correctamente.',
+                        usuario: {
+                            id: user.id,
+                            nombre: nuevoNombre,
+                            email: user.email,
+                            telefono: nuevoTelefono,
+                            direccion: nuevaDireccion,
+                            nit: nuevoNit,
+                            rol: user.rol,
+                            estado: user.estado
+                        }
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        console.error('Error al actualizar perfil de usuario:', error);
         res.status(500).json({ error: 'Error interno del servidor.' });
     }
 });
@@ -1015,7 +1068,12 @@ const registrarVentaOPedido = (req, res) => {
             numero_operacion,
             banco_origen, 
             comprobante_img,
-            estado_pago 
+            estado_pago,
+            direccion_entrega,
+            telefono_contacto,
+            referencia_entrega,
+            nombre_destinatario,
+            cliente_nombre
         } = req.body;
 
         if (!cliente_id || !carrito || !Array.isArray(carrito) || carrito.length === 0) {
@@ -1047,11 +1105,16 @@ const registrarVentaOPedido = (req, res) => {
                 }
 
                 // 1. Validar existencia del cliente
-                db.get(`SELECT id, nombre, email, telefono FROM usuarios WHERE id = ?`, [cliente_id], (userErr, user) => {
+                db.get(`SELECT id, nombre, email, telefono, direccion FROM usuarios WHERE id = ?`, [cliente_id], (userErr, user) => {
                     if (userErr || !user) {
                         db.run('ROLLBACK;');
                         return res.status(404).json({ error: 'El cliente especificado no existe o no es válido.' });
                     }
+
+                    const dirEntrega = (direccion_entrega || user.direccion || '').trim() || 'Sucre, Bolivia';
+                    const telContacto = (telefono_contacto || user.telefono || '').trim();
+                    const refEntrega = (referencia_entrega || '').trim();
+                    const nomDest = (nombre_destinatario || cliente_nombre || user.nombre || '').trim();
 
                     // 2. Validar existencias de stock de CADA producto en el carrito
                     const ids = carrito.map(item => item.id);
@@ -1086,9 +1149,14 @@ const registrarVentaOPedido = (req, res) => {
                             `INSERT INTO pedidos (
                                 cliente_id, total, estado, fecha_compra,
                                 metodo_pago, comprobante_ref, numero_operacion, banco_origen, comprobante_img,
-                                estado_pago, estado_logistica
-                            ) VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?, ?)`,
-                            [cliente_id, totalNum, estGeneral, mPago, compRef, finalNumOperacion, bancoOrig, comprobante_img || null, estPago, estLogistica],
+                                estado_pago, estado_logistica,
+                                direccion_entrega, telefono_contacto, referencia_entrega, nombre_destinatario, cliente_nombre
+                            ) VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                            [
+                                cliente_id, totalNum, estGeneral, mPago, compRef, finalNumOperacion, bancoOrig, 
+                                comprobante_img || null, estPago, estLogistica,
+                                dirEntrega, telContacto, refEntrega, nomDest, nomDest
+                            ],
                             function (orderErr) {
                                 if (orderErr) {
                                     db.run('ROLLBACK;');
@@ -1097,6 +1165,17 @@ const registrarVentaOPedido = (req, res) => {
                                 }
 
                                 const pedidoId = this.lastID;
+
+                                // Guardar o actualizar datos de contacto/entrega en el perfil del usuario para futuras compras
+                                if (telContacto || dirEntrega) {
+                                    db.run(
+                                        `UPDATE usuarios SET 
+                                            telefono = CASE WHEN ? != '' THEN ? ELSE telefono END,
+                                            direccion = CASE WHEN ? != '' THEN ? ELSE direccion END
+                                         WHERE id = ?`,
+                                        [telContacto, telContacto, dirEntrega, dirEntrega, cliente_id]
+                                    );
+                                }
 
                                 // 4. Descontar stock, registrar detalles del pedido y registrar Kardex
                                 const stmtDetalle = db.prepare(
@@ -1184,16 +1263,18 @@ const registrarVentaOPedido = (req, res) => {
 
                                         const alertaNuevoPedido = `*NUEVO PEDIDO REGISTRADO (#${codPedidoFmt})*\n` +
                                             `──────────────────────────\n` +
-                                            `• *Cliente:* ${user.nombre}\n` +
+                                            `• *Cliente / Destinatario:* ${nomDest || user.nombre}\n` +
                                             `• *Total:* *Bs. ${totalNum.toFixed(2)}*\n` +
                                             `• *Pago:* ${metodoPagoEtiqueta}\n` +
                                             `• *Referencia:* \`${finalNumOperacion}\`\n` +
                                             `• *Banco:* ${bancoOrig}\n` +
                                             `• *Cobro:* ${estPagoEtiqueta}\n` +
+                                            `• *Entrega en Sucre:* ${dirEntrega}${refEntrega ? (' (' + refEntrega + ')') : ''}\n` +
+                                            `• *Teléfono Contacto:* ${telContacto || 'Sin teléfono'}\n` +
                                             `• *Ítems:* ${carrito.length} repuesto(s)\n` +
                                             `• *Logística:* ${estLogistica}\n` +
                                             `──────────────────────────\n` +
-                                            `_Consulte el panel de Cobranzas del ERP para validar el ingreso._`;
+                                            `_Consulte el panel de Cobranzas y Logística del ERP._`;
 
                                         enviarAlertaAdmin(alertaNuevoPedido).catch(() => {});
 
@@ -1256,7 +1337,11 @@ const registrarVentaOPedido = (req, res) => {
                                             numero_operacion: finalNumOperacion,
                                             banco_origen: bancoOrig,
                                             estado_pago: estPago,
-                                            estado_logistica: estLogistica
+                                            estado_logistica: estLogistica,
+                                            direccion_entrega: dirEntrega,
+                                            telefono_contacto: telContacto,
+                                            referencia_entrega: refEntrega,
+                                            nombre_destinatario: nomDest
                                         });
                                     });
                                 });
@@ -1744,7 +1829,13 @@ app.get('/api/pedidos', (req, res) => {
                 p.cliente_nit_ci,
                 p.monto_recibido,
                 p.cambio,
-                COALESCE(p.cliente_nombre, u.nombre, 'Cliente Desconocido') as cliente,
+                p.direccion_entrega,
+                p.telefono_contacto,
+                p.referencia_entrega,
+                p.nombre_destinatario,
+                COALESCE(p.direccion_entrega, u.direccion, 'Sucre, Bolivia') as direccion_final,
+                COALESCE(p.telefono_contacto, u.telefono, '') as telefono_final,
+                COALESCE(p.nombre_destinatario, p.cliente_nombre, u.nombre, 'Cliente Desconocido') as cliente,
                 COALESCE(p.cliente_email, u.email, '-') as cliente_email
             FROM pedidos p 
             LEFT JOIN usuarios u ON p.cliente_id = u.id
@@ -1881,76 +1972,220 @@ app.put('/api/pedidos/:id/aprobar-cobro', (req, res) => {
 });
 
 /**
- * Webhook para conciliación bancaria automática vía API QR
+ * Webhook para conciliación bancaria automática vía API QR y MacroDroid (Yape Bolivia)
  * POST /api/pagos/webhook-qr
  */
 app.post('/api/pagos/webhook-qr', (req, res) => {
     try {
-        const { pedido_id, referencia, monto, estado, id_transaccion, banco } = req.body || {};
-        const refId = pedido_id || (referencia ? parseInt(String(referencia).replace(/\D/g, '')) : null);
+        const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "GOLDEN_WEBHOOK_2026_SECURE";
 
-        if (!refId) {
-            return res.status(400).json({ error: 'Falta identificador de pedido o referencia válida' });
+        // Validación estricta de clave secreta mediante header o body
+        const secretHeader = req.headers['x-webhook-secret'] || (req.headers['authorization'] ? req.headers['authorization'].replace(/^Bearer\s+/i, '') : null);
+        const secretBody = req.body && (req.body.secret || req.body.webhook_secret);
+
+        if (secretHeader !== WEBHOOK_SECRET && secretBody !== WEBHOOK_SECRET) {
+            return res.status(401).json({
+                ok: false,
+                error: 'Acceso no autorizado: clave secreta de webhook inválida'
+            });
         }
 
-        db.get('SELECT id, total, estado_pago, metodo_pago, cliente_id FROM pedidos WHERE id = ?', [refId], (err, ped) => {
-            if (err || !ped) {
-                return res.status(404).json({ error: 'Pedido no encontrado para conciliación de webhook' });
+        const {
+            texto_notificacion,
+            app_origen,
+            pedido_id,
+            referencia,
+            monto: montoBody,
+            estado,
+            id_transaccion,
+            banco
+        } = req.body || {};
+
+        const texto = String(texto_notificacion || req.body?.texto || req.body?.text || req.body?.message || req.body?.notification || '').trim();
+        const app = String(app_origen || banco || 'Yape Bolivia').trim();
+
+        // Extracción de monto con expresión regular para Yape Bolivia (Bs. / BOB)
+        // Ejemplos: "Yape: Recibiste Bs 1.00 de Juan Perez", "Recibiste Bs. 161.50..."
+        const regexMonto = /(?:Bs\.?|BOB)\s*([0-9]+(?:[.,][0-9]{1,2})?)/i;
+        let montoExtraido = null;
+
+        if (texto) {
+            const match = texto.match(regexMonto);
+            if (match && match[1]) {
+                montoExtraido = parseFloat(match[1].replace(',', '.'));
+            }
+        }
+
+        // Si no se extrajo del texto pero vino explícito en el body
+        if ((montoExtraido === null || isNaN(montoExtraido)) && montoBody !== undefined && montoBody !== null) {
+            montoExtraido = parseFloat(String(montoBody).replace(',', '.'));
+        }
+
+        if (montoExtraido === null || isNaN(montoExtraido) || montoExtraido <= 0) {
+            return res.status(400).json({
+                ok: false,
+                error: 'No se pudo extraer el monto en Bs. del texto de la notificación'
+            });
+        }
+
+        const monto = parseFloat(montoExtraido.toFixed(2));
+        const refId = pedido_id || (referencia ? parseInt(String(referencia).replace(/\D/g, '')) : null);
+
+        // Buscar en SQLite el pedido más reciente con estado_pago = 'PENDIENTE'
+        // cuyo total coincida con ese monto (Math.abs(pedido.total - monto) < 0.02)
+        const sqlBusqueda = `
+            SELECT id, total, estado, estado_pago, metodo_pago, cliente_id, cliente_nombre, numero_operacion 
+            FROM pedidos 
+            WHERE estado_pago = 'PENDIENTE' 
+            ORDER BY id DESC
+        `;
+
+        db.all(sqlBusqueda, [], (err, rows) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    error: 'Error al consultar pedidos pendientes en base de datos: ' + err.message
+                });
             }
 
+            let pedidoEncontrado = null;
+
+            // Si se envió un pedido_id específico, verificarlo prioritariamente
+            if (refId && rows && rows.length > 0) {
+                pedidoEncontrado = rows.find(p => p.id === refId && Math.abs(parseFloat(p.total) - monto) < 0.02);
+            }
+
+            // Búsqueda por monto coincidente en pedidos pendientes más recientes
+            if (!pedidoEncontrado && rows && rows.length > 0) {
+                pedidoEncontrado = rows.find(p => Math.abs(parseFloat(p.total) - monto) < 0.02);
+            }
+
+            if (!pedidoEncontrado) {
+                return res.status(404).json({
+                    ok: false,
+                    error: `No se encontró ningún pedido PENDIENTE con monto coincidente de Bs. ${monto.toFixed(2)}`
+                });
+            }
+
+            const ped = pedidoEncontrado;
             const nuevoEstadoPago = (estado && String(estado).toUpperCase().includes('FAIL')) ? 'RECHAZADO' : 'VERIFICADO';
-            const nuevoEstadoGen = nuevoEstadoPago === 'VERIFICADO' ? 'PAGADO' : 'PENDIENTE';
-            const numOperacion = id_transaccion || referencia || ('QR-AUTO-' + Date.now().toString().slice(-6));
+            const nuevoEstadoGen = 'VERIFICADO';
+            const numOperacion = id_transaccion || ('YAPE-' + Date.now().toString().slice(-6));
+            const textoGuardar = texto || `Recibiste Bs. ${monto.toFixed(2)} vía ${app}`;
 
             db.run(
-                `UPDATE pedidos SET estado_pago = ?, estado = ?, estado_logistica = 'ORDEN RECIBIDA / PAGO VERIFICADO', numero_operacion = COALESCE(numero_operacion, ?), comprobante_ref = COALESCE(comprobante_ref, ?) WHERE id = ?`,
-                [nuevoEstadoPago, nuevoEstadoGen, numOperacion, numOperacion, ped.id],
+                `UPDATE pedidos 
+                 SET estado_pago = ?, 
+                     estado = ?, 
+                     verificado_por = 'YAPE_REAL_AUTO', 
+                     transaccion_bancaria_id = ?, 
+                     numero_operacion = COALESCE(numero_operacion, ?), 
+                     comprobante_ref = COALESCE(comprobante_ref, ?), 
+                     estado_logistica = 'ORDEN RECIBIDA / PAGO VERIFICADO' 
+                 WHERE id = ?`,
+                [nuevoEstadoPago, nuevoEstadoGen, textoGuardar, numOperacion, numOperacion, ped.id],
                 function (updErr) {
-                    if (updErr) return res.status(500).json({ error: 'Error al actualizar pedido por webhook: ' + updErr.message });
+                    if (updErr) {
+                        return res.status(500).json({
+                            ok: false,
+                            error: 'Error al actualizar pedido por webhook: ' + updErr.message
+                        });
+                    }
 
                     registrarAuditoria(
-                        'WEBHOOK-QR-BANCO',
-                        `Conciliación automática vía Webhook QR para Pedido #${ped.id} (Bs. ${parseFloat(ped.total).toFixed(2)}) - Ref: ${numOperacion}`,
+                        'YAPE_REAL_AUTO',
+                        `Conciliación automática Yape (MacroDroid) para Pedido #${ped.id} (Bs. ${monto.toFixed(2)}) - App: ${app}. Notificación: "${textoGuardar.slice(0, 100)}"`,
                         'COBRANZAS'
                     );
 
                     if (nuevoEstadoPago === 'VERIFICADO') {
-                        const alertaWebhook = `*CONFIRMACIÓN AUTOMÁTICA QR (WEBHOOK)*\n` +
+                        const alertaWebhook = `*PAGO VERIFICADO AUTOMÁTICAMENTE (YAPE)*\n` +
                             `──────────────────────────\n` +
                             `• *Pedido:* #PED-${String(ped.id).padStart(4, '0')}\n` +
-                            `• *Monto:* *Bs. ${parseFloat(ped.total).toFixed(2)}*\n` +
-                            `• *Canal:* API Interoperable (${banco || 'SIMPLE / Yape'})\n` +
-                            `• *Transacción ID:* \`${numOperacion}\`\n` +
-                            `• *Estado:* Habilitado para Empaque y Despacho\n` +
+                            `• *Monto Conciliado:* *Bs. ${monto.toFixed(2)}*\n` +
+                            `• *Canal:* ${app}\n` +
+                            `• *Notificación:* _${textoGuardar.slice(0, 120)}_\n` +
+                            `• *Verificado por:* YAPE_REAL_AUTO\n` +
+                            `• *Estado:* VERIFICADO\n` +
                             `──────────────────────────`;
-                        enviarAlertaAdmin(alertaWebhook).catch(() => {});
+                        if (typeof enviarAlertaAdmin === 'function') {
+                            enviarAlertaAdmin(alertaWebhook).catch(() => {});
+                        }
                     }
 
                     return res.status(200).json({
                         ok: true,
-                        recibido: true,
                         pedido_id: ped.id,
-                        estado_pago: nuevoEstadoPago,
-                        mensaje: 'Webhook de pago QR procesado exitosamente'
+                        monto_conciliado: monto,
+                        mensaje: 'Pago verificado automáticamente por Yape'
                     });
                 }
             );
         });
     } catch (error) {
         console.error('Error en webhook-qr:', error);
-        res.status(500).json({ error: 'Error procesando webhook QR' });
+        res.status(500).json({ ok: false, error: 'Error procesando webhook QR' });
+    }
+});
+
+/**
+ * Polling ultraligero del estado de pago de un pedido
+ * GET /api/pedidos/:id/estado-pago
+ */
+app.get('/api/pedidos/:id/estado-pago', (req, res) => {
+    try {
+        const pedidoId = req.params.id;
+        db.get(
+            `SELECT id, total, estado, estado_pago, verificado_por, transaccion_bancaria_id, numero_operacion, comprobante_ref 
+             FROM pedidos 
+             WHERE id = ?`,
+            [pedidoId],
+            (err, row) => {
+                if (err) return res.status(500).json({ ok: false, error: 'Error al consultar estado de pago: ' + err.message });
+                if (!row) return res.status(404).json({ ok: false, error: 'Pedido no encontrado' });
+
+                const esVerificado = row.estado_pago === 'VERIFICADO' || row.estado === 'VERIFICADO';
+                return res.status(200).json({
+                    ok: true,
+                    pedido_id: row.id,
+                    total: parseFloat(row.total),
+                    estado: row.estado,
+                    estado_pago: row.estado_pago,
+                    verificado_por: row.verificado_por,
+                    transaccion_bancaria_id: row.transaccion_bancaria_id,
+                    numero_operacion: row.numero_operacion,
+                    comprobante_ref: row.comprobante_ref,
+                    es_verificado: esVerificado
+                });
+            }
+        );
+    } catch (error) {
+        console.error('Error en GET /api/pedidos/:id/estado-pago:', error);
+        res.status(500).json({ ok: false, error: 'Error interno al consultar estado' });
     }
 });
 
 /**
  * Endpoint de Consulta y Renderizado Vectorial del QR Oficial Yape Bolivia
- * GET /api/pagos/qr-yape?format=svg|json
+ * Admite generación estática oficial o dinámica con monto bloqueado y referencia:
+ * GET /api/pagos/qr-yape?format=svg|json&monto=161.50&referencia=GLD-0035
  */
 app.get('/api/pagos/qr-yape', async (req, res) => {
     try {
         const format = (req.query.format || 'svg').toLowerCase();
+        const monto = req.query.monto ? parseFloat(req.query.monto) : null;
+        const referencia = req.query.referencia || ('GLD-' + Date.now().toString().slice(-4));
+        
+        let payloadFinal = YAPE_QR_PAYLOAD;
+        let infoDinamica = null;
+
+        if (monto && !isNaN(monto) && monto > 0) {
+            infoDinamica = generarPayloadEMVCoDinamico(monto, referencia);
+            payloadFinal = infoDinamica.payload;
+        }
+
         if (format === 'svg') {
-            let svg = await QRCode.toString(YAPE_QR_PAYLOAD, {
+            let svg = await QRCode.toString(payloadFinal, {
                 type: 'svg',
                 errorCorrectionLevel: 'H',
                 margin: 2,
@@ -1969,7 +2204,7 @@ app.get('/api/pagos/qr-yape', async (req, res) => {
             res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
             return res.send(svg);
         } else {
-            const dataUrl = await QRCode.toDataURL(YAPE_QR_PAYLOAD, {
+            const dataUrl = await QRCode.toDataURL(payloadFinal, {
                 errorCorrectionLevel: 'H',
                 margin: 2,
                 width: 600,
@@ -1980,10 +2215,15 @@ app.get('/api/pagos/qr-yape', async (req, res) => {
             });
             return res.json({
                 success: true,
-                payload: YAPE_QR_PAYLOAD,
+                payload: payloadFinal,
                 titular: 'Nelson Polares Ortiz',
                 vigencia: '2026-12-19',
                 banco: 'Yape Bolivia / QR SIMPLE',
+                es_dinamico: !!infoDinamica,
+                monto: infoDinamica ? infoDinamica.monto : null,
+                referencia: infoDinamica ? infoDinamica.referencia : null,
+                crc: infoDinamica ? infoDinamica.crc : null,
+                tipo: infoDinamica ? infoDinamica.tipo : 'Estático Yape',
                 dataUrl
             });
         }
@@ -1993,13 +2233,56 @@ app.get('/api/pagos/qr-yape', async (req, res) => {
     }
 });
 
+/**
+ * Endpoint Generador Exclusivo de QR Dinámico EMVCo
+ * POST /api/pagos/qr-dinamico
+ * Body: { monto, referencia }
+ */
+app.post('/api/pagos/qr-dinamico', async (req, res) => {
+    try {
+        const { monto, referencia } = req.body || {};
+        const montoNum = parseFloat(monto) || 0;
+        const refStr = (referencia || 'GLD-' + Date.now().toString().slice(-4)).trim();
+        
+        const dynamicInfo = generarPayloadEMVCoDinamico(montoNum, refStr);
+        const dataUrl = await QRCode.toDataURL(dynamicInfo.payload, {
+            errorCorrectionLevel: 'H',
+            margin: 2,
+            width: 600,
+            color: {
+                dark: '#581c87',
+                light: '#ffffff'
+            }
+        });
+
+        return res.json({
+            ok: true,
+            success: true,
+            payload: dynamicInfo.payload,
+            crc: dynamicInfo.crc,
+            monto: dynamicInfo.monto,
+            montoFloat: dynamicInfo.montoFloat,
+            referencia: dynamicInfo.referencia,
+            tipo: dynamicInfo.tipo,
+            titular: dynamicInfo.titular,
+            dataUrl
+        });
+    } catch (err) {
+        console.error('Error en POST /api/pagos/qr-dinamico:', err);
+        return res.status(500).json({ ok: false, error: 'Error al generar payload dinámico EMVCo' });
+    }
+});
+
 app.get('/api/pagos/qr-yape/info', (req, res) => {
     res.json({
         success: true,
         payload: YAPE_QR_PAYLOAD,
         titular: 'Nelson Polares Ortiz',
         vigencia: '2026-12-19',
-        banco: 'Yape Bolivia / QR Interoperable (Bs.)'
+        banco: 'Yape Bolivia / QR Interoperable (Bs.)',
+        emvco_template: YAPE_EMVCO_BASE_TEMPLATE,
+        generador_dinamico: true,
+        crc_algoritmo: 'CRC-16/CCITT-FALSE (0x1021)'
     });
 });
 
@@ -3008,3 +3291,13 @@ app.listen(PORT, () => {
         }
     })();
 });
+
+module.exports = {
+    app,
+    generarPayloadEMVCoDinamico,
+    validarCRC16,
+    crc16CcittFalse,
+    parsearTLV,
+    YAPE_QR_PAYLOAD,
+    YAPE_EMVCO_BASE_TEMPLATE
+};

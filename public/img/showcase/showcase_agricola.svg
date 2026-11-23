@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a0c10" />
+      <stop offset="50%" stop-color="#141824" />
+      <stop offset="80%" stop-color="#2a2015" />
+      <stop offset="100%" stop-color="#4a3010" />
+    </linearGradient>
+    <linearGradient id="fieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#221808" />
+      <stop offset="40%" stop-color="#181206" />
+      <stop offset="100%" stop-color="#0d0a04" />
+    </linearGradient>
+    <linearGradient id="tractorYellow" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="60%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="hydraulics" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94a3b8" />
+      <stop offset="50%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#64748b" />
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="70%" cy="65%" r="40%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="lightBeam" cx="30%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Sky & Dusk Field -->
+  <rect width="1200" height="520" fill="url(#skyGrad)" />
+  <rect y="520" width="1200" height="280" fill="url(#fieldGrad)" />
+  <circle cx="840" cy="500" r="300" fill="url(#sunGlow)" />
+
+  <!-- Distant mountain ridges & horizons -->
+  <polygon points="0,520 180,480 340,505 520,470 700,510 880,465 1060,495 1200,475 1200,530 0,530" fill="#1e1814" opacity="0.6"/>
+  <polygon points="0,525 240,505 480,518 760,498 1000,515 1200,505 1200,535 0,535" fill="#14110d" opacity="0.8"/>
+
+  <!-- Field Plow Furrows (perspective lines) -->
+  <g stroke="#3a2510" stroke-width="2" opacity="0.5">
+    <line x1="600" y1="520" x2="-200" y2="800" stroke-width="4"/>
+    <line x1="650" y1="520" x2="50" y2="800" stroke-width="4"/>
+    <line x1="700" y1="520" x2="350" y2="800" stroke-width="5"/>
+    <line x1="750" y1="520" x2="680" y2="800" stroke-width="6"/>
+    <line x1="800" y1="520" x2="1050" y2="800" stroke-width="7"/>
+    <line x1="850" y1="520" x2="1400" y2="800" stroke-width="8"/>
+  </g>
+
+  <!-- Heavy Duty Tractor / Agricultural Machinery Silhouette & Geometry -->
+  <g transform="translate(240, 260)">
+    <!-- Cabin Glass & Structure -->
+    <polygon points="340,70 480,70 510,180 300,180" fill="#0f172a" stroke="#d97706" stroke-width="4"/>
+    <polygon points="350,80 470,80 495,170 315,170" fill="#38bdf8" opacity="0.3"/>
+    <line x1="410" y1="80" x2="410" y2="170" stroke="#d97706" stroke-width="3"/>
+
+    <!-- Cab Roof -->
+    <path d="M 320 70 Q 410 55 500 70 L 510 80 L 310 80 Z" fill="#f59e0b"/>
+
+    <!-- Hood & Engine Bay -->
+    <path d="M 300 180 L 140 190 Q 110 200 100 240 L 100 310 L 320 310 Z" fill="url(#tractorYellow)" stroke="#b45309" stroke-width="3"/>
+    <!-- Exhaust Stack -->
+    <path d="M 180 90 L 195 90 L 190 190 L 175 190 Z" fill="#334155"/>
+    <ellipse cx="187" cy="90" rx="8" ry="3" fill="#64748b"/>
+
+    <!-- Front Grille & Lights -->
+    <polygon points="100,240 120,240 120,300 100,300" fill="#1e293b"/>
+    <line x1="102" y1="250" x2="118" y2="250" stroke="#f59e0b" stroke-width="2"/>
+    <line x1="102" y1="265" x2="118" y2="265" stroke="#f59e0b" stroke-width="2"/>
+    <line x1="102" y1="280" x2="118" y2="280" stroke="#f59e0b" stroke-width="2"/>
+
+    <!-- Powerful Work Headlights -->
+    <circle cx="108" cy="225" r="14" fill="#ffffff" filter="drop-shadow(0 0 16px #fbbf24)"/>
+    <polygon points="108,225 -100,180 -120,380" fill="url(#lightBeam)" opacity="0.7"/>
+
+    <!-- Cabin Work LED bar on roof -->
+    <rect x="330" y="65" width="160" height="8" rx="3" fill="#ffffff" filter="drop-shadow(0 0 10px #38bdf8)"/>
+
+    <!-- Heavy Hydraulic Arm & Cylinders -->
+    <line x1="160" y1="260" x2="40" y2="340" stroke="url(#hydraulics)" stroke-width="14" stroke-linecap="round"/>
+    <line x1="40" y1="340" x2="-40" y2="380" stroke="#475569" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Massive Rear Tire (Lugged deep tread) -->
+    <circle cx="480" cy="290" r="130" fill="#090b0e" stroke="#1f242d" stroke-width="16"/>
+    <!-- Rim -->
+    <circle cx="480" cy="290" r="70" fill="#d97706" stroke="#b45309" stroke-width="6"/>
+    <circle cx="480" cy="290" r="30" fill="#1e293b"/>
+    <!-- Deep Treads -->
+    <g stroke="#1f242d" stroke-width="10" stroke-linecap="round">
+      <line x1="480" y1="160" x2="480" y2="185"/>
+      <line x1="570" y1="195" x2="550" y2="215"/>
+      <line x1="610" y1="290" x2="585" y2="290"/>
+      <line x1="570" y1="380" x2="550" y2="360"/>
+      <line x1="480" y1="420" x2="480" y2="395"/>
+      <line x1="390" y1="380" x2="410" y2="360"/>
+      <line x1="350" y1="290" x2="375" y2="290"/>
+      <line x1="390" y1="195" x2="410" y2="215"/>
+    </g>
+
+    <!-- Front Tire (Smaller, heavy tread) -->
+    <circle cx="180" cy="330" r="85" fill="#090b0e" stroke="#1f242d" stroke-width="12"/>
+    <circle cx="180" cy="330" r="45" fill="#d97706" stroke="#b45309" stroke-width="5"/>
+    <circle cx="180" cy="330" r="20" fill="#1e293b"/>
+    <!-- Front Treads -->
+    <g stroke="#1f242d" stroke-width="8" stroke-linecap="round">
+      <line x1="180" y1="245" x2="180" y2="265"/>
+      <line x1="240" y1="270" x2="225" y2="285"/>
+      <line x1="265" y1="330" x2="245" y2="330"/>
+      <line x1="240" y1="390" x2="225" y2="375"/>
+      <line x1="180" y1="415" x2="180" y2="395"/>
+      <line x1="120" y1="390" x2="135" y2="375"/>
+      <line x1="95" y1="330" x2="115" y2="330"/>
+      <line x1="120" y1="270" x2="135" y2="285"/>
+    </g>
+  </g>
+
+  <!-- Modern Technical Overlay Badge -->
+  <g transform="translate(60, 60)">
+    <rect width="360" height="88" rx="14" fill="#0f172a" fill-opacity="0.85" stroke="#334155" stroke-width="1.5" />
+    <circle cx="44" cy="44" r="22" fill="#d97706" fill-opacity="0.2"/>
+    <path d="M 36 44 L 42 50 L 52 38" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="82" y="38" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="16" letter-spacing="0.5">LÍNEA AGRÍCOLA Y MAQUINARIA</text>
+    <text x="82" y="60" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12">Fluidos Hidráulicos &amp; Transmisión · Trabajo Continuo</text>
+  </g>
+</svg>

@@ -146,7 +146,7 @@
                     <thead>
                         <tr>
                             <th class="ps-4">Orden</th>
-                            <th>Cliente / Taller</th>
+                            <th>Cliente / Entrega en Sucre</th>
                             <th>Fecha</th>
                             <th>Importe</th>
                             <th style="min-width: 200px;">Estado del pedido</th>
@@ -372,6 +372,17 @@
                 </div>
 
                 <div class="modal-body p-4" style="background: #FAF8F5;">
+                    <!-- Tarjeta con Datos de Entrega para el Chofer -->
+                    <div class="p-3 mb-3 rounded-3 border" style="background: #F0FDF4; border-color: #BBF7D0 !important;" id="despachoDestinoCard">
+                        <div class="small fw-bold text-success font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>Destino de Despacho en Sucre:
+                        </div>
+                        <div class="fw-bold text-dark fs-6" id="despachoDestinoDireccion">Av. Hernando Siles #450, Sucre</div>
+                        <div class="small text-secondary mt-1">
+                            <i class="bi bi-telephone-fill text-success me-1"></i><span id="despachoDestinoTelefono">75789123</span> · <span id="despachoDestinoCliente">Taller Central</span>
+                        </div>
+                    </div>
+
                     <div class="p-3 bg-white border rounded shadow-sm mb-3">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">
@@ -416,6 +427,17 @@
                 </div>
 
                 <div class="modal-body p-4" style="background: #FAF8F5;">
+                    <!-- Tarjeta con Datos de Entrega para el Receptor -->
+                    <div class="p-3 mb-3 rounded-3 border" style="background: #F0FDF4; border-color: #BBF7D0 !important;" id="actaDestinoCard">
+                        <div class="small fw-bold text-success font-mono text-uppercase mb-1" style="font-size: 0.72rem;">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>Punto de Entrega en Sucre:
+                        </div>
+                        <div class="fw-bold text-dark fs-6" id="actaDestinoDireccion">Av. Hernando Siles #450, Sucre</div>
+                        <div class="small text-secondary mt-1">
+                            <i class="bi bi-telephone-fill text-success me-1"></i><span id="actaDestinoTelefono">75789123</span> · <span id="actaDestinoCliente">Taller Central</span>
+                        </div>
+                    </div>
+
                     <div class="p-3 bg-white border rounded shadow-sm mb-3">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-dark font-mono text-uppercase mb-1" style="font-size: 0.75rem;">

@@ -73,6 +73,63 @@ function saltarSplashIntro() {
 
 window.saltarSplashIntro = saltarSplashIntro;
 
+// ==========================================
+// CONTROL DE CARRUSEL AUTOMOTRIZ (4.5s)
+// ==========================================
+var timerCarruselAutomotriz = null;
+var indiceSlideAutomotriz = 0;
+
+function irASlideAutomotriz(nuevoIndice) {
+    const slides = document.querySelectorAll('.ken-burns-slide');
+    const pills = document.querySelectorAll('.showcase-indicator-pill');
+    const elTagText = document.getElementById('showcaseTagText');
+    const elTitle = document.getElementById('showcaseActiveTitle');
+    const elSub = document.getElementById('showcaseActiveSub');
+
+    if (!slides || slides.length === 0) return;
+    const total = slides.length;
+    indiceSlideAutomotriz = ((nuevoIndice % total) + total) % total;
+
+    slides.forEach((slide, idx) => {
+        if (idx === indiceSlideAutomotriz) {
+            slide.classList.add('active');
+            const img = slide.querySelector('img');
+            if (img) {
+                img.style.animation = 'none';
+                void img.offsetHeight;
+                img.style.animation = '';
+            }
+            const tag = slide.getAttribute('data-tag') || '';
+            const title = slide.getAttribute('data-title') || '';
+            const sub = slide.getAttribute('data-sub') || '';
+
+            if (elTagText) elTagText.textContent = tag;
+            if (elTitle) elTitle.textContent = title;
+            if (elSub) elSub.textContent = sub;
+        } else {
+            slide.classList.remove('active');
+        }
+    });
+
+    pills.forEach((pill, idx) => {
+        if (idx === indiceSlideAutomotriz) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
+    if (timerCarruselAutomotriz) clearInterval(timerCarruselAutomotriz);
+    timerCarruselAutomotriz = setInterval(() => {
+        irASlideAutomotriz(indiceSlideAutomotriz + 1);
+    }, 4500);
+}
+
+window.irASlideAutomotriz = irASlideAutomotriz;
+window.iniciarCarruselAutomotriz = function() {
+    irASlideAutomotriz(0);
+};
+
 // Control de visibilidad de contraseña
 function toggleMostrarPassword() {
     const input = document.getElementById('loginPassword');
@@ -109,6 +166,11 @@ window.redirigirSegunContextoCliente = redirigirSegunContextoCliente;
 document.addEventListener('DOMContentLoaded', () => {
     // Iniciar capa superpuesta de intro animada sobre el login
     iniciarSecuenciaSplash();
+
+    // Iniciar escaparate automotriz en movimiento (Carrusel Ken Burns 4.5s)
+    if (document.getElementById('automotiveSlidesContainer')) {
+        irASlideAutomotriz(0);
+    }
 
     // Detección automática de ?modo=cliente en la URL para abrir el portal comercial luminoso
     const urlParams = new URLSearchParams(window.location.search);
@@ -162,13 +224,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Configurar formulario de Login original
-    const formLogin = document.getElementById('loginForm');
+    // Configurar formulario de Login original (Personal Interno)
+    const formLogin = document.getElementById('loginForm') || document.getElementById('formLogin');
     if (formLogin) {
         formLogin.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
+            const elEmail = document.getElementById('loginEmail') || document.getElementById('email');
+            const elPass = document.getElementById('loginPassword') || document.getElementById('password');
+            const email = elEmail ? elEmail.value.trim() : '';
+            const password = elPass ? elPass.value : '';
             const alertBox = document.getElementById('loginAlert');
             const btnLogin = document.getElementById('btnLogin');
 
@@ -237,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Configurar formulario de Login de Clientes / Talleres (Portal y legacy)
-    const formPortalLogin = document.getElementById('portalLoginForm') || document.getElementById('clienteLoginForm');
+    const formPortalLogin = document.getElementById('portalLoginForm') || document.getElementById('formLogin') || document.getElementById('clienteLoginForm');
     if (formPortalLogin) {
         formPortalLogin.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -310,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Configurar formulario de Registro de Nuevo Taller (Portal y legacy)
-    const formPortalReg = document.getElementById('portalRegistroForm') || document.getElementById('clienteRegistroForm');
+    const formPortalReg = document.getElementById('portalRegistroForm') || document.getElementById('formRegistro') || document.getElementById('clienteRegistroForm');
     if (formPortalReg) {
         formPortalReg.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -405,23 +469,37 @@ window.activarModoComercialCliente = function() {
     const loginView = document.getElementById('loginView');
     const portalClientesView = document.getElementById('portalClientesView');
     const crudView = document.getElementById('crudView');
+    const splitWrapper = document.getElementById('splitScreenWrapper');
+    const btnSwitch = document.getElementById('btnSwitchModePersonal');
 
     if (crudView) crudView.classList.add('d-none');
+    if (splitWrapper) splitWrapper.classList.remove('d-none');
     if (loginView) loginView.classList.add('d-none');
     if (portalClientesView) {
         portalClientesView.classList.remove('d-none');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (btnSwitch) {
+        btnSwitch.innerHTML = '<span>Acceso Personal GOLDEN</span> <i class="bi bi-arrow-right"></i>';
+        btnSwitch.onclick = window.activarModoPersonalInterno;
     }
 };
 
 window.activarModoPersonalInterno = function() {
     const loginView = document.getElementById('loginView');
     const portalClientesView = document.getElementById('portalClientesView');
+    const splitWrapper = document.getElementById('splitScreenWrapper');
+    const btnSwitch = document.getElementById('btnSwitchModePersonal');
 
+    if (splitWrapper) splitWrapper.classList.remove('d-none');
     if (portalClientesView) portalClientesView.classList.add('d-none');
     if (loginView) {
         loginView.classList.remove('d-none');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (btnSwitch) {
+        btnSwitch.innerHTML = '<i class="bi bi-arrow-left"></i> <span>Portal Clientes &amp; Talleres</span>';
+        btnSwitch.onclick = window.activarModoComercialCliente;
     }
 };
 
@@ -739,8 +817,10 @@ function mostrarPanelCRUD(usuario) {
     const loginView = document.getElementById('loginView');
     const crudView = document.getElementById('crudView');
     const menuContenedor = document.getElementById('menu-contenedor');
+    const splitWrapper = document.getElementById('splitScreenWrapper');
 
     if (loginView) loginView.classList.add('d-none');
+    if (splitWrapper) splitWrapper.classList.add('d-none');
     if (crudView) crudView.classList.remove('d-none');
     if (menuContenedor) {
         menuContenedor.classList.remove('d-none');

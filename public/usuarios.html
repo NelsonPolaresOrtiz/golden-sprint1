@@ -494,7 +494,7 @@
                 } else {
                     // Creación
                     if (!password || password.length < 6) {
-                        alert('La contraseña debe tener al menos 6 caracteres.');
+                        mostrarAlerta('warning', 'La contraseña debe tener al menos 6 caracteres.');
                         btn.disabled = false;
                         btn.textContent = 'Guardar Cuenta';
                         return;
@@ -516,7 +516,7 @@
                 modalUsuarioInstancia.hide();
                 await cargarUsuarios();
             } catch (err) {
-                alert(err.message);
+                mostrarAlerta('danger', err.message);
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Guardar Cuenta';
@@ -535,7 +535,7 @@
                 mostrarAlerta('warning', data.mensaje || 'Usuario eliminado correctamente.');
                 await cargarUsuarios();
             } catch (err) {
-                alert(err.message);
+                mostrarAlerta('danger', err.message);
             }
         }
 
@@ -550,7 +550,7 @@
 
         function exportarUsuariosExcel() {
             if (!usuariosGlobales || usuariosGlobales.length === 0) {
-                alert('No hay registros de usuarios para exportar');
+                mostrarAlerta('warning', 'No hay registros de usuarios para exportar.');
                 return;
             }
             if (typeof window.exportarReporteExcel === 'function') {

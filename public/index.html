@@ -31,284 +31,774 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Google Identity Services SDK Oficial -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Tipografía Editorial: Archivo, Bricolage Grotesque, Work Sans, Chivo Mono -->
+    <!-- Tipografías: Plus Jakarta Sans, Inter, Chivo Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Estilos Comerciales Automotrices Cálidos -->
-    <link rel="stylesheet" href="styles.css?v=25">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Chivo+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos base globales -->
+    <link rel="stylesheet" href="styles.css?v=30">
 
+    <!-- ========================================================================= -->
+    <!-- ESTILOS AUTOCONTENIDOS: LOGIN SPLIT-SCREEN & ESCAPARATE AUTOMOTRIZ        -->
+    <!-- ========================================================================= -->
     <style>
-        /* ==========================================================================
-           ESTRUCTURA DIVIDIDA & ESCENA 3D INTERACTIVA 360° (PALETA CÁLIDA AUTOMOTRIZ)
-           ========================================================================== */
+        :root {
+            --golden-dark: #141619;
+            --golden-crimson: #B91C1C;
+            --golden-crimson-dark: #991B1B;
+            --golden-gold: #D97706;
+            --golden-border: #E2E8F0;
+            --golden-input-border: #CBD5E1;
+            --golden-text-dark: #0F172A;
+            --golden-text-muted: #64748B;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #FAF8F5 !important;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--golden-dark);
+            color: #1E293B;
             overflow-x: hidden;
-        }
-
-        .split-login-wrapper {
             min-height: 100vh;
-            display: flex;
-            flex-wrap: wrap;
         }
 
-        /* COLUMNA IZQUIERDA: SHOWCASE INTERACTIVO 3D CAD TÉCNICO (CARBÓN GRAFITO #1C1917) */
-        .showcase-3d-col {
-            background-color: #1C1917;
-            background-image: 
-                linear-gradient(rgba(200, 30, 30, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(200, 30, 30, 0.08) 1px, transparent 1px),
-                linear-gradient(rgba(120, 113, 108, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(120, 113, 108, 0.04) 1px, transparent 1px);
-            background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+        /* Resets de botones e inputs para eliminar bordes crudos del navegador */
+        button {
+            font-family: inherit;
+            border: none;
+            outline: none;
+            background: none;
+        }
+        button:focus,
+        button:focus-visible {
+            outline: none;
+        }
+
+        /* ========================================================================= */
+        /* ESTRUCTURA SPLIT-SCREEN (100vh / 1.15fr 0.85fr)                           */
+        /* ========================================================================= */
+        .split-screen-container,
+        .split-login-wrapper {
+            display: grid !important;
+            grid-template-columns: 1.15fr 0.85fr !important;
+            min-height: 100vh !important;
+            min-height: 100dvh !important;
+            width: 100% !important;
+            background-color: var(--golden-dark) !important;
+            overflow: hidden !important;
+        }
+
+        /* Columna Izquierda (55% / 1.15fr): Escaparate Automotriz Animado */
+        .automotive-showcase-col {
             position: relative;
+            background-color: var(--golden-dark);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 2.5rem;
             min-height: 100vh;
-            border-right: 3px solid #C81E1E;
+            min-height: 100dvh;
+            padding: 2.25rem 2.75rem;
+            box-sizing: border-box;
+            z-index: 1;
         }
 
-        @media (max-width: 991.98px) {
-            .showcase-3d-col {
-                min-height: 480px;
-                padding: 1.5rem;
-                border-right: none;
-                border-bottom: 3px solid #C81E1E;
-            }
-        }
-
-        /* COLUMNA DERECHA: FORMULARIO DE ACCESO CÁLIDO (#FAF8F5) */
-        .form-access-col {
-            background-color: #FAF8F5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2.5rem 1.5rem;
-            min-height: 100vh;
-        }
-
-        /* Tarjeta de Formulario Limpia */
-        .login-card-stitch {
+        /* Contenedor de Slides Cinematográficos */
+        .automotive-slides-container {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            max-width: 450px;
-            background-color: #FFFFFF !important;
-            border: 1px solid #E6E1DA !important;
-            border-radius: 6px !important;
-            box-shadow: 0 4px 20px rgba(28, 25, 23, 0.06) !important;
-            padding: 2.5rem 2rem;
-            position: relative;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
         }
 
-        /* ==========================================================================
-           MOTOR 3D CON CSS 3D TRANSFORMS & SEGUIMIENTO DE CURSOR
-           ========================================================================== */
-
-        .cad-viewport {
-            perspective: 1000px;
-            perspective-origin: center center;
-            position: relative;
+        .ken-burns-slide {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: auto 0;
-            min-height: 400px;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            z-index: 1;
         }
 
-        .cad-pivot {
-            transform-style: preserve-3d;
-            position: relative;
-            width: 340px;
-            height: 340px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+        .ken-burns-slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        .ken-burns-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transform: scale(1.0);
             will-change: transform;
         }
 
-        /* Rotación Continua 360° de los Anillos Técnicos */
-        .cad-rotator-360 {
-            transform-style: preserve-3d;
+        .ken-burns-slide.active img {
+            animation: kenBurns 4.5s ease-out forwards, kenBurnsMotion 4.5s ease-out forwards;
+        }
+
+        @keyframes kenBurns {
+            0% {
+                transform: scale(1.0) translate(0, 0);
+            }
+            100% {
+                transform: scale(1.08) translate(-1%, -1%);
+            }
+        }
+
+        @keyframes kenBurnsMotion {
+            0% {
+                transform: scale(1.0) translate(0, 0);
+            }
+            100% {
+                transform: scale(1.08) translate(-1%, -1%);
+            }
+        }
+
+        /* Overlay Degradado Cinematográfico */
+        .showcase-overlay-vignette {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: rotate360 26s linear infinite;
-        }
-
-        .cad-rotator-reverse {
-            transform-style: preserve-3d;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: rotate360Reverse 18s linear infinite;
-        }
-
-        @keyframes rotate360 {
-            0% { transform: rotateZ(0deg); }
-            100% { transform: rotateZ(360deg); }
-        }
-
-        @keyframes rotate360Reverse {
-            0% { transform: rotateZ(360deg); }
-            100% { transform: rotateZ(0deg); }
-        }
-
-        /* Anillos Concéntricos Técnicos */
-        .cad-ring-outer {
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            border: 1px dashed rgba(200, 30, 30, 0.45);
-            border-radius: 50%;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(20, 22, 25, 0.70) 0%, rgba(20, 22, 25, 0.45) 45%, rgba(20, 22, 25, 0.95) 100%);
+            z-index: 3;
             pointer-events: none;
         }
 
-        .cad-ring-inner {
-            position: absolute;
-            width: 250px;
-            height: 250px;
-            border: 1px solid rgba(120, 113, 108, 0.35);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .cad-ring-axis {
-            position: absolute;
-            width: 360px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(200, 30, 30, 0.35), transparent);
-            pointer-events: none;
-        }
-
-        .cad-ring-axis.vertical {
-            transform: rotate(90deg);
-        }
-
-        /* Núcleo Central: Emblema Técnico Automotriz 3D */
-        .cad-core-card {
-            width: 220px;
-            height: 220px;
-            background: linear-gradient(145deg, #292524 0%, #1C1917 100%);
-            border: 2px solid #C81E1E;
-            border-radius: 6px;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(200, 30, 30, 0.2);
-            transform-style: preserve-3d;
-            transform: translateZ(35px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.25rem;
-            text-align: center;
+        /* Cabecera Superior */
+        .showcase-header-brand {
             position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .btn-showcase-mode-switch {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #F8FAFC;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+
+        .btn-showcase-mode-switch:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #FFFFFF;
+            transform: translateY(-1px);
+        }
+
+        /* Centro: Titular y 3 Tarjetas Frosted Glass */
+        .showcase-center-content {
+            position: relative;
+            z-index: 5;
+            margin: auto 0;
+            max-width: 600px;
+        }
+
+        .showcase-main-heading {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin: 0 0 0.65rem 0;
+        }
+
+        .showcase-main-subheading {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            color: #CBD5E1;
+            line-height: 1.45;
+            margin: 0 0 1.25rem 0;
+        }
+
+        .showcase-glass-card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 11px 15px;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .showcase-glass-card:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateX(4px);
+        }
+
+        .showcase-glass-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .showcase-glass-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin: 0 0 2px 0;
+        }
+
+        .showcase-glass-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            color: #94A3B8;
+            margin: 0;
+            line-height: 1.35;
+        }
+
+        /* Pie Inferior del Showcase */
+        .showcase-footer-content {
+            position: relative;
+            z-index: 5;
+        }
+
+        .showcase-meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(185, 28, 28, 0.25);
+            border: 1px solid rgba(185, 28, 28, 0.45);
+            color: #FCA5A5;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 3px 9px;
+            border-radius: 6px;
+        }
+
+        .showcase-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .showcase-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            color: #94A3B8;
+            margin: 3px 0 10px 0;
+        }
+
+        /* 4 Indicadores de Categoría */
+        .showcase-indicators-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .showcase-indicator-pill {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #CBD5E1;
+            padding: 6px 13px;
+            border-radius: 999px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.76rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
+            outline: none;
         }
 
-        .cad-core-card::before {
+        .showcase-indicator-pill .pill-index {
+            color: #64748B;
+            font-family: 'Chivo Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .showcase-indicator-pill:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #FFFFFF;
+        }
+
+        .showcase-indicator-pill.active {
+            background: #B91C1C !important;
+            border-color: #EF4444 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 0 16px rgba(185, 28, 28, 0.5) !important;
+        }
+
+        .showcase-indicator-pill.active .pill-index {
+            color: #FECACA !important;
+        }
+
+        .showcase-contact-strip {
+            font-family: 'Chivo Mono', monospace;
+            font-size: 0.72rem;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        /* ========================================================================= */
+        /* COLUMNA DERECHA: FORMULARIOS MODERNOS ESTILIZADOS (#FFFFFF)              */
+        /* ========================================================================= */
+        .form-access-col {
+            background-color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.25rem 2rem;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .login-form-inner {
+            max-width: 420px;
+            width: 100%;
+            margin: auto;
+        }
+
+        /* Cápsula Discreta Superior */
+        .pill-portal-commercial {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            color: #475569;
+            font-family: 'Chivo Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 0.85rem;
+            letter-spacing: 0.04em;
+        }
+
+        /* Selector Segmentado Moderno */
+        .auth-segmented-control,
+        .commercial-pill-tabs {
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 10px;
+            display: flex;
+            gap: 4px;
+            border: 1px solid #E2E8F0;
+            margin-bottom: 1.25rem;
+        }
+
+        .auth-segment-tab,
+        .commercial-pill-tab {
+            flex: 1;
+            border: none !important;
+            background: transparent;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            outline: none;
+            text-align: center;
+        }
+
+        .auth-segment-tab:hover,
+        .commercial-pill-tab:hover {
+            color: #0F172A;
+        }
+
+        .auth-segment-tab.active,
+        .commercial-pill-tab.active {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+            font-weight: 700 !important;
+            border: none !important;
+        }
+
+        /* Botones Sociales Limpios */
+        .btn-social-auth {
+            width: 100%;
+            height: 42px;
+            border-radius: 10px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 10px;
+            text-decoration: none;
+            outline: none;
+            border: none;
+        }
+
+        .btn-google-clean,
+        .btn-google {
+            background: #FFFFFF !important;
+            border: 1px solid #CBD5E1 !important;
+            color: #1E293B !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-google-clean:hover,
+        .btn-google:hover {
+            background: #F8FAFC !important;
+            border-color: #94A3B8 !important;
+            color: #0F172A !important;
+        }
+
+        .btn-facebook-clean,
+        .btn-facebook {
+            background: #1877F2 !important;
+            border: 1px solid #1877F2 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 2px 6px rgba(24, 119, 242, 0.25);
+        }
+
+        .btn-facebook-clean:hover,
+        .btn-facebook:hover {
+            background: #166FE5 !important;
+            border-color: #166FE5 !important;
+            color: #FFFFFF !important;
+        }
+
+        /* Divisor Horizontal Limpio */
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 1.15rem 0;
+            color: #94A3B8;
+            font-size: 0.74rem;
+            font-family: 'Chivo Mono', monospace;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
             content: '';
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            right: 4px;
-            bottom: 4px;
-            border: 1px dashed rgba(120, 113, 108, 0.25);
-            border-radius: 4px;
-            pointer-events: none;
+            flex: 1;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .auth-divider span {
+            padding: 0 10px;
         }
 
-        /* 3 Indicadores Flotantes Técnicos */
-        .cad-floating-indicator {
-            position: absolute;
-            background: rgba(28, 25, 23, 0.95);
-            border: 1px solid rgba(200, 30, 30, 0.6);
-            border-radius: 4px;
-            padding: 7px 11px;
+        /* Labels e Inputs */
+        .auth-field-label {
+            display: block;
             font-family: 'Inter', sans-serif;
             font-size: 0.72rem;
-            color: #FFFFFF;
-            transform-style: preserve-3d;
-            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
-            line-height: 1.3;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 5px;
+        }
+
+        .modern-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .modern-input-icon {
+            position: absolute;
+            left: 14px;
+            color: #94A3B8;
+            font-size: 1rem;
             pointer-events: none;
-            white-space: nowrap;
-            z-index: 10;
+            z-index: 2;
         }
 
-        .cad-floating-indicator strong {
-            color: #F87171;
-            display: block;
-            font-size: 0.74rem;
-            letter-spacing: 0.3px;
-        }
-
-        .cad-floating-indicator small {
-            color: #A8A29E;
-            font-size: 0.65rem;
-        }
-
-        /* Posiciones en el espacio 3D */
-        .indicator-stock {
-            top: 10px;
-            left: -35px;
-            transform: translateZ(70px);
-        }
-
-        .indicator-billing {
-            right: -45px;
-            top: 50%;
-            transform: translateY(-50%) translateZ(80px);
-        }
-
-        .indicator-dispatch {
-            bottom: 15px;
-            left: -20px;
-            transform: translateZ(65px);
-        }
-
-        @media (max-width: 575.98px) {
-            .cad-pivot {
-                width: 280px;
-                height: 280px;
-            }
-            .cad-ring-outer { width: 270px; height: 270px; }
-            .cad-ring-inner { width: 210px; height: 210px; }
-            .cad-core-card { width: 180px; height: 180px; }
-            .cad-floating-indicator { font-size: 0.65rem; padding: 5px 8px; }
-            .indicator-stock { left: -15px; top: 0; }
-            .indicator-billing { right: -25px; }
-            .indicator-dispatch { left: -10px; bottom: 0; }
-        }
-
-        /* Botones de Acceso Rápido Demo */
-        .btn-demo-access {
-            background-color: #F3EFEA !important;
-            border: 1px solid #E6E1DA !important;
-            color: #1C1917 !important;
-            border-radius: 4px !important;
+        .modern-form-input,
+        .portal-form-control {
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid #CBD5E1;
+            padding: 0 14px;
+            font-size: 14px;
             font-family: 'Inter', sans-serif;
-            font-size: 0.74rem !important;
-            font-weight: 600 !important;
-            padding: 0.35rem 0.65rem !important;
-            transition: all 0.15s ease !important;
+            color: #0F172A;
+            background-color: #FFFFFF;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .btn-demo-access:hover {
-            background-color: #E6E1DA !important;
-            border-color: #D6D0C7 !important;
-            color: #1C1917 !important;
+        .modern-form-input.has-icon {
+            padding-left: 42px;
+        }
+
+        .modern-form-input.has-toggle {
+            padding-right: 44px;
+        }
+
+        .modern-form-input:focus,
+        .portal-form-control:focus {
+            border-color: #B91C1C !important;
+            box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12) !important;
+        }
+
+        .modern-toggle-btn {
+            position: absolute;
+            right: 8px;
+            height: 32px;
+            width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            z-index: 2;
+        }
+
+        .modern-toggle-btn:hover {
+            color: #0F172A;
+            background: #F1F5F9;
+        }
+
+        /* Botón Principal Carmesí */
+        .btn-portal-submit,
+        .btn-login-crimson {
+            height: 46px;
+            background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%) !important;
+            color: #FFFFFF !important;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            border: none !important;
+            border-radius: 10px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25);
+            outline: none;
+            text-decoration: none;
+        }
+
+        .btn-portal-submit:hover,
+        .btn-login-crimson:hover {
+            background: linear-gradient(135deg, #991B1B 0%, #7F1D1D 100%) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(185, 28, 28, 0.35);
+            color: #FFFFFF !important;
+        }
+
+        .btn-portal-submit:active,
+        .btn-login-crimson:active {
+            transform: translateY(0);
+        }
+
+        /* Cápsula de Acceso Rápido */
+        .btn-quick-access-chip {
+            background: #F8FAFC !important;
+            border: 1px solid #E2E8F0 !important;
+            color: #334155 !important;
+            border-radius: 999px !important;
+            padding: 8px 16px !important;
+            font-size: 12.5px !important;
+            font-weight: 500 !important;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            outline: none;
+            text-decoration: none;
+        }
+
+        .btn-quick-access-chip:hover {
+            background: #F1F5F9 !important;
+            border-color: #CBD5E1 !important;
+            color: #0F172A !important;
+        }
+
+        /* Enlace a Tienda Online / Catálogo Libre */
+        .link-catalog-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            margin-top: 1rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .link-catalog-box:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+            transform: translateY(-1px);
+        }
+
+        /* Chips de Demo */
+        .demo-access-chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-demo-chip-modern {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            color: #334155;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: 'Chivo Mono', monospace;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-demo-chip-modern:hover {
+            background: #F1F5F9;
+            border-color: #CBD5E1;
+            color: #0F172A;
+        }
+
+        /* Modal OAuth Social Items */
+        .oauth-account-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #FFFFFF;
+        }
+
+        .oauth-account-item:hover {
+            background: #F8FAFC;
+            border-color: #CBD5E1;
+            transform: translateX(3px);
+        }
+
+        .oauth-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .btn-social-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #FFFFFF;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .btn-social-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ========================================================================= */
+        /* RESPONSIVE (< 960px)                                                      */
+        /* ========================================================================= */
+        @media (max-width: 960px) {
+            .split-screen-container,
+            .split-login-wrapper {
+                grid-template-columns: 1fr !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 100vh;
+            }
+
+            .automotive-showcase-col {
+                flex: 0 0 auto !important;
+                width: 100% !important;
+                min-height: 260px !important;
+                padding: 1.5rem !important;
+            }
+
+            .showcase-center-content {
+                display: none !important;
+            }
+
+            .showcase-main-heading {
+                font-size: 1.35rem !important;
+            }
+
+            .form-access-col {
+                padding: 2rem 1.5rem 3rem !important;
+            }
         }
     </style>
 </head>
@@ -319,564 +809,437 @@
     <!-- ========================================================================= -->
     <div id="splashOverlay" class="splash-overlay">
         <div class="splash-center-wrap">
-            <!-- Isotipo SVG Técnico con Animación de Trazado Progresivo -->
             <svg class="splash-svg-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Engranaje Industrial (Trazado dorado #D97706 / relleno Rojo #B91C1C) -->
                 <path class="splash-draw-gear" d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" />
-                <!-- Círculo Central Técnico (Dorado Industrial #D97706) -->
                 <circle class="splash-draw-circle" cx="50" cy="55" r="28" />
-                <!-- Gota de Aceite de Alta Precisión (Blanco Puro) -->
                 <path class="splash-draw-drop" d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" />
-                <!-- Líneas de Brillo y Flujo Hidráulico -->
                 <path class="splash-draw-sparkle" d="M47 48c0-3 3-7 3-7" />
                 <path class="splash-draw-flow" d="M30 65l-12 12" />
                 <path class="splash-draw-flow" d="M26 55l-14 5" />
                 <path class="splash-draw-flow" d="M35 44l-10-10" />
             </svg>
-
-            <!-- Fase 2: Aparición de la Marca -->
             <div class="splash-brand-wrap">
                 <div class="splash-brand-title">GOLDEN<span>.</span></div>
                 <div class="splash-brand-sub">LUBRICANTES &amp; FILTROS</div>
             </div>
         </div>
-
-        <!-- Botón Saltar Intro -->
         <button type="button" class="btn-skip-intro" onclick="saltarSplashIntro()">
             <i class="bi bi-fast-forward-fill"></i> Saltar intro
         </button>
     </div>
 
-
     <!-- MENÚ COMPARTIDO (Se muestra cuando el usuario está logueado en vista CRUD) -->
     <div id="menu-contenedor" class="d-none"></div>
 
     <!-- ========================================================================= -->
-    <!-- VISTA 1: LOGIN SPLIT-SCREEN CON ESCENA INTERACTIVA 360°                  -->
+    <!-- CONTENEDOR PRINCIPAL: LOGIN SPLIT-SCREEN (55% / 45%)                     -->
     <!-- ========================================================================= -->
-    <div id="loginView" class="split-login-wrapper">
+    <div id="splitScreenWrapper" class="split-screen-container split-login-wrapper">
 
-        <!-- 1. COLUMNA IZQUIERDA: SHOWCASE INTERACTIVO 3D CAD TÉCNICO (50%) -->
-        <div class="col-12 col-lg-6 showcase-3d-col" id="showcaseCol">
+        <!-- 1. COLUMNA IZQUIERDA (55% / 1.15fr): ESCAPARATE AUTOMOTRIZ EN MOVIMIENTO -->
+        <div class="automotive-showcase-col" id="showcaseCol">
             
-            <!-- Cabecera Técnica Superior: Identidad Oficial GOLDEN -->
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
-                        <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
+            <!-- Contenedor de Slides Cinematográficos con Animación Ken Burns (4.5s) -->
+            <div class="automotive-slides-container" id="automotiveSlidesContainer">
+                
+                <!-- Slide 0: Línea Liviana (Autos & SUV) -->
+                <div class="ken-burns-slide active" data-index="0" data-tag="LÍNEA LIVIANA (AUTOS &amp; SUV)" data-title="Lubricantes Sintéticos API SP" data-sub="Máxima eficiencia térmica y protección antidesgaste para motores modernos.">
+                    <img src="https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" 
+                         alt="Línea Liviana - Autos &amp; SUV" 
+                         onerror="this.onerror=null; this.src='img/showcase/showcase_liviana.svg';">
+                </div>
+
+                <!-- Slide 1: Línea Pesada (Transporte & Carga) -->
+                <div class="ken-burns-slide" data-index="1" data-tag="LÍNEA PESADA (TRANSPORTE &amp; CARGA)" data-title="Aceites Diesel 15W-40 CK-4" data-sub="Protección extrema bajo cargas pesadas, rutas de altura y trabajo severo.">
+                    <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" 
+                         alt="Línea Pesada - Transporte &amp; Carga" 
+                         onerror="this.onerror=null; this.src='img/showcase/showcase_pesada.svg';">
+                </div>
+
+                <!-- Slide 2: Línea Agrícola y Maquinaria -->
+                <div class="ken-burns-slide" data-index="2" data-tag="LÍNEA AGRÍCOLA &amp; MAQUINARIA" data-title="Fluidos Hidráulicos &amp; Transmisión" data-sub="Rendimiento continuo ISO VG 68 / 46 para tractores y equipo amarillo de alta exigencia.">
+                    <img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" 
+                         alt="Línea Agrícola y Maquinaria" 
+                         onerror="this.onerror=null; this.src='img/showcase/showcase_agricola.svg';">
+                </div>
+
+                <!-- Slide 3: Línea Motocicletas -->
+                <div class="ken-burns-slide" data-index="3" data-tag="LÍNEA MOTOCICLETAS (2T &amp; 4T)" data-title="Tecnología 4T JASO MA2" data-sub="Alto desempeño, embrague húmedo protegido y máxima aceleración en carretera y ciudad.">
+                    <img src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&amp;fit=crop&amp;w=1400&amp;q=80" 
+                         alt="Línea Motocicletas" 
+                         onerror="this.onerror=null; this.src='img/showcase/showcase_moto.svg';">
+                </div>
+            </div>
+
+            <!-- Capa Superpuesta de Viñeta y Degradado Oscuro Cinematográfico -->
+            <div class="showcase-overlay-vignette"></div>
+
+            <!-- Cabecera Superior: Logotipo Oficial GOLDEN, Estado y Switch de Modo -->
+            <div class="showcase-header-brand">
+                <div class="d-flex align-items-center gap-3">
+                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(185, 28, 28, 0.4));">
                         <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
-                        <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
-                        <!-- Gota de Aceite de Alta Precisión -->
-                        <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
-                        <!-- Detalle de brillo en la gota -->
+                        <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#141619" stroke-width="4"/>
+                        <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#141619" stroke-width="4"/>
                         <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                        <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                        <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M30 65l-12 12" stroke="#141619" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M26 55l-14 5" stroke="#141619" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M35 44l-10-10" stroke="#141619" stroke-width="5" stroke-linecap="round"/>
                     </svg>
                     <div style="display: flex; flex-direction: column; line-height: 1.1;">
-                        <span style="font-family: 'Inter', sans-serif; font-size: 1.35rem; font-weight: 900; color: #FAFAFA; letter-spacing: -0.01em;">GOLDEN</span>
-                        <span style="font-family: 'Inter', sans-serif; font-size: 0.58rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
+                        <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">GOLDEN</span>
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700; color: #EF4444; letter-spacing: 0.08em; white-space: nowrap;">DISTRIBUCIÓN OFICIAL · SUCRE, BOLIVIA</span>
                     </div>
                 </div>
-                <div>
-                    <span class="badge font-mono" style="background: rgba(21, 128, 61, 0.2); color: #4ADE80; border: 1px solid rgba(21, 128, 61, 0.4); font-size: 0.68rem; border-radius: 4px;">
-                        <span class="pulse-dot pulse-dot-emerald me-1"></span>SISTEMA EN LÍNEA
-                    </span>
-                </div>
-            </div>
-
-            <!-- Centro: Visor 3D Interactivo con Rotación 360° y Seguimiento de Cursor -->
-            <div class="cad-viewport">
-                <div class="cad-pivot" id="cadPivot">
-                    
-                    <!-- Ejes de Referencia CAD -->
-                    <div class="cad-ring-axis"></div>
-                    <div class="cad-ring-axis vertical"></div>
-
-                    <!-- Anillo Exterior Rotatorio 360° -->
-                    <div class="cad-rotator-360">
-                        <div class="cad-ring-outer"></div>
-                    </div>
-
-                    <!-- Anillo Interior en Contragiro -->
-                    <div class="cad-rotator-reverse">
-                        <div class="cad-ring-inner"></div>
-                    </div>
-
-                    <!-- Núcleo Central 3D / Emblema Automotriz Oficial -->
-                    <div class="cad-core-card">
-                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-2" style="filter: drop-shadow(0 4px 10px rgba(185, 28, 28, 0.35)); flex-shrink: 0;">
-                            <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
-                            <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
-                            <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
-                            <!-- Gota de Aceite de Alta Precisión -->
-                            <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
-                            <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                            <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                            <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                        </svg>
-                        <span class="font-mono fw-bold text-uppercase" id="cadCoreBadge" style="color: #F87171; font-size: 0.78rem; letter-spacing: 1px;">
-                            GOLDEN ERP
-                        </span>
-                        <h6 class="text-white fw-bold mb-1" id="cadCoreTitle" style="font-size: 0.85rem; line-height: 1.25;">
-                            Lubricantes &amp; Filtros
-                        </h6>
-                        <span class="font-mono" id="cadCoreSub" style="font-size: 0.65rem; color: #A8A29E;">
-                            DISTRIBUCIÓN MAYORISTA
-                        </span>
-                    </div>
-
-                    <!-- [01] Indicador Flotante 1: Control de Stock -->
-                    <div class="cad-floating-indicator indicator-stock" id="cadIndStock">
-                        <strong id="cadIndStockTitle"><i class="bi bi-database-check me-1"></i>STOCK EN TIEMPO REAL</strong>
-                        <small id="cadIndStockSub">Catálogo Actualizado</small>
-                    </div>
-
-                    <!-- [02] Indicador Flotante 2: Facturación con NIT -->
-                    <div class="cad-floating-indicator indicator-billing" id="cadIndBilling">
-                        <strong id="cadIndBillingTitle"><i class="bi bi-file-earmark-text-fill me-1"></i>FACTURACIÓN CON NIT</strong>
-                        <small id="cadIndBillingSub">Norma SIN / IVA 13% • Talleres</small>
-                    </div>
-
-                    <!-- [03] Indicador Flotante 3: Despacho a Talleres -->
-                    <div class="cad-floating-indicator indicator-dispatch" id="cadIndDispatch">
-                        <strong id="cadIndDispatchTitle"><i class="bi bi-truck me-1"></i>DESPACHO A TALLERES</strong>
-                        <small id="cadIndDispatchSub">Envíos en el día a todo el país</small>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Pie Técnico de Telemetría -->
-            <div class="d-flex justify-content-between align-items-end font-mono pt-3" style="font-size: 0.72rem; border-top: 1px solid rgba(120, 113, 108, 0.2);">
-                <div>
-                    <span class="d-block" id="cadFootLeftTitle" style="color: #F87171; font-weight: 600;">PEDIDOS MAYORISTAS</span>
-                    <span id="cadFootLeftSub" style="color: #A8A29E;">SUCRE, BOLIVIA</span>
-                </div>
-                <div class="text-end" style="color: #A8A29E;">
-                    <span id="cadFootRightTitle">RED DE DISTRIBUCIÓN</span>
-                    <span class="d-block text-white" id="cadFootRightSub">SUCRE • POTOSÍ • COCHABAMBA</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- 2. COLUMNA DERECHA: FORMULARIO DE ACCESO CÁLIDO (50%) -->
-        <div class="col-12 col-lg-6 form-access-col">
-            
-            <!-- PANEL A: ACCESO PERSONAL INTERNO (ADMIN, ALMACÉN, DESPACHO) -->
-            <div class="login-card-stitch" id="panelLoginInterno">
-                
-                <!-- Encabezado del Formulario: Identidad Oficial GOLDEN -->
-                <div class="mb-4">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
-                            <!-- Engranaje Industrial (Rojo Taller #B91C1C y Oro #D97706) -->
-                            <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
-                            <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
-                            <!-- Gota de Aceite de Alta Precisión -->
-                            <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
-                            <!-- Detalle de brillo en la gota -->
-                            <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                            <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                            <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                        </svg>
-                        <div style="display: flex; flex-direction: column; line-height: 1.1;">
-                            <span style="font-family: 'Inter', sans-serif; font-size: 1.6rem; font-weight: 900; color: #18181B; letter-spacing: -0.01em;">GOLDEN</span>
-                            <span style="font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; white-space: nowrap;">LUBRICANTES &amp; FILTROS</span>
-                        </div>
-                    </div>
-                    <span class="badge mb-2 font-mono" style="background: #F3EFEA; color: #57534E; border: 1px solid #E6E1DA;">
-                        Portal Oficial de Distribución Automotriz
-                    </span>
-                    <h3 class="fw-bold mb-1 text-dark" style="font-family: 'Inter', sans-serif; letter-spacing: -0.3px;">
-                        Bienvenido a GOLDEN Lubricantes
-                    </h3>
-                    <p class="text-muted small mb-0" style="font-size: 0.88rem;">
-                        Distribución mayorista para talleres mecánicos, flotas y personal en Sucre.
-                    </p>
-                </div>
-
-                <!-- Tarjeta Destacada de Entrada Comercial: Catálogo Libre -->
-                <div class="p-3 mb-3 rounded border text-start shadow-sm" style="background: #ECFDF5; border-color: #A7F3D0 !important;">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div>
-                            <span class="badge mb-1" style="background: #15803D; color: #FFFFFF; font-size: 0.68rem; letter-spacing: 0.5px;">
-                                <i class="bi bi-shop me-1"></i>CATÁLOGO LIBRE
-                            </span>
-                            <div class="fw-bold text-dark" style="font-size: 0.92rem;">¿Buscas lubricantes y filtros?</div>
-                            <small class="text-secondary d-block" style="font-size: 0.76rem;">Explora precios mayoristas y añade repuestos sin necesidad de iniciar sesión.</small>
-                        </div>
-                        <a href="tienda.html" class="btn btn-success btn-sm px-3 py-2 fw-bold d-inline-flex align-items-center gap-1 shadow-sm text-nowrap" style="background: #15803D; border-color: #15803D; border-radius: 6px;">
-                            <i class="bi bi-cart3"></i>
-                            <span>Explorar Catálogo Oficial &rarr;</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Botón de Acceso Clientes / Talleres -->
-                <button type="button" class="btn btn-outline-dark btn-sm w-100 py-2 mb-3 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="activarModoComercialCliente()" style="border-radius: 6px; border-color: #CBD5E1;">
-                    <i class="bi bi-tools text-warning"></i>
-                    <span>Portal de Clientes y Registro de Talleres &rarr;</span>
-                </button>
-
-                <div class="d-flex align-items-center my-3">
-                    <hr class="flex-grow-1 my-0 text-muted opacity-25">
-                    <span class="px-2 text-muted font-mono" style="font-size: 0.72rem; letter-spacing: 0.5px;">INGRESO PERSONAL INTERNO</span>
-                    <hr class="flex-grow-1 my-0 text-muted opacity-25">
-                </div>
-
-                <!-- Alerta Dinámica de Error de Inicio de Sesión -->
-                <div id="loginAlert" class="alert d-none py-2 px-3 small rounded-2 fw-semibold text-center mb-3" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;"></div>
-
-                <!-- Formulario de Acceso -->
-                <form id="loginForm">
-                    
-                    <!-- Campo: Correo Institucional -->
-                    <div class="mb-3">
-                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; color: #57534E;">
-                            Correo Institucional / Usuario
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border border-end-0 text-muted ps-3 pe-2" style="border-color: #D6D0C7;">
-                                <i class="bi bi-envelope-fill"></i>
-                            </span>
-                            <input type="email" 
-                                   id="loginEmail" 
-                                   class="form-control font-mono border-start-0 ps-1" 
-                                   placeholder="admin@golden.bo" 
-                                   required 
-                                   style="border-color: #D6D0C7; font-size: 0.9rem;">
-                        </div>
-                    </div>
-
-                    <!-- Campo: Contraseña con Toggle Mostrar/Ocultar -->
-                    <div class="mb-4">
-                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; color: #57534E;">
-                            Contraseña de Acceso
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border border-end-0 text-muted ps-3 pe-2" style="border-color: #D6D0C7;">
-                                <i class="bi bi-key-fill"></i>
-                            </span>
-                            <input type="password" 
-                                   id="loginPassword" 
-                                   class="form-control font-mono border-start-0 border-end-0 ps-1" 
-                                   placeholder="••••••••" 
-                                   required 
-                                   style="border-color: #D6D0C7; font-size: 0.9rem;">
-                            <button class="btn btn-outline-secondary border border-start-0 bg-white pe-3" 
-                                    type="button" 
-                                    id="btnTogglePassword" 
-                                    onclick="toggleMostrarPassword()" 
-                                    style="border-color: #D6D0C7; color: #78716C;" 
-                                    title="Mostrar u ocultar contraseña">
-                                <i class="bi bi-eye-fill" id="iconoPassword"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Botón de Ingreso en Rojo Automotriz #C81E1E -->
-                    <button type="submit" 
-                            id="btnLogin" 
-                            class="btn btn-primary w-100 py-3 fw-bold fs-6 shadow-sm d-flex align-items-center justify-content-center gap-2 mb-4" 
-                            style="background-color: #C81E1E; border-color: #C81E1E; border-radius: 6px;">
-                        <i class="bi bi-box-arrow-in-right fs-5"></i>
-                        <span>Ingresar al Sistema</span>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn-showcase-mode-switch" id="btnSwitchModePersonal" onclick="activarModoPersonalInterno()" title="Cambiar a acceso de personal interno">
+                        <span>Acceso Personal GOLDEN</span>
+                        <i class="bi bi-arrow-right"></i>
                     </button>
-                </form>
+                </div>
+            </div>
 
-                <!-- Selección rápida de perfil institucional -->
-                <div class="mt-3 pt-3 border-top text-center" style="border-color: #E6E1DA !important;">
-                    <span class="text-muted small fw-bold text-uppercase d-block mb-2 font-mono" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                        Selección rápida de perfil institucional:
-                    </span>
-                    <div class="d-flex flex-wrap justify-content-center gap-2">
-                        <button type="button" 
-                                class="btn btn-demo-access d-flex align-items-center gap-1" 
-                                onclick="llenarLogin('admin@golden.bo', 'admin123')">
-                            <i class="bi bi-shield-lock-fill text-danger"></i> ADMIN (Gerente)
-                        </button>
-                        <button type="button" 
-                                class="btn btn-demo-access d-flex align-items-center gap-1" 
-                                onclick="llenarLogin('empaque@golden.bo', 'empaque123')">
-                            <i class="bi bi-box-seam-fill text-warning"></i> EMPAQUE (Almacén)
-                        </button>
-                        <button type="button" 
-                                class="btn btn-demo-access d-flex align-items-center gap-1" 
-                                onclick="llenarLogin('despacho@golden.bo', 'despacho123')">
-                            <i class="bi bi-truck text-primary"></i> DESPACHO (Chofer)
-                        </button>
-                        <button type="button" 
-                                class="btn btn-demo-access d-flex align-items-center gap-1 text-success fw-bold" 
-                                onclick="activarModoComercialCliente()">
-                            <i class="bi bi-tools text-success"></i> CLIENTE (Taller)
-                        </button>
+            <!-- Centro: Titular Principal y 3 Tarjetas Frosted Glass de Beneficios -->
+            <div class="showcase-center-content">
+                <h1 class="showcase-main-heading">
+                    Abastece tu taller con precios directos de distribuidora.
+                </h1>
+                <p class="showcase-main-subheading">
+                    Accede a catálogo mayorista en tiempo real para mecánicos, lubricentros y flotas en Sucre y Chuquisaca.
+                </p>
+
+                <!-- 3 Tarjetas Horizontales de Cristal Esmerilado -->
+                <div class="showcase-glass-card">
+                    <div class="showcase-glass-icon" style="background: rgba(217, 119, 6, 0.2); color: #FBBF24; border: 1px solid rgba(217, 119, 6, 0.35);">
+                        <i class="bi bi-box-seam-fill"></i>
+                    </div>
+                    <div>
+                        <h4 class="showcase-glass-title">Stock Real Garantizado</h4>
+                        <p class="showcase-glass-desc">Consulta litros, baldes de 20L y filtros disponibles al instante con stock actualizado.</p>
                     </div>
                 </div>
 
+                <div class="showcase-glass-card">
+                    <div class="showcase-glass-icon" style="background: rgba(22, 163, 74, 0.2); color: #4ADE80; border: 1px solid rgba(22, 163, 74, 0.35);">
+                        <i class="bi bi-qr-code-scan"></i>
+                    </div>
+                    <div>
+                        <h4 class="showcase-glass-title">Pago Flexible con QR o PayPal</h4>
+                        <p class="showcase-glass-desc">Paga desde tu celular con QR Simple boliviano (Yape/BCP) o tarjeta internacional.</p>
+                    </div>
+                </div>
+
+                <div class="showcase-glass-card">
+                    <div class="showcase-glass-icon" style="background: rgba(185, 28, 28, 0.2); color: #F87171; border: 1px solid rgba(185, 28, 28, 0.35);">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <div>
+                        <h4 class="showcase-glass-title">Despacho en el Día en Sucre</h4>
+                        <p class="showcase-glass-desc">Seguimiento paso a paso desde el empaque hasta la puerta de tu taller o lubricentro.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor técnico oculto para compatibilidad DOM / Scripts -->
+            <div class="d-none" aria-hidden="true">
+                <div id="showcaseActiveTag"><span id="showcaseTagText"></span></div>
+                <div id="showcaseActiveTitle"></div>
+                <div id="showcaseActiveSub"></div>
+                <div id="showcaseIndicatorsBar"></div>
             </div>
 
         </div>
 
-    </div>
+        <!-- 2. COLUMNA DERECHA (45% / 0.85fr): FORMULARIOS MODERNOS ESTILIZADOS (#FFFFFF) -->
+        <div class="form-access-col" id="formAccessCol">
+            <div class="login-form-inner">
 
-    <!-- ========================================================================= -->
-    <!-- VISTA COMERCIAL: PORTAL LUMINOSO PARA CLIENTES Y TALLERES MECÁNICOS       -->
-    <!-- ========================================================================= -->
-    <div id="portalClientesView" class="portal-comercial-wrapper d-none">
-        
-        <!-- Barra Superior con Botón Discreto para Volver al Login de Personal -->
-        <div class="portal-topbar">
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge font-mono" style="background: rgba(217, 119, 6, 0.12); color: #B45309; border: 1px solid rgba(217, 119, 6, 0.25); font-size: 0.72rem; padding: 5px 10px; border-radius: 6px;">
-                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i>DISTRIBUCIÓN OFICIAL • SUCRE, BOLIVIA
-                </span>
-            </div>
-            <div>
-                <button type="button" class="btn-portal-back" onclick="activarModoPersonalInterno()" title="Volver al acceso de empleados y administradores">
-                    <span>Acceso Personal GOLDEN</span>
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="portal-container">
-            <div class="row g-4 g-xl-5 align-items-center">
-                
-                <!-- COLUMNA IZQUIERDA (60%): VITRINA COMERCIAL PARA TALLERES -->
-                <div class="col-12 col-lg-7">
+                <!-- ============================================================= -->
+                <!-- VISTA A: PORTAL COMERCIAL CLIENTES Y TALLERES (VISIBLE DEFAULT) -->
+                <!-- ============================================================= -->
+                <div id="portalClientesView" class="auth-panel-view">
                     
-                    <!-- Cabecera de Marca -->
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
-                            <!-- Engranaje Industrial Rojo #B91C1C y Oro #D97706 -->
-                            <path d="M50 12c-3.1 0-5.8 2.1-6.6 5.1l-1.3 4.8c-2.3.6-4.5 1.6-6.6 2.9l-4.1-2.9c-2.5-1.8-5.9-1.3-7.8 1.1l-4.2 5.2c-1.9 2.4-1.6 5.8.7 7.7l3.8 3.1c-.5 2.3-.7 4.7-.6 7l-4.7 1.6c-2.9 1-4.9 3.7-4.9 6.8v6.7c0 3.1 2 5.8 4.9 6.8l4.7 1.6c.1 2.3.4 4.7.9 7l-3.8 3.1c-2.3 1.9-2.6 5.3-.7 7.7l4.2 5.2c1.9 2.4 5.3 2.9 7.8 1.1l4.1-2.9c2.1 1.3 4.3 2.3 6.6 2.9l1.3 4.8c.8 3 3.5 5.1 6.6 5.1h6.7c3.1 0 5.8-2.1 6.6-5.1l1.3-4.8c2.3-.6 4.5-1.6 6.6-2.9l4.1 2.9c2.5 1.8 5.9 1.3 7.8-1.1l4.2-5.2c1.9-2.4 1.6-5.8-.7-7.7l-3.8-3.1c.5-2.3.7-4.7.6-7l4.7-1.6c2.9-1 4.9-3.7 4.9-6.8v-6.7c0-3.1-2-5.8-4.9-6.8l-4.7-1.6c-.1-2.3-.4-4.7-.9-7l3.8-3.1c2.3-1.9 2.6-5.3.7-7.7l-4.2-5.2c-1.9-2.4-5.3-2.9-7.8-1.1l-4.1 2.9c-2.1-1.3-4.3-2.3-6.6-2.9l-1.3-4.8c-.8-3-3.5-5.1-6.6-5.1H50z" fill="#B91C1C"/>
-                            <circle cx="50" cy="55" r="28" fill="#D97706" stroke="#18181B" stroke-width="4"/>
-                            <!-- Gota de Aceite de Alta Precisión -->
-                            <path d="M50 33c0 0-14 14.5-14 21.5s6.3 11.5 14 11.5 14-4.5 14-11.5S50 33 50 33z" fill="#FFF" stroke="#18181B" stroke-width="4"/>
-                            <path d="M47 48c0-3 3-7 3-7" stroke="#B91C1C" stroke-width="3" stroke-linecap="round"/>
-                            <path d="M30 65l-12 12" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                            <path d="M26 55l-14 5" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                            <path d="M35 44l-10-10" stroke="#18181B" stroke-width="5" stroke-linecap="round"/>
-                        </svg>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span style="font-family: 'Inter', sans-serif; font-size: 1.6rem; font-weight: 900; color: #1C1917; letter-spacing: -0.01em;">GOLDEN</span>
-                                <span class="badge font-mono" style="background: #F3EFEA; color: #78716C; border: 1px solid #E6E1DA; font-size: 0.68rem;">
-                                    TIENDA MAYORISTA &amp; TALLERES — SUCRE
-                                </span>
-                            </div>
-                            <span style="font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 700; color: #B91C1C; letter-spacing: 0.1em; display: block;">
-                                LUBRICANTES &amp; FILTROS
-                            </span>
-                        </div>
+                    <!-- Cápsula Discreta de Portal -->
+                    <div class="pill-portal-commercial">
+                        <i class="bi bi-tools text-danger"></i>
+                        <span>PORTAL COMERCIAL B2B / B2C</span>
                     </div>
 
-                    <!-- Titular Grande y Humano -->
-                    <h1 class="display-6 fw-bold mb-3" style="font-family: 'Inter', sans-serif; color: #1C1917; line-height: 1.15; letter-spacing: -0.02em;">
-                        Abastece tu taller con precios directos de distribuidora.
-                    </h1>
-
-                    <p class="text-secondary fs-6 mb-4" style="line-height: 1.5; max-width: 580px;">
-                        Accede a nuestro catálogo mayorista en tiempo real. Precios especiales por caja cerrada y balde para mecánicos, lubricentros y flotas en Sucre y Chuquisaca.
+                    <!-- Título y Subtítulo Minimalistas -->
+                    <h2 class="fw-bold text-dark mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.6rem; letter-spacing: -0.02em;">
+                        Acceso al Catálogo Mayorista
+                    </h2>
+                    <p class="text-secondary small mb-3" style="font-size: 0.86rem; line-height: 1.45;">
+                        Ingresa con tu cuenta comercial o regístrate para precios especiales en Sucre.
                     </p>
 
-                    <!-- 3 Tarjetas Horizontales Limpias -->
-                    <div class="d-flex flex-column gap-3 mb-4" style="max-width: 580px;">
+                    <!-- Selector Segmentado Moderno: Ingresar / Registrar Taller -->
+                    <div class="auth-segmented-control commercial-pill-tabs mb-3">
+                        <button type="button" class="auth-segment-tab commercial-pill-tab active" id="tabPillIngresar" onclick="alternarPillComercial('ingresar')">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Ingresar</span>
+                        </button>
+                        <button type="button" class="auth-segment-tab commercial-pill-tab" id="tabPillRegistrar" onclick="alternarPillComercial('registrar')">
+                            <i class="bi bi-person-plus-fill"></i>
+                            <span>Registrar Taller</span>
+                        </button>
+                    </div>
+
+                    <!-- Alerta Dinámica de Clientes -->
+                    <div id="portalClienteAlert" class="alert d-none py-2 px-3 small rounded-3 fw-semibold text-center mb-3" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;"></div>
+
+                    <!-- SECCIÓN 1: INGRESAR CLIENTES -->
+                    <div id="seccionPillIngresar">
                         
-                        <!-- Tarjeta 1: Stock Real Garantizado -->
-                        <div class="commercial-feature-card">
-                            <div class="commercial-feature-icon" style="background: #FEF3C7; color: #D97706;">
-                                <i class="bi bi-box-seam-fill"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">Stock Real Garantizado</h6>
-                                <p class="text-muted small mb-0" style="font-size: 0.84rem; line-height: 1.35;">
-                                    Consulta litros, baldes de 20L y filtros disponibles al instante.
-                                </p>
-                            </div>
+                        <!-- Botón Google -->
+                        <button type="button" id="btnGoogle" class="btn-social-auth btn-google-clean btn-google w-100" onclick="abrirModalOAuthSocial('google')">
+                            <svg width="20" height="20" viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            <span>Continuar con Google</span>
+                        </button>
+
+                        <!-- Botón Facebook -->
+                        <button type="button" id="btnFacebook" class="btn-social-auth btn-facebook-clean btn-facebook w-100" onclick="abrirModalOAuthSocial('facebook')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                            <span>Continuar con Facebook</span>
+                        </button>
+
+                        <!-- Divisor Limpio -->
+                        <div class="auth-divider">
+                            <span>o ingresa con tu cuenta registrada</span>
                         </div>
 
-                        <!-- Tarjeta 2: Pago Flexible con QR o PayPal -->
-                        <div class="commercial-feature-card">
-                            <div class="commercial-feature-icon" style="background: #DCFCE7; color: #16A34A;">
-                                <i class="bi bi-qr-code-scan"></i>
+                        <!-- Formulario de Acceso Directo de Clientes -->
+                        <form id="portalLoginForm" name="formLogin">
+                            <div class="mb-3">
+                                <label for="portalClienteEmail" class="auth-field-label">
+                                    Correo Electrónico
+                                </label>
+                                <input type="email" 
+                                       id="portalClienteEmail" 
+                                       name="email"
+                                       class="portal-form-control modern-form-input font-mono" 
+                                       placeholder="taller@golden.bo" 
+                                       required 
+                                       autocomplete="username">
                             </div>
-                            <div>
-                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">Pago Flexible con QR o PayPal</h6>
-                                <p class="text-muted small mb-0" style="font-size: 0.84rem; line-height: 1.35;">
-                                    Paga desde tu celular con QR Simple boliviano o tarjeta internacional.
-                                </p>
+
+                            <div class="mb-3">
+                                <label for="portalClientePassword" class="auth-field-label">
+                                    Contraseña
+                                </label>
+                                <div class="modern-input-group">
+                                    <input type="password" 
+                                           id="portalClientePassword" 
+                                           name="password"
+                                           class="portal-form-control modern-form-input has-toggle font-mono" 
+                                           placeholder="••••••••" 
+                                           required 
+                                           autocomplete="current-password">
+                                    <button type="button" 
+                                            class="modern-toggle-btn" 
+                                            onclick="togglePasswordVisibility('portalClientePassword', this)" 
+                                            title="Mostrar u ocultar contraseña">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </button>
+                                </div>
                             </div>
+
+                            <!-- Botón Carmesí: Entrar al Catálogo -->
+                            <button type="submit" id="btnPortalClienteLogin" class="btn-portal-submit mb-3">
+                                <i class="bi bi-cart-check-fill fs-5"></i>
+                                <span>Entrar al Catálogo</span>
+                            </button>
+                        </form>
+
+                        <!-- Acceso Rápido Taller Central -->
+                        <div class="text-center pt-1 mb-2">
+                            <button type="button" id="btnAccesoRapidoCliente" class="btn-quick-access-chip" onclick="llenarPortalCliente('cliente@golden.bo', 'cliente123')">
+                                <i class="bi bi-shield-check text-success"></i>
+                                <span>Acceso Rápido: cliente@golden.bo (Taller Central)</span>
+                            </button>
                         </div>
 
-                        <!-- Tarjeta 3: Despacho en el Día en Sucre -->
-                        <div class="commercial-feature-card">
-                            <div class="commercial-feature-icon" style="background: #FEE2E2; color: #B91C1C;">
-                                <i class="bi bi-truck"></i>
-                            </div>
+                        <!-- Enlace a Tienda Online Libre -->
+                        <a href="tienda.html" class="link-catalog-box">
                             <div>
-                                <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem;">Despacho en el Día en Sucre</h6>
-                                <p class="text-muted small mb-0" style="font-size: 0.84rem; line-height: 1.35;">
-                                    Seguimiento paso a paso desde el empaque hasta la puerta de tu taller.
-                                </p>
+                                <div class="fw-bold text-dark" style="font-size: 0.86rem;">
+                                    <i class="bi bi-shop text-danger me-1"></i> ¿Deseas cotizar sin cuenta previa?
+                                </div>
+                                <small class="text-secondary" style="font-size: 0.76rem;">Explora catálogo y precios minoristas libres.</small>
                             </div>
-                        </div>
+                            <span class="badge" style="background: #B91C1C; color: #FFFFFF; font-size: 0.74rem; border-radius: 6px; padding: 5px 8px;">
+                                Tienda &rarr;
+                            </span>
+                        </a>
+
+                        <!-- Botón para alternar a Personal Interno -->
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2 mt-3 fw-semibold d-flex align-items-center justify-content-center gap-2" onclick="activarModoPersonalInterno()" style="border-radius: 10px; border-color: #E2E8F0; color: #475569; font-size: 0.82rem;">
+                            <i class="bi bi-shield-lock-fill text-danger"></i>
+                            <span>Acceso de Personal y Administradores &rarr;</span>
+                        </button>
 
                     </div>
 
-                    <!-- Datos de atención local -->
-                    <div class="d-flex align-items-center gap-3 pt-2 text-muted small font-mono" style="font-size: 0.76rem;">
-                        <span><i class="bi bi-telephone-fill text-danger me-1"></i>(4) 64-52890</span>
-                        <span>•</span>
-                        <span><i class="bi bi-whatsapp text-success me-1"></i>WhatsApp: +591 67375645</span>
-                        <span>•</span>
-                        <span><i class="bi bi-shield-check text-primary me-1"></i>Factura Fiscal IVA 13%</span>
+                    <!-- SECCIÓN 2: REGISTRAR TALLER (Pestaña 2) -->
+                    <div id="seccionPillRegistrar" class="d-none">
+                        <form id="portalRegistroForm" name="formRegistro">
+                            <div class="mb-2">
+                                <label for="regPortalNombre" class="auth-field-label">Nombre del Taller o Cliente</label>
+                                <input type="text" id="regPortalNombre" class="portal-form-control modern-form-input" placeholder="Ej. Taller Mecánico Los Primos" required>
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label for="regPortalNit" class="auth-field-label">NIT / CI (para factura)</label>
+                                    <input type="text" id="regPortalNit" class="portal-form-control modern-form-input font-mono" placeholder="1029384756" required>
+                                </div>
+                                <div class="col-6">
+                                    <label for="regPortalTelefono" class="auth-field-label">Celular / WhatsApp</label>
+                                    <input type="tel" id="regPortalTelefono" class="portal-form-control modern-form-input font-mono" placeholder="71234567" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="regPortalDireccion" class="auth-field-label">Dirección de entrega en Sucre</label>
+                                <input type="text" id="regPortalDireccion" class="portal-form-control modern-form-input" placeholder="Av. Las Américas #340, Zona Central">
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="regPortalEmail" class="auth-field-label">Correo Electrónico</label>
+                                <input type="email" id="regPortalEmail" class="portal-form-control modern-form-input font-mono" placeholder="contacto@mitaller.bo" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="regPortalPassword" class="auth-field-label">Contraseña</label>
+                                <input type="password" id="regPortalPassword" class="portal-form-control modern-form-input font-mono" placeholder="Mínimo 6 caracteres" required>
+                            </div>
+
+                            <button type="submit" id="btnPortalClienteRegistro" class="btn-portal-submit mb-2">
+                                <i class="bi bi-check-circle-fill fs-5"></i>
+                                <span>Crear Cuenta y Empezar a Comprar</span>
+                            </button>
+
+                            <small class="text-muted d-block text-center mt-2" style="font-size: 0.74rem;">
+                                <i class="bi bi-shield-check text-success me-1"></i>Facturación oficial con crédito fiscal y registro inmediato.
+                            </small>
+                        </form>
                     </div>
 
                 </div>
 
-                <!-- COLUMNA DERECHA (40%): TARJETA COMERCIAL FLOTANTE -->
-                <div class="col-12 col-lg-5">
-                    <div class="commercial-floating-card">
+                <!-- ============================================================= -->
+                <!-- VISTA B: ACCESO PERSONAL INTERNO (ADMIN, EMPAQUE, DESPACHO)   -->
+                <!-- ============================================================= -->
+                <div id="loginView" class="auth-panel-view d-none">
+                    
+                    <div id="panelLoginInterno">
                         
-                        <!-- Selector de Pestañas Superior Tipo Píldora (Pill Tabs) -->
-                        <div class="commercial-pill-tabs mb-4">
-                            <button type="button" class="commercial-pill-tab active" id="tabPillIngresar" onclick="alternarPillComercial('ingresar')">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Ingresar
-                            </button>
-                            <button type="button" class="commercial-pill-tab" id="tabPillRegistrar" onclick="alternarPillComercial('registrar')">
-                                <i class="bi bi-person-plus-fill me-1"></i> Registrar Taller
-                            </button>
+                        <!-- Cápsula Discreta de Personal -->
+                        <div class="pill-portal-commercial">
+                            <i class="bi bi-shield-lock-fill text-danger"></i>
+                            <span>PERSONAL AUTORIZADO GOLDEN</span>
                         </div>
 
-                        <!-- Alerta Dinámica de Clientes -->
-                        <div id="portalClienteAlert" class="alert d-none py-2 px-3 small rounded-3 fw-semibold text-center mb-3" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;"></div>
+                        <!-- Título y Subtítulo -->
+                        <h2 class="fw-bold text-dark mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.6rem; letter-spacing: -0.02em;">
+                            Acceso de Personal
+                        </h2>
+                        <p class="text-secondary small mb-3" style="font-size: 0.86rem; line-height: 1.45;">
+                            Ingresa con tu correo institucional (@golden.bo) para gestionar inventario, ventas y logística.
+                        </p>
 
-                        <!-- SECCIÓN 1: INGRESAR -->
-                        <div id="seccionPillIngresar">
+                        <!-- Alerta Dinámica de Error -->
+                        <div id="loginAlert" class="alert d-none py-2 px-3 small rounded-3 fw-semibold text-center mb-3" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;"></div>
+
+                        <!-- Formulario de Acceso Oficial de Personal -->
+                        <form id="loginForm" name="formLoginInterno">
                             
-                            <!-- Botón Grande: Continuar con Google -->
-                            <button type="button" class="btn btn-social-auth btn-google w-100 mb-2" onclick="abrirModalOAuthSocial('google')">
-                                <svg width="20" height="20" viewBox="0 0 48 48">
-                                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                                </svg>
-                                <span class="fw-semibold">Continuar con Google</span>
-                            </button>
-
-                            <!-- Botón Grande: Continuar con Facebook -->
-                            <button type="button" class="btn btn-social-auth btn-facebook w-100 mb-3" onclick="abrirModalOAuthSocial('facebook')">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
-                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                </svg>
-                                <span class="fw-semibold text-white">Continuar con Facebook</span>
-                            </button>
-
-                            <!-- Divisor Limpio -->
-                            <div class="d-flex align-items-center my-3">
-                                <hr class="flex-grow-1 my-0 text-muted opacity-25">
-                                <span class="px-3 text-muted small font-mono" style="font-size: 0.76rem;">o ingresa con tu cuenta registrada</span>
-                                <hr class="flex-grow-1 my-0 text-muted opacity-25">
+                            <!-- Correo Institucional -->
+                            <div class="mb-3">
+                                <label for="loginEmail" class="auth-field-label">
+                                    Correo Institucional / Usuario
+                                </label>
+                                <div class="modern-input-group">
+                                    <span class="modern-input-icon">
+                                        <i class="bi bi-envelope"></i>
+                                    </span>
+                                    <input type="email" 
+                                           id="loginEmail" 
+                                           name="email"
+                                           class="modern-form-input has-icon font-mono" 
+                                           placeholder="admin@golden.bo" 
+                                           required 
+                                           autocomplete="username">
+                                </div>
                             </div>
 
-                            <!-- Formulario de Acceso Directo -->
-                            <form id="portalLoginForm">
-                                <div class="mb-3">
-                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                        Correo Electrónico
-                                    </label>
-                                    <input type="email" id="portalClienteEmail" class="form-control portal-form-control font-mono" placeholder="taller@golden.bo" required>
+                            <!-- Contraseña -->
+                            <div class="mb-4">
+                                <label for="loginPassword" class="auth-field-label">
+                                    Contraseña de Acceso
+                                </label>
+                                <div class="modern-input-group">
+                                    <span class="modern-input-icon">
+                                        <i class="bi bi-key"></i>
+                                    </span>
+                                    <input type="password" 
+                                           id="loginPassword" 
+                                           name="password"
+                                           class="modern-form-input has-icon has-toggle font-mono" 
+                                           placeholder="••••••••" 
+                                           required 
+                                           autocomplete="current-password">
+                                    <button type="button" 
+                                            id="btnTogglePassword" 
+                                            class="modern-toggle-btn" 
+                                            onclick="toggleMostrarPassword()" 
+                                            title="Mostrar u ocultar contraseña">
+                                        <i class="bi bi-eye-fill" id="iconoPassword"></i>
+                                    </button>
                                 </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                        Contraseña
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="password" id="portalClientePassword" class="form-control portal-form-control font-mono border-end-0" placeholder="••••••••" required>
-                                        <button class="btn btn-outline-secondary border border-start-0 bg-white pe-3" type="button" onclick="togglePasswordVisibility('portalClientePassword', this)" style="border-radius: 0 10px 10px 0; border-color: #D6D0C7;">
-                                            <i class="bi bi-eye-fill"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <button type="submit" id="btnPortalClienteLogin" class="btn btn-portal-submit w-100 mb-3">
-                                    <i class="bi bi-cart-check-fill fs-5"></i>
-                                    <span>Entrar al Catálogo</span>
-                                </button>
-                            </form>
-
-                            <!-- Acceso rápido para Taller Central -->
-                            <div class="text-center pt-2">
-                                <button type="button" class="btn btn-sm btn-light border text-muted font-mono" style="font-size: 0.75rem; border-radius: 8px;" onclick="llenarPortalCliente('cliente@golden.bo', 'cliente123')">
-                                    <i class="bi bi-shield-check text-success me-1"></i>Acceso Rápido: cliente@golden.bo (Taller Central)
-                                </button>
                             </div>
 
-                        </div>
+                            <!-- Botón Carmesí de Ingreso -->
+                            <button type="submit" 
+                                    id="btnLogin" 
+                                    class="btn-login-crimson">
+                                <span>Ingresar al Sistema</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </form>
 
-                        <!-- SECCIÓN 2: REGISTRAR TALLER -->
-                        <div id="seccionPillRegistrar" class="d-none">
-                            <form id="portalRegistroForm">
-                                <div class="mb-2">
-                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                        Nombre del Taller o Cliente
-                                    </label>
-                                    <input type="text" id="regPortalNombre" class="form-control portal-form-control" placeholder="Ej. Taller Mecánico Los Primos" required>
-                                </div>
+                        <!-- Volver a Portal Clientes y Talleres -->
+                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 py-2 mt-3 fw-semibold d-flex align-items-center justify-content-center gap-2" onclick="activarModoComercialCliente()" style="border-radius: 10px; border-color: #E2E8F0; color: #475569; font-size: 0.82rem;">
+                            <i class="bi bi-arrow-left text-danger"></i>
+                            <span>Volver a Portal Clientes &amp; Talleres</span>
+                        </button>
 
-                                <div class="row g-2 mb-2">
-                                    <div class="col-6">
-                                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                            NIT / CI (para factura)
-                                        </label>
-                                        <input type="text" id="regPortalNit" class="form-control portal-form-control font-mono" placeholder="1029384756" required>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                            Celular / WhatsApp
-                                        </label>
-                                        <input type="tel" id="regPortalTelefono" class="form-control portal-form-control font-mono" placeholder="71234567" required>
-                                    </div>
-                                </div>
-
-                                <div class="mb-2">
-                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                        Dirección de entrega en Sucre
-                                    </label>
-                                    <input type="text" id="regPortalDireccion" class="form-control portal-form-control" placeholder="Av. Las Américas #340, Zona Central">
-                                </div>
-
-                                <div class="mb-2">
-                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                        Correo Electrónico
-                                    </label>
-                                    <input type="email" id="regPortalEmail" class="form-control portal-form-control font-mono" placeholder="contacto@mitaller.bo" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label font-mono small fw-bold text-uppercase d-block mb-1" style="font-size: 0.72rem; color: #57534E;">
-                                        Contraseña
-                                    </label>
-                                    <input type="password" id="regPortalPassword" class="form-control portal-form-control font-mono" placeholder="Mínimo 6 caracteres" required>
-                                </div>
-
-                                <button type="submit" id="btnPortalClienteRegistro" class="btn btn-portal-submit w-100 mb-2">
-                                    <i class="bi bi-check-circle-fill fs-5"></i>
-                                    <span>Crear Cuenta y Empezar a Comprar</span>
+                        <!-- Botones de Demostración Rápida -->
+                        <div class="mt-4 pt-3 border-top" style="border-color: #F1F5F9 !important;">
+                            <span class="text-muted small fw-bold text-uppercase d-block mb-2 font-mono" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                Acceso Rápido Demostrativo:
+                            </span>
+                            <div class="demo-access-chips">
+                                <button type="button" class="btn-demo-chip-modern" onclick="llenarLogin('admin@golden.bo', 'admin123')">
+                                    <i class="bi bi-shield-lock-fill text-danger"></i> ADMIN
                                 </button>
-
-                                <small class="text-muted d-block text-center mt-2" style="font-size: 0.74rem;">
-                                    <i class="bi bi-shield-check text-success me-1"></i>Facturación oficial con crédito fiscal y registro inmediato.
-                                </small>
-                            </form>
+                                <button type="button" class="btn-demo-chip-modern" onclick="llenarLogin('empaque@golden.bo', 'empaque123')">
+                                    <i class="bi bi-box-seam-fill text-warning"></i> EMPAQUE
+                                </button>
+                                <button type="button" class="btn-demo-chip-modern" onclick="llenarLogin('despacho@golden.bo', 'despacho123')">
+                                    <i class="bi bi-truck text-primary"></i> DESPACHO
+                                </button>
+                                <button type="button" class="btn-demo-chip-modern" onclick="activarModoComercialCliente()">
+                                    <i class="bi bi-tools text-success"></i> CLIENTE
+                                </button>
+                            </div>
                         </div>
 
                     </div>
@@ -890,18 +1253,18 @@
     <!-- ========================================================================= -->
     <!-- VISTA 2: PANEL CRUD DE USUARIOS (SOLO ADMINISTRADOR LOGUEADO)             -->
     <!-- ========================================================================= -->
-    <div id="crudView" class="container-fluid px-4 py-4 d-none">
+    <div id="crudView" class="container-fluid px-4 py-4 d-none" style="background-color: #FAF8F5; min-height: 100vh;">
         
         <!-- Título de Sección -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom gap-2">
             <div>
                 <h2 class="fw-bold mb-0 text-dark">
-                    <i class="bi bi-people-fill text-warning me-2"></i>Gestión de Usuarios & Talleres
+                    <i class="bi bi-people-fill text-warning me-2"></i>Gestión de Usuarios &amp; Talleres
                 </h2>
                 <p class="text-muted mb-0 mt-1 small">Administración de cuentas con control de acceso basado en roles (RBAC) y trazabilidad.</p>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge badge-gold">
+                <span class="badge badge-gold" style="background: rgba(217, 119, 6, 0.15); color: #B45309; border: 1px solid rgba(217, 119, 6, 0.3); padding: 6px 12px; border-radius: 999px;">
                     <span class="pulse-dot pulse-dot-gold me-1"></span> Módulo Seguro RBAC
                 </span>
             </div>
@@ -910,8 +1273,8 @@
         <div class="row g-4">
             <!-- Columna Izquierda: Formulario Crear / Editar -->
             <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="glass-header text-dark fw-bold d-flex align-items-center" id="formTitle">
+                <div class="card h-100 shadow-sm border-0" style="border-radius: 14px;">
+                    <div class="glass-header text-dark fw-bold d-flex align-items-center p-3 border-bottom" id="formTitle">
                         <i class="bi bi-person-plus-fill text-warning me-2 fs-5"></i> Registrar Nuevo Usuario
                     </div>
                     <div class="p-4">
@@ -921,17 +1284,17 @@
                             <input type="hidden" id="userId">
 
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">Nombre Completo / Razón Social</label>
+                                <label for="nombre" class="form-label small fw-bold text-muted">Nombre Completo / Razón Social</label>
                                 <input type="text" id="nombre" class="form-control" placeholder="Ej. Lubricentro Central" required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">Correo Institucional (Login)</label>
+                                <label for="email" class="form-label small fw-bold text-muted">Correo Institucional (Login)</label>
                                 <input type="email" id="email" class="form-control font-mono" placeholder="usuario@golden.bo" required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-muted">
+                                <label for="password" class="form-label small fw-bold text-muted">
                                     Contraseña <span id="passHint" class="text-warning fw-normal small"></span>
                                 </label>
                                 <input type="password" id="password" class="form-control font-mono" placeholder="Mínimo 6 caracteres">
@@ -939,7 +1302,7 @@
 
                             <div class="row">
                                 <div class="col-6 mb-4">
-                                    <label class="form-label small fw-bold text-muted">Rol en Sistema</label>
+                                    <label for="rol" class="form-label small fw-bold text-muted">Rol en Sistema</label>
                                     <select id="rol" class="form-select font-mono" required>
                                         <option value="ADMIN">ADMIN</option>
                                         <option value="ALMACENERO">ALMACENERO</option>
@@ -949,7 +1312,7 @@
                                     </select>
                                 </div>
                                 <div class="col-6 mb-4">
-                                    <label class="form-label small fw-bold text-muted">Estado</label>
+                                    <label for="estado" class="form-label small fw-bold text-muted">Estado</label>
                                     <select id="estado" class="form-select font-mono" required>
                                         <option value="ACTIVO">ACTIVO</option>
                                         <option value="INACTIVO">INACTIVO</option>
@@ -958,10 +1321,10 @@
                             </div>
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-stitch-primary w-100 py-2 fs-6 shadow-sm" id="btnGuardar">
+                                <button type="submit" class="btn btn-danger w-100 py-2 fs-6 shadow-sm" id="btnGuardar" style="background: #B91C1C; border-color: #B91C1C; border-radius: 8px;">
                                     <i class="bi bi-save me-1"></i> Guardar usuario
                                 </button>
-                                <button type="button" class="btn btn-secondary w-100 d-none py-2" id="btnCancelar" onclick="resetFormulario()">
+                                <button type="button" class="btn btn-secondary w-100 d-none py-2" id="btnCancelar" onclick="resetFormulario()" style="border-radius: 8px;">
                                     <i class="bi bi-x-circle me-1"></i> Cancelar edición
                                 </button>
                             </div>
@@ -972,8 +1335,8 @@
 
             <!-- Columna Derecha: Directorio de Usuarios -->
             <div class="col-lg-8">
-                <div class="card h-100">
-                    <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="card h-100 shadow-sm border-0" style="border-radius: 14px;">
+                    <div class="glass-header d-flex flex-wrap justify-content-between align-items-center gap-2 p-3 border-bottom">
                         <h5 class="mb-0 fw-bold text-dark d-flex align-items-center">
                             <i class="bi bi-list-columns-reverse text-warning me-2"></i>Directorio de usuarios y talleres
                         </h5>
@@ -982,7 +1345,7 @@
                                 <span class="input-group-text bg-white border border-end-0 text-muted"><i class="bi bi-search"></i></span>
                                 <input type="text" id="buscadorUsuarios" class="form-control border-start-0 ps-0" placeholder="Buscar cliente, taller, teléfono, NIT o rol...">
                             </div>
-                            <button class="btn btn-secondary btn-sm px-3" onclick="cargarUsuarios()">
+                            <button class="btn btn-outline-secondary btn-sm px-3" onclick="cargarUsuarios()" style="border-radius: 8px;">
                                 <i class="bi bi-arrow-clockwise me-1"></i> Refrescar
                             </button>
                         </div>
@@ -1007,7 +1370,9 @@
         </div>
     </div>
 
-    <!-- Modal OAuth Social (Google / Facebook / Microsoft) -->
+    <!-- ========================================================================= -->
+    <!-- MODAL OAUTH SOCIAL (GOOGLE / FACEBOOK)                                    -->
+    <!-- ========================================================================= -->
     <div class="modal fade" id="modalOAuthSocial" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden; font-family: 'Inter', sans-serif;">
@@ -1033,7 +1398,7 @@
                         Selecciona una cuenta comercial o taller registrado para ingresar al catálogo mayorista inmediatamente:
                     </p>
 
-                    <!-- Lista de Cuentas Sugeridas (Tipografía Limpia Work Sans) -->
+                    <!-- Lista de Cuentas Sugeridas -->
                     <div class="d-flex flex-column gap-2 mb-3">
                         <!-- Cuenta 1: Taller Los Primos -->
                         <div class="oauth-account-item" onclick="ejecutarOAuthLogin('taller.losprimos@gmail.com', 'Taller Mecánico Los Primos')">
@@ -1081,11 +1446,11 @@
                         <!-- Formulario desplegable para cuenta personalizada -->
                         <div id="oauthCustomForm" class="d-none mt-3 p-3 bg-light rounded-3 border">
                             <div class="mb-2">
-                                <label class="form-label small fw-bold text-uppercase mb-1" id="lblCustomOAuthNombre" style="font-size: 0.72rem; color: #57534E;">Nombre de tu Taller / Comprador</label>
+                                <label for="oauthCustomNombre" class="form-label small fw-bold text-uppercase mb-1" id="lblCustomOAuthNombre" style="font-size: 0.72rem; color: #57534E;">Nombre de tu Taller / Comprador</label>
                                 <input type="text" id="oauthCustomNombre" class="form-control form-control-sm" placeholder="Ej: Taller Mecánico San Roque" style="border-radius: 6px;">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold text-uppercase mb-1" id="lblCustomOAuthEmail" style="font-size: 0.72rem; color: #57534E;">Correo Electrónico Gmail</label>
+                                <label for="oauthCustomEmail" class="form-label small fw-bold text-uppercase mb-1" id="lblCustomOAuthEmail" style="font-size: 0.72rem; color: #57534E;">Correo Electrónico Gmail</label>
                                 <input type="email" id="oauthCustomEmail" class="form-control form-control-sm" placeholder="tu.correo@gmail.com" style="border-radius: 6px;">
                             </div>
                             <button type="button" id="btnCustomOAuthSubmit" class="btn btn-primary btn-sm w-100 py-2 fw-bold" onclick="ejecutarOAuthPersonalizado()" style="background-color: #B91C1C; border-color: #B91C1C; border-radius: 6px;">
@@ -1099,7 +1464,6 @@
                         <span class="small text-muted">Autenticando credenciales seguras...</span>
                     </div>
 
-                    <!-- Mensaje de seguridad al pie (Comercial y Humano) -->
                     <div class="text-center mt-3">
                         <small class="text-muted" style="font-size: 0.74rem; line-height: 1.35;">
                             <i class="bi bi-shield-check text-success me-1"></i>
@@ -1112,9 +1476,11 @@
         </div>
     </div>
 
-    <!-- Script de Interactividad 3D y Control de UI -->
+    <!-- ========================================================================= -->
+    <!-- SCRIPTS DE INTERACTIVIDAD LOCAL (CARRUSEL 4.5S Y CONTROLES)               -->
+    <!-- ========================================================================= -->
     <script>
-        // Control de visibilidad de contraseña
+        // Control de visibilidad de contraseña en personal interno
         function toggleMostrarPassword() {
             var input = document.getElementById('loginPassword');
             var icono = document.getElementById('iconoPassword');
@@ -1128,54 +1494,75 @@
             }
         }
 
-        // Sistema 3D con Seguimiento de Cursor en Tiempo Real
+        // =========================================================================
+        // CARRUSEL AUTOMÁTICO KEN BURNS (4.5 SEGUNDOS) - ESCAPARATE AUTOMOTRIZ
+        // =========================================================================
         (function() {
-            var showcase = document.getElementById('showcaseCol');
-            var pivot = document.getElementById('cadPivot');
-            if (!showcase || !pivot) return;
+            var timerCarrusel = null;
+            var indiceActual = 0;
 
-            function aplicarInclinacion(clientX, clientY) {
-                var rect = showcase.getBoundingClientRect();
-                var centroX = rect.left + rect.width / 2;
-                var centroY = rect.top + rect.height / 2;
+            window.irASlideAutomotriz = function(nuevoIndice) {
+                var slides = document.querySelectorAll('.ken-burns-slide');
+                var pills = document.querySelectorAll('.showcase-indicator-pill');
+                var elTagText = document.getElementById('showcaseTagText');
+                var elTitle = document.getElementById('showcaseActiveTitle');
+                var elSub = document.getElementById('showcaseActiveSub');
 
-                // Desviación normalizada [-1, 1]
-                var deltaX = (clientX - centroX) / (rect.width / 2);
-                var deltaY = (clientY - centroY) / (rect.height / 2);
+                if (!slides || slides.length === 0) return;
+                var total = slides.length;
+                indiceActual = ((nuevoIndice % total) + total) % total;
 
-                // Limitar ángulo máximo a 26 grados para elegancia industrial
-                var clampX = Math.max(-1.2, Math.min(1.2, deltaX));
-                var clampY = Math.max(-1.2, Math.min(1.2, deltaY));
+                slides.forEach(function(slide, idx) {
+                    if (idx === indiceActual) {
+                        slide.classList.add('active');
+                        var img = slide.querySelector('img');
+                        if (img) {
+                            img.style.animation = 'none';
+                            void img.offsetHeight;
+                            img.style.animation = '';
+                        }
+                        var tag = slide.getAttribute('data-tag') || '';
+                        var title = slide.getAttribute('data-title') || '';
+                        var sub = slide.getAttribute('data-sub') || '';
 
-                var rotY = clampX * 24;
-                var rotX = -clampY * 24;
+                        if (elTagText) elTagText.textContent = tag;
+                        if (elTitle) elTitle.textContent = title;
+                        if (elSub) elSub.textContent = sub;
+                    } else {
+                        slide.classList.remove('active');
+                    }
+                });
 
-                pivot.style.transform = 'rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+                pills.forEach(function(pill, idx) {
+                    if (idx === indiceActual) {
+                        pill.classList.add('active');
+                    } else {
+                        pill.classList.remove('active');
+                    }
+                });
+
+                // Reiniciar intervalo de 4.5 segundos
+                if (timerCarrusel) clearInterval(timerCarrusel);
+                timerCarrusel = setInterval(function() {
+                    window.irASlideAutomotriz(indiceActual + 1);
+                }, 4500);
+            };
+
+            // Iniciar carrusel automático
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    window.irASlideAutomotriz(0);
+                });
+            } else {
+                window.irASlideAutomotriz(0);
             }
-
-            // Seguimiento de cursor en toda la ventana
-            window.addEventListener('mousemove', function(e) {
-                aplicarInclinacion(e.clientX, e.clientY);
-            });
-
-            // Soporte para pantallas táctiles / móviles
-            window.addEventListener('touchmove', function(e) {
-                if (e.touches && e.touches[0]) {
-                    aplicarInclinacion(e.touches[0].clientX, e.touches[0].clientY);
-                }
-            }, { passive: true });
-
-            // Reajuste al salir del viewport
-            showcase.addEventListener('mouseleave', function() {
-                pivot.style.transform = 'rotateX(0deg) rotateY(0deg)';
-            });
         })();
     </script>
 
     <!-- Scripts de Bootstrap, SweetAlert2 y Aplicación -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="menu.js?v=29"></script>
-    <script src="app.js?v=29"></script>
+    <script src="menu.js?v=30"></script>
+    <script src="app.js?v=30"></script>
 </body>
 </html>

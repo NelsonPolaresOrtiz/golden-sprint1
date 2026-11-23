@@ -234,8 +234,18 @@ function renderizarTablaPedidos(lista = null) {
                     </div>
                 </td>
                 <td>
-                    <div class="fw-bold text-dark"><i class="bi bi-person-fill me-1 text-danger"></i>${escaparHTML(p.cliente || 'Consumidor Final')}</div>
-                    <small class="font-monospace d-block text-secondary" style="font-size: 0.75rem;">${escaparHTML(p.cliente_email || '')}</small>
+                    <div class="fw-bold text-dark"><i class="bi bi-person-fill me-1 text-danger"></i>${escaparHTML(p.nombre_destinatario || p.cliente || 'Consumidor Final')}</div>
+                    ${(p.telefono_contacto || p.telefono_final) ? `
+                        <div class="small fw-semibold mt-1">
+                            <a href="https://wa.me/591${escaparHTML(p.telefono_contacto || p.telefono_final).replace(/\D/g, '')}" target="_blank" class="text-decoration-none text-success" title="Escribir al WhatsApp">
+                                <i class="bi bi-whatsapp me-1 text-success"></i>${escaparHTML(p.telefono_contacto || p.telefono_final)}
+                            </a>
+                        </div>
+                    ` : ''}
+                    <div class="small text-secondary mt-1" style="font-size: 0.78rem;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i><strong>${escaparHTML(p.direccion_entrega || p.direccion_final || 'Sucre, Bolivia')}</strong>
+                        ${p.referencia_entrega ? `<span class="text-muted d-block ps-3" style="font-size: 0.72rem;">Ref: ${escaparHTML(p.referencia_entrega)}</span>` : ''}
+                    </div>
                 </td>
                 <td class="small text-secondary font-mono">
                     <i class="bi bi-calendar3 me-1 text-warning"></i>${fechaFormateada}
@@ -415,6 +425,17 @@ function abrirModalDespachoRuta(pedidoId) {
         inpChofer.value = usuarioLogueado.nombre;
     }
 
+    const pedido = (pedidosGlobal || []).find(p => p.id === pedidoId);
+    if (pedido) {
+        const elDir = document.getElementById('despachoDestinoDireccion');
+        const elTel = document.getElementById('despachoDestinoTelefono');
+        const elCli = document.getElementById('despachoDestinoCliente');
+        const dirTexto = (pedido.direccion_entrega || pedido.direccion_final || 'Sucre, Bolivia') + (pedido.referencia_entrega ? ` (${pedido.referencia_entrega})` : '');
+        if (elDir) elDir.innerText = dirTexto;
+        if (elTel) elTel.innerText = pedido.telefono_contacto || pedido.telefono_final || 'Sin teléfono';
+        if (elCli) elCli.innerText = pedido.nombre_destinatario || pedido.cliente || 'Cliente';
+    }
+
     const modalEl = document.getElementById('modalDespachoRuta');
     if (modalEl) {
         const bsModal = new bootstrap.Modal(modalEl);
@@ -457,6 +478,18 @@ async function confirmarSalidaRutaDesdeModal() {
 
 function abrirModalActaEntrega(pedidoId) {
     pedidoSeleccionadoOperativo = pedidoId;
+
+    const pedido = (pedidosGlobal || []).find(p => p.id === pedidoId);
+    if (pedido) {
+        const elDir = document.getElementById('actaDestinoDireccion');
+        const elTel = document.getElementById('actaDestinoTelefono');
+        const elCli = document.getElementById('actaDestinoCliente');
+        const dirTexto = (pedido.direccion_entrega || pedido.direccion_final || 'Sucre, Bolivia') + (pedido.referencia_entrega ? ` (${pedido.referencia_entrega})` : '');
+        if (elDir) elDir.innerText = dirTexto;
+        if (elTel) elTel.innerText = pedido.telefono_contacto || pedido.telefono_final || 'Sin teléfono';
+        if (elCli) elCli.innerText = pedido.nombre_destinatario || pedido.cliente || 'Cliente';
+    }
+
     const modalEl = document.getElementById('modalActaEntrega');
     if (modalEl) {
         const bsModal = new bootstrap.Modal(modalEl);

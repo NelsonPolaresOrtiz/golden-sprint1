@@ -443,6 +443,86 @@ function renderizarCarritoVenta() {
     if (elQRMontoExacto) elQRMontoExacto.innerText = `Bs. ${totalVenta.toFixed(2)}`;
 
     calcularCambioEfectivo();
+    renderizarQRVentaDirecta(totalVenta);
+}
+
+/**
+ * Renderizado de QR Dinámico EMVCo para Mostrador de Venta Directa
+ */
+function renderizarQRVentaDirecta(montoTotal) {
+    const canvas = document.getElementById('canvasQRVentaDirecta');
+    const imgFallback = document.getElementById('imgQRVdFallback');
+    const elQRMontoExacto = document.getElementById('txtQRMontoExacto');
+    const elRef = document.getElementById('txtQRVdReferencia');
+    const elCRC = document.getElementById('badgeQRVdCRC');
+
+    const totalVenta = typeof montoTotal === 'number' ? montoTotal : (carritoVenta.reduce((acc, it) => acc + (it.precio * it.cantidad), 0));
+    const ref = 'VD-GLD-' + Date.now().toString().slice(-4);
+
+    if (elQRMontoExacto) elQRMontoExacto.innerText = `Bs. ${totalVenta.toFixed(2)}`;
+    if (elRef) elRef.innerText = ref;
+
+    let dynamic = null;
+    if (typeof window.generarPayloadEMVCoDinamico === 'function') {
+        dynamic = window.generarPayloadEMVCoDinamico(totalVenta, ref);
+    } else if (typeof QRDinamicoEMVCo !== 'undefined' && QRDinamicoEMVCo.generarPayloadEMVCoDinamico) {
+        dynamic = QRDinamicoEMVCo.generarPayloadEMVCoDinamico(totalVenta, ref);
+    }
+
+    if (dynamic && elCRC) {
+        elCRC.innerText = `CRC: #${dynamic.crc}`;
+    }
+
+    if (canvas && window.QRCode && typeof window.QRCode === 'function') {
+        try {
+            const virtualDiv = document.createElement('div');
+            new QRCode(virtualDiv, {
+                text: dynamic ? dynamic.payload : '000201010212...',
+                width: 360,
+                height: 360,
+                colorDark: '#581c87',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                const qrCanvas = virtualDiv.querySelector('canvas');
+                if (qrCanvas) {
+                    canvas.width = 360;
+                    canvas.height = 360;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(qrCanvas, 0, 0, 360, 360);
+
+                    // Badge central "Bs."
+                    const cx = 180, cy = 180, r = 30;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fill();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#E2E8F0';
+                    ctx.stroke();
+
+                    ctx.font = '900 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ctx.fillStyle = '#581c87';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Bs.', cx, cy + 2);
+                    ctx.restore();
+
+                    canvas.style.display = 'block';
+                    if (imgFallback) imgFallback.style.display = 'none';
+                }
+            }, 50);
+            return;
+        } catch (e) {
+            console.warn('Error al generar QR dinámico para venta directa:', e);
+        }
+    }
+
+    if (imgFallback) imgFallback.style.display = 'block';
+    if (canvas) canvas.style.display = 'none';
 }
 
 /**
@@ -501,6 +581,7 @@ function seleccionarMetodoPago(metodo) {
     } else if (metodo === 'QR_TIENDA') {
         document.getElementById('tabMetodoQR')?.classList.add('active');
         document.getElementById('panelPagoQR')?.classList.remove('d-none');
+        renderizarQRVentaDirecta();
     } else if (metodo === 'TRANSFERENCIA') {
         document.getElementById('tabMetodoTransferencia')?.classList.add('active');
         document.getElementById('panelPagoTransferencia')?.classList.remove('d-none');

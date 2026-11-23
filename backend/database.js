@@ -161,6 +161,10 @@ db.serialize(() => {
         entrega_pin TEXT,
         entrega_observaciones TEXT,
         entrega_fecha DATETIME,
+        direccion_entrega TEXT,
+        telefono_contacto TEXT,
+        referencia_entrega TEXT,
+        nombre_destinatario TEXT,
         FOREIGN KEY (cliente_id) REFERENCES usuarios(id)
     )`);
 
@@ -195,7 +199,13 @@ db.serialize(() => {
                 { name: 'cliente_nit_ci', type: 'TEXT' },
                 { name: 'cliente_email', type: 'TEXT' },
                 { name: 'monto_recibido', type: 'DECIMAL(10,2)' },
-                { name: 'cambio', type: 'DECIMAL(10,2)' }
+                { name: 'cambio', type: 'DECIMAL(10,2)' },
+                { name: 'verificado_por', type: 'TEXT' },
+                { name: 'transaccion_bancaria_id', type: 'TEXT' },
+                { name: 'direccion_entrega', type: 'TEXT' },
+                { name: 'telefono_contacto', type: 'TEXT' },
+                { name: 'referencia_entrega', type: 'TEXT' },
+                { name: 'nombre_destinatario', type: 'TEXT' }
             ];
 
             colsToAdd.forEach(c => {

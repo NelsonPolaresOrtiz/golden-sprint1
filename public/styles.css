@@ -435,6 +435,146 @@ body:has(#menu-container:not(.d-none):not([style*="display: none"])) {
     pointer-events: none !important;
 }
 
+/* =========================================================================
+   POPOVER / DROPDOWN DE NOTIFICACIONES DEL SISTEMA (#popoverNotificaciones)
+   ========================================================================= */
+.notificaciones-dropdown-container {
+    position: relative !important;
+}
+
+.popover-notificaciones-panel {
+    position: absolute !important;
+    top: calc(100% + 10px) !important;
+    right: 0 !important;
+    width: 360px !important;
+    max-width: 92vw !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    z-index: 1200 !important;
+    overflow: hidden !important;
+    animation: popoverFadeSlideIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    transform-origin: top right !important;
+    color: #1E293B !important;
+}
+
+@keyframes popoverFadeSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.popover-notif-header {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+}
+
+.popover-notif-list {
+    background: #FFFFFF !important;
+    max-height: 380px !important;
+    overflow-y: auto !important;
+}
+
+.popover-notif-list::-webkit-scrollbar {
+    width: 5px;
+}
+.popover-notif-list::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+.popover-notif-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 12px 14px !important;
+    text-decoration: none !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    transition: background-color 0.15s ease !important;
+    color: inherit !important;
+}
+
+.popover-notif-item:hover {
+    background-color: #F8FAFC !important;
+    text-decoration: none !important;
+}
+
+.popover-notif-item:last-child {
+    border-bottom: none !important;
+}
+
+.popover-notif-icon-wrap {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    font-size: 15px !important;
+}
+
+.popover-notif-icon-danger {
+    background: #FEF2F2 !important;
+    color: #DC2626 !important;
+    border: 1px solid #FEE2E2 !important;
+}
+
+.popover-notif-icon-warning {
+    background: #FEF3C7 !important;
+    color: #D97706 !important;
+    border: 1px solid #FDE68A !important;
+}
+
+.popover-notif-icon-primary {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+    border: 1px solid #DBEAFE !important;
+}
+
+.popover-notif-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+    line-height: 1.3 !important;
+    text-align: left !important;
+}
+
+.popover-notif-title {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    color: #0F172A !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+}
+
+.popover-notif-desc {
+    font-size: 0.74rem !important;
+    color: #475569 !important;
+    margin-bottom: 3px !important;
+    line-height: 1.35 !important;
+}
+
+.popover-notif-meta {
+    font-size: 0.68rem !important;
+    color: #94A3B8 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.popover-notif-footer {
+    transition: background-color 0.15s ease !important;
+}
+.popover-notif-footer:hover {
+    background-color: #E2E8F0 !important;
+    color: #0F172A !important;
+}
+
 /* Chip de Perfil de Usuario Estilizado y Compacto */
 .nav-profile-chip {
     display: flex !important;
@@ -519,6 +659,39 @@ body:has(#menu-container:not(.d-none):not([style*="display: none"])) {
     font-weight: 600 !important;
     letter-spacing: -0.01em !important;
     white-space: nowrap !important;
+}
+
+/* Contraste perfecto para chip de perfil claro (Tienda y vistas luminosas) */
+.nav-profile-chip-light .nav-profile-name {
+    color: #0F172A !important;
+}
+
+.nav-profile-chip-light .nav-profile-chevron {
+    color: #475569 !important;
+}
+
+.nav-profile-chip-light .nav-role-badge-tech.role-cliente {
+    background: #FEF3C7 !important;
+    color: #92400E !important;
+    border: 1px solid #FCD34D !important;
+}
+
+.nav-profile-chip-light .nav-role-badge-tech.role-admin {
+    background: #FEE2E2 !important;
+    color: #991B1B !important;
+    border: 1px solid #FCA5A5 !important;
+}
+
+.nav-profile-chip-light .nav-role-badge-tech.role-empaque {
+    background: #E0E7FF !important;
+    color: #3730A3 !important;
+    border: 1px solid #C7D2FE !important;
+}
+
+.nav-profile-chip-light .nav-role-badge-tech.role-despacho {
+    background: #DCFCE7 !important;
+    color: #166534 !important;
+    border: 1px solid #86EFAC !important;
 }
 
 /* Micro-insignia tecnológica del rol */
@@ -2370,7 +2543,7 @@ textarea.form-control:focus {
     pointer-events: none;
 }
 
-/* 2. HERO BANNER INDUSTRIAL LIMPIO Y ESPACIOSO */
+/* 2. HERO BANNER INDUSTRIAL LIMPIO Y ESPACIOSO CON FONDO CINEMATOGRÁFICO */
 .tecfil-hero {
     background: #141619 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -2387,8 +2560,47 @@ textarea.form-control:focus {
     inset: 0;
     background-image: radial-gradient(rgba(217, 119, 6, 0.06) 1px, transparent 0);
     background-size: 28px 28px;
-    opacity: 0.6;
+    opacity: 0.5;
     pointer-events: none;
+    z-index: 1;
+}
+
+/* Capa de Video HD en Bucle y Canvas Procedural de Aceite Dorado */
+.hero-oil-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero-video-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out;
+}
+
+.hero-oil-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(15,17,21,0.92) 0%, rgba(15,17,21,0.72) 50%, rgba(15,17,21,0.45) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.tecfil-hero .hero-content-wrap {
+    position: relative;
+    z-index: 2;
 }
 
 .tecfil-hero-title {
@@ -3809,4 +4021,571 @@ th,
 .sku-badge,
 .badge-sigla {
     text-transform: uppercase !important;
+}
+
+/* ==========================================================================
+   PANTALLA DIVIDIDA SPLIT-SCREEN (55% / 45%) - ESTÉTICA AUTOMOTRIZ EN MOVIMIENTO
+   ========================================================================== */
+
+.split-login-wrapper {
+    display: flex;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    background: #141619;
+    overflow-x: hidden;
+}
+
+/* Columna Izquierda (55%): Escaparate Automotriz en Movimiento */
+.automotive-showcase-col {
+    flex: 0 0 55%;
+    max-width: 55%;
+    position: relative;
+    background: #141619;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 2.5rem 3rem;
+    box-sizing: border-box;
+}
+
+/* Slides de Vehículos y Animación Ken Burns */
+.automotive-slides-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.ken-burns-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.ken-burns-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.ken-burns-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.0) translate(0, 0);
+    will-change: transform;
+}
+
+.ken-burns-slide.active img {
+    animation: kenBurnsMotion 8s ease-out forwards;
+}
+
+@keyframes kenBurnsMotion {
+    0% {
+        transform: scale(1.0) translate(0, 0);
+    }
+    100% {
+        transform: scale(1.08) translate(-1.5%, -1%);
+    }
+}
+
+/* Capas Superpuestas de Degradado y Marca */
+.showcase-overlay-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 75% 25%, transparent 30%, rgba(20, 22, 25, 0.5) 70%, rgba(20, 22, 25, 0.88) 100%),
+                linear-gradient(to top, rgba(20, 22, 25, 0.95) 0%, rgba(20, 22, 25, 0.6) 35%, rgba(20, 22, 25, 0.2) 65%, transparent 100%),
+                linear-gradient(to bottom, rgba(20, 22, 25, 0.75) 0%, transparent 30%);
+    z-index: 3;
+    pointer-events: none;
+}
+
+.showcase-header-brand {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.showcase-footer-content {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Píldoras Indicadoras Interactivas */
+.showcase-indicators-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.showcase-indicator-pill {
+    width: 32px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    outline: none;
+}
+
+.showcase-indicator-pill:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.showcase-indicator-pill.active {
+    width: 54px;
+    background: #B91C1C;
+    box-shadow: 0 0 12px rgba(185, 28, 28, 0.65);
+}
+
+/* Etiquetas y Leyendas de Categoría Dinámica */
+.showcase-meta-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(185, 28, 28, 0.15);
+    border: 1px solid rgba(185, 28, 28, 0.4);
+    color: #F87171;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    backdrop-filter: blur(8px);
+    width: fit-content;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.showcase-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.showcase-subtitle {
+    font-size: 0.95rem;
+    color: #CBD5E1;
+    margin: 0;
+    line-height: 1.4;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Columna Derecha (45%): Formulario de Acceso Limpio */
+.form-access-col {
+    flex: 0 0 45%;
+    max-width: 45%;
+    background-color: #FFFFFF !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 3rem;
+    min-height: 100vh;
+    min-height: 100dvh;
+    box-sizing: border-box;
+}
+
+.login-form-inner {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cápsula Sutil de Portal */
+.pill-portal-commercial {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    color: #64748B;
+    font-family: 'Inter', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    width: fit-content;
+}
+
+/* Inputs Modernos Futuristas */
+.modern-input-group {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.modern-input-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    color: #94A3B8;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.modern-form-input {
+    flex: 1;
+    height: 46px;
+    border: 1px solid #E2E8F0;
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+    padding: 0 14px;
+    font-size: 0.92rem;
+    color: #141619;
+    background: #FFFFFF;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.modern-form-input.has-toggle {
+    border-radius: 0;
+    border-right: none;
+}
+
+.modern-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 46px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modern-toggle-btn:hover {
+    color: #141619;
+    background: #F8FAFC;
+}
+
+.modern-input-group:focus-within .modern-input-icon {
+    border-color: #B91C1C;
+    color: #B91C1C;
+}
+
+.modern-input-group:focus-within .modern-form-input {
+    border-color: #B91C1C;
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.14);
+}
+
+.modern-input-group:focus-within .modern-toggle-btn {
+    border-color: #B91C1C;
+}
+
+/* Botón Carmesí Futurista */
+.btn-login-crimson {
+    height: 46px;
+    background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(185, 28, 28, 0.3) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    cursor: pointer;
+    width: 100%;
+}
+
+.btn-login-crimson:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(185, 28, 28, 0.45) !important;
+    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%) !important;
+}
+
+.btn-login-crimson:active {
+    transform: translateY(0);
+}
+
+/* Enlace a Tienda Online */
+.link-catalog-box {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-top: 1.25rem;
+}
+
+.link-catalog-box:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    transform: translateY(-1px);
+}
+
+/* Quick Demo Access Chips */
+.demo-access-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0.75rem;
+}
+
+.btn-demo-chip-modern {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    color: #475569;
+    font-family: 'Inter', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-demo-chip-modern:hover {
+    background: #FFFFFF;
+    border-color: #CBD5E1;
+    color: #141619;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================================================= */
+/* MEJORAS Y COMPONENTES FUTURISTAS DEL LOGIN SPLIT-SCREEN                   */
+/* ========================================================================= */
+.btn-showcase-mode-switch {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #F8FAFC;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+.btn-showcase-mode-switch:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+}
+
+.showcase-glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 11px 15px;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    transition: all 0.2s ease;
+}
+.showcase-glass-card:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.22);
+    transform: translateX(4px);
+}
+.showcase-glass-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.showcase-glass-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 2px 0;
+}
+.showcase-glass-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    color: #94A3B8;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.auth-segmented-control {
+    background: #F1F5F9;
+    padding: 4px;
+    border-radius: 10px;
+    display: flex;
+    gap: 4px;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 1.25rem;
+}
+.auth-segment-tab {
+    flex: 1;
+    border: none !important;
+    background: transparent;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    outline: none;
+    text-align: center;
+}
+.auth-segment-tab:hover {
+    color: #0F172A;
+}
+.auth-segment-tab.active {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+    font-weight: 700 !important;
+    border: none !important;
+}
+
+.btn-google-clean {
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    color: #1E293B !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.btn-google-clean:hover {
+    background: #F8FAFC !important;
+    border-color: #94A3B8 !important;
+    color: #0F172A !important;
+}
+
+.btn-facebook-clean {
+    background: #1877F2 !important;
+    border: 1px solid #1877F2 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 6px rgba(24, 119, 242, 0.25);
+}
+.btn-facebook-clean:hover {
+    background: #166FE5 !important;
+    border-color: #166FE5 !important;
+    color: #FFFFFF !important;
+}
+
+.btn-quick-access-chip {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #334155 !important;
+    border-radius: 999px !important;
+    padding: 8px 16px !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    outline: none;
+    text-decoration: none;
+}
+.btn-quick-access-chip:hover {
+    background: #F1F5F9 !important;
+    border-color: #CBD5E1 !important;
+    color: #0F172A !important;
+}
+
+.showcase-contact-strip {
+    font-family: 'Chivo Mono', monospace;
+    font-size: 0.72rem;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+/* Responsive (< 900px): Banner Superior Animado (220px) + Formulario Debajo */
+@media (max-width: 900px) {
+    .split-login-wrapper {
+        flex-direction: column !important;
+    }
+    .automotive-showcase-col {
+        flex: 0 0 220px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 220px !important;
+        height: 220px !important;
+        padding: 1.25rem 1.5rem !important;
+    }
+    .showcase-footer-content {
+        gap: 0.5rem !important;
+    }
+    .showcase-title {
+        font-size: 1.15rem !important;
+    }
+    .showcase-subtitle {
+        display: none !important;
+    }
+    .form-access-col {
+        flex: 1 0 auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 2rem 1.5rem 3rem !important;
+    }
 }
